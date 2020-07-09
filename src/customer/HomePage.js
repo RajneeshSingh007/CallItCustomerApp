@@ -1,53 +1,38 @@
-import i18n from 'i18next';
-import k from './../i18n/keys';
-import React from 'react';
+import Slider from '@react-native-community/slider';
 import {
-  View,
-  Dimensions,
-  FlatList,
-  StatusBar,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  SectionList,
-  TouchableOpacity,
-  BackHandler,
-  ScrollView,
-  InteractionManager,
-  Platform,
-  Picker,
-  Linking,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import {
-  Divider,
   Heading,
   Image,
   NavigationBar,
   Screen,
   Subtitle,
   Title,
-  Caption,
 } from '@shoutem/ui';
-import DummyLoader from '../util/DummyLoader';
-import * as Pref from './../util/Pref';
-import * as Helper from './../util/Helper';
-import NavigationActions from '../util/NavigationActions';
-import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
-import GetLocation from 'react-native-get-location';
+import i18n from 'i18next';
 import Lodash from 'lodash';
-import Moment from 'moment';
+import React from 'react';
 import {
-  Card,
-  Button,
-  Checkbox,
-  Dialog,
-  Portal,
-  Colors,
-  TextInput,
-} from 'react-native-paper';
-import Slider from '@react-native-community/slider';
-import ProgressiveImage from './ProgressiveImage';
+  BackHandler,
+  FlatList,
+  Linking,
+  Platform,
+  ScrollView,
+  SectionList,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
+import GetLocation from 'react-native-get-location';
+import {Button, Card, Checkbox, Colors, TextInput} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import DummyLoader from '../util/DummyLoader';
+import NavigationActions from '../util/NavigationActions';
+import k from './../i18n/keys';
+import * as Helper from './../util/Helper';
+import * as Pref from './../util/Pref';
+import {sizeHeight, sizeWidth} from './../util/Size';
 
 var now = new Date().getDay();
 
@@ -111,6 +96,7 @@ class HomePage extends React.Component {
       existingagain: false,
       catImageList: [],
       cloneHomePageList: [],
+      catClicked: false,
     };
   };
 
@@ -133,9 +119,13 @@ class HomePage extends React.Component {
                 valuevalue !== null &&
                 Number(valuevalue) === 1
               ) {
-                this.setState({
-                  progressView: true,
-                });
+                if (this.state.catClicked === false) {
+                  this.setState({
+                    progressView: true,
+                  });
+                } else {
+                  this.backrestore();
+                }
               }
             });
           }
@@ -154,10 +144,14 @@ class HomePage extends React.Component {
               valuevalue !== null &&
               Number(valuevalue) === 1
             ) {
-              this.setState(this.initialState(), () => {
-                this.homesetup();
-              });
-             //console.log(`valuevalue`, valuevalue);
+              if (this.state.catClicked === false) {
+                this.setState(this.initialState(), () => {
+                  this.homesetup();
+                });
+              } else {
+                this.backrestore();
+              }
+              //console.log(`valuevalue`, valuevalue);
             }
           });
         }
@@ -1037,6 +1031,7 @@ class HomePage extends React.Component {
         navFromBusiness: false,
         filterView: false,
         existing: false,
+        catClicked: true,
       });
     } else {
       this.setState({progressView: true});
@@ -1068,11 +1063,15 @@ class HomePage extends React.Component {
           restaurants: fil,
           existing: false,
           existingagain: true,
+          catClicked: true,
         });
       }
     }
   };
   renderCatItemRow(item, index) {
+    if (index === 0) {
+      return null;
+    }
     return (
       <View
         style={{
@@ -1122,8 +1121,7 @@ class HomePage extends React.Component {
           marginEnd: 12,
           marginStart: 8,
         }}>
-        <TouchableWithoutFeedback
-          onPress={() => this.branchItemClicked(item)}>
+        <TouchableWithoutFeedback onPress={() => this.branchItemClicked(item)}>
           <Card
             elevation={0}
             style={{
@@ -1281,9 +1279,7 @@ class HomePage extends React.Component {
           marginStart: 8,
         }}>
         <TouchableWithoutFeedback
-          onPress={() =>
-            this.getBusinessBasedBranch(item.business.idbusiness)
-          }>
+          onPress={() => this.getBusinessBasedBranch(item.business.idbusiness)}>
           <Card
             elevation={0}
             style={{
@@ -1734,12 +1730,14 @@ class HomePage extends React.Component {
     return (
       <View
         style={{
+          flex: 1,
           flexDirection: 'row',
-          alignContent: 'flex-start',
-          alignSelf: 'flex-start',
-          justifyContent: 'flex-start',
+          //alignContent: 'flex-start',
+          //alignSelf: 'flex-start',
+          //justifyContent: 'flex-start',
           marginVertical: sizeHeight(1),
           marginHorizontal: sizeWidth(6),
+          paddingVertical: 4,
           width: '100%',
         }}>
         <TouchableWithoutFeedback
@@ -2250,7 +2248,8 @@ class HomePage extends React.Component {
         {this.state.isCatgegoryClicked == 2 && this.state.filterView ? (
           <ScrollView
             showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps={'handled'}>
             <View style={{flexDirection: 'column', height: sizeHeight(86)}}>
               <TextInput
                 mode="flat"
@@ -2267,20 +2266,28 @@ class HomePage extends React.Component {
                 <View
                   style={{
                     flexGrow: 1,
-                    flexWrap: 'wrap',
-                    marginVertical: sizeHeight(2),
+                    //flexWrap: 'wrap',
+                    //marginVertical: sizeHeight(2),
+                    marginHorizontal: sizeWidth(6),
+                    marginTop: -2,
                   }}>
-                  <FlatList
-                    //extraData={this.state}
-                    showsVerticalScrollIndicator={true}
-                    showsHorizontalScrollIndicator={false}
-                    data={this.state.businessSuggestions}
-                    nestedScrollEnabled={true}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item: item, index}) =>
-                      this.renderRowBizSug(item, index, 1)
-                    }
-                  />
+                  <Card elevation={2}>
+                    <FlatList
+                      //extraData={this.state}
+                      showsVerticalScrollIndicator={true}
+                      showsHorizontalScrollIndicator={false}
+                      data={this.state.businessSuggestions}
+                      nestedScrollEnabled={true}
+                      keyboardShouldPersistTaps={'handled'}
+                      ItemSeparatorComponent={() => (
+                        <View style={styles.listservicedivider} />
+                      )}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({item: item, index}) =>
+                        this.renderRowBizSug(item, index, 1)
+                      }
+                    />
+                  </Card>
                 </View>
               ) : null}
 
@@ -2332,20 +2339,27 @@ class HomePage extends React.Component {
                 <View
                   style={{
                     flexGrow: 1,
-                    flexWrap: 'wrap',
-                    marginVertical: sizeHeight(2),
+                    //flexWrap: 'wrap',
+                    //marginVertical: sizeHeight(2),
+                    marginHorizontal: sizeWidth(6),
+                    marginTop: -2,
                   }}>
-                  <FlatList
-                    //extraData={this.state}
-                    showsVerticalScrollIndicator={true}
-                    showsHorizontalScrollIndicator={false}
-                    data={this.state.businessCatSuggestions}
-                    nestedScrollEnabled={true}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item: item, index}) =>
-                      this.renderRowBizSug(item, index, 2)
-                    }
-                  />
+                  <Card elevation={2}>
+                    <FlatList
+                      //extraData={this.state}
+                      showsVerticalScrollIndicator={true}
+                      showsHorizontalScrollIndicator={false}
+                      data={this.state.businessCatSuggestions}
+                      nestedScrollEnabled={true}
+                      keyExtractor={(item, index) => index.toString()}
+                      ItemSeparatorComponent={() => (
+                        <View style={styles.listservicedivider} />
+                      )}
+                      renderItem={({item: item, index}) =>
+                        this.renderRowBizSug(item, index, 2)
+                      }
+                    />
+                  </Card>
                 </View>
               ) : null}
 
@@ -2804,5 +2818,10 @@ const styles = StyleSheet.create({
     width: i18n.t(k._5),
     backgroundColor: i18n.t(k.DACCF),
     textAlign: 'center',
+  },
+  listservicedivider: {
+    height: 1,
+    backgroundColor: '#dedede',
+    marginHorizontal: sizeWidth(6),
   },
 });

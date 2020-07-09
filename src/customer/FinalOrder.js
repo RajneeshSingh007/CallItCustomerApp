@@ -157,8 +157,8 @@ export default class FinalOrder extends React.Component {
       },
     );
     this.focusListener = this.props.navigation.addListener('didFocus', () => {
-    Pref.setVal(Pref.HomeReload, null);
-    this.work();
+      Pref.setVal(Pref.HomeReload, null);
+      this.work();
     });
   }
 
@@ -2225,7 +2225,9 @@ export default class FinalOrder extends React.Component {
       <TouchableWithoutFeedback onPress={() => this.cardSelect(item, index)}>
         <View
           style={{
-            marginHorizontal: sizeWidth(6),
+            width:'96%',
+            marginStart:8,
+            //marginHorizontal: sizeWidth(1),
             justifyContent: 'space-between',
             flexDirection: 'row',
             flex: 1,
@@ -2233,7 +2235,8 @@ export default class FinalOrder extends React.Component {
             borderRadius: 4,
             borderWidth: 0.5,
             marginVertical: sizeHeight(1),
-            padding: 4,
+            paddingHorizontal: 4,
+            paddingVertical:6,
             backgroundColor: item.selected ? i18n.t(k.DACCF) : `white`,
           }}>
           <View
@@ -2254,7 +2257,7 @@ export default class FinalOrder extends React.Component {
               }}>
               {`${i18n.t(k.cardsavedtextendwith)}-${item.name}`}
             </Title>
-            {item.checked ? (
+            {!item.checked ? (
               <Subtitle
                 styleName="v-start h-start "
                 style={{
@@ -2485,6 +2488,7 @@ export default class FinalOrder extends React.Component {
 
         <ScrollView
           showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps={'handled'}
           showsVerticalScrollIndicator={false}>
           <View
             styleName="vertical"
@@ -2720,6 +2724,7 @@ export default class FinalOrder extends React.Component {
                     style={{
                       marginHorizontal: sizeWidth(3),
                     }}
+                    keyboardShouldPersistTaps={'handled'}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={true}
                     nestedScrollEnabled={true}
@@ -3207,7 +3212,9 @@ export default class FinalOrder extends React.Component {
                               const cardnumber = formyear.join('');
                               this.setState({
                                 cardnumber: cardnumber,
-                                creditCardImage: this.returnCardImage(cardnumber),
+                                creditCardImage: this.returnCardImage(
+                                  cardnumber,
+                                ),
                               });
                             }}
                             mask={'[0000] [0000] [0000] [0000]'}

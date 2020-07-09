@@ -184,7 +184,12 @@ export default class SignupPage extends React.Component {
       } else if (this.state.mobile === '9876543210') {
         this.setState({message: i18n.t(k._100)});
       } else {
-        this.setState({smp: true});
+        this.setState({smp: true, timercounter:30}, () =>{
+          if (this.timerlisterner !== undefined) {
+            clearInterval(this.timerlisterner);
+          }
+          this.timerlisterner = setInterval(this.runtimer, 1000);
+        });
         this.sendOTPCode(false);
       }
     } else if (this.state.mode === 1) {
@@ -303,14 +308,7 @@ export default class SignupPage extends React.Component {
             smp: false,
             firstTime: true,
             timercounter:30
-          },
-          () => {
-            if (this.timerlisterner !== undefined) {
-              clearInterval(this.timerlisterner);
-            }
-            this.timerlisterner = setInterval(this.runtimer, 1000);
-          },
-        );
+          });
       })
       .catch(error => {
         //////console.log('error', error);
@@ -467,6 +465,20 @@ export default class SignupPage extends React.Component {
                 <TouchableWithoutFeedback
                   onPress={() => {
                     if (timer === 2) {
+                      this.setState({timercounter:30}, () =>{
+                        if (
+                          this.timerlisterner !==
+                          undefined
+                        ) {
+                          clearInterval(
+                            this.timerlisterner,
+                          );
+                        }
+                        this.timerlisterner = setInterval(
+                          this.runtimer,
+                          1000,
+                        );
+                      })
                       this.sendOTPCode(true);
                     }
                   }}>

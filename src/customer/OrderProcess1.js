@@ -239,6 +239,11 @@ export default class OrderProcess1 extends React.Component {
   }
 
   componentDidUpdate(prevProp, nextState) {
+    const fkbranchS = prevProp.tabNames[0].data[0].fkbranchS;
+    const nextfkbranchS = this.props.tabNames[0].data[0].fkbranchS;
+    if (fkbranchS !== nextfkbranchS) {
+      this.menuServicesSetup();
+    }
     if (nextState.backClicked) {
       this.setState({
         clickedItemPos: nextState.clickedItemPos,
@@ -250,6 +255,7 @@ export default class OrderProcess1 extends React.Component {
 
   menuServicesSetup = () => {
     if (this.props.tabNames !== null && this.props.tabNames.length > 0) {
+      console.log(`this.props.tabNames`, this.props.tabNames);
       const list = [];
       Lodash.map(this.props.tabNames, (item, index) => {
         // const {data} = item;
@@ -916,9 +922,7 @@ export default class OrderProcess1 extends React.Component {
           }}>
           <Subtitle
             styleName={
-              serviceExtrax.extraAvailable === 1
-                ? ''
-                : i18n.t(k.LINE_THROUGH)
+              serviceExtrax.extraAvailable === 1 ? '' : i18n.t(k.LINE_THROUGH)
             }
             style={{
               color: this.isSelected(serviceExtrax) ? 'white' : '#292929',
@@ -930,9 +934,7 @@ export default class OrderProcess1 extends React.Component {
             {`${i18n.t(k._64)}${serviceExtrax.price}${i18n.t(k._65)}`}{' '}
             <Subtitle
               styleName={
-                serviceExtrax.extraAvailable === 1
-                  ? ''
-                  : i18n.t(k.LINE_THROUGH)
+                serviceExtrax.extraAvailable === 1 ? '' : i18n.t(k.LINE_THROUGH)
               }
               style={{
                 color: this.isSelected(serviceExtrax) ? 'white' : '#292929',

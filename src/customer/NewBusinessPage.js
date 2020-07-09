@@ -174,48 +174,7 @@ export default class NewBusinessPage extends React.Component {
         this.setState({isFav: false});
       }
     });
-    //this.getLoc(data.idbranch);
     this.fetchAllServices(data.idbranch);
-  }
-
-  getLoc(idbranch) {
-    GetLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 15000,
-    })
-      .then(location => {
-        //console.log(location);
-        this.setState({
-          currentLog: location.longitude,
-          currentLat: location.latitude,
-        });
-
-        Pref.getVal(Pref.bearerToken, value => {
-          const token = Helper.removeQuotes(value);
-          const data = JSON.stringify({
-            lon: Number(location.longitude),
-            lat: Number(location.latitude),
-          });
-
-          //console.log('token', data, idbranch);
-          Helper.networkHelperTokenPost(
-            Pref.GetDeliveryPriceUrl + idbranch,
-            data,
-            Pref.methodPost,
-            token,
-            result => {
-              //console.log('re', result);
-              this.setState({deliveryPrice: result});
-            },
-            error => {
-              //////console.log(error);
-            },
-          );
-        });
-      })
-      .catch(error => {
-        //////console.log(error);
-      });
   }
 
   /**
@@ -260,7 +219,7 @@ export default class NewBusinessPage extends React.Component {
         Pref.methodGet,
         token,
         result => {
-          //console.log('result', result)
+          //console.log('result', result[0].fkbranchS)
           this.setState({progressView: false});
           if (result !== null && result.length > 0) {
             let groupedExtra = Lodash.groupBy(result, function(exData) {
@@ -272,6 +231,8 @@ export default class NewBusinessPage extends React.Component {
               cat: key,
               data: groupedExtra[key],
             }));
+
+            //console.log(`serviceCat`, serviceCat);
 
             this.setState({
               branchid: idx,

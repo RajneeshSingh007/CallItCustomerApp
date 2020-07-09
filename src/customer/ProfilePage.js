@@ -349,9 +349,8 @@ export default class ProfilePage extends React.Component {
     return (
       <Screen
         style={{
-          backgroundColor: "white",
-        }}
-      >
+          backgroundColor: 'white',
+        }}>
         <StatusBar barStyle="dark-content" backgroundColor="white" />
         <NavigationBar
           styleName="inline no-border"
@@ -375,8 +374,7 @@ export default class ProfilePage extends React.Component {
           leftComponent={
             <View
               styleName="horizontal space-between"
-              style={{ marginStart: 12 }}
-            >
+              style={{marginStart: 12}}>
               {/* <TouchableOpacity
                 onPress={() => Helper.itemClick(this.props, "Home")}
                >
@@ -394,11 +392,10 @@ export default class ProfilePage extends React.Component {
               <Heading
                 style={{
                   fontSize: 20,
-                  color: "#292929",
-                  fontFamily: "Rubik",
-                  fontWeight: "700",
-                }}
-              >
+                  color: '#292929',
+                  fontFamily: 'Rubik',
+                  fontWeight: '700',
+                }}>
                 {`${i18n.t(k._84)}`}
               </Heading>
             </View>
@@ -406,24 +403,22 @@ export default class ProfilePage extends React.Component {
         />
 
         <ScrollView
+          keyboardShouldPersistTaps={'handled'}
           showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-        >
+          showsVerticalScrollIndicator={false}>
           <DummyLoader
             visibilty={this.state.progressView}
             center={
               <View
                 styleName="vertical"
-                style={{ marginHorizontal: sizeWidth(1) }}
-              >
+                style={{marginHorizontal: sizeWidth(1)}}>
                 <Subtitle
                   style={{
-                    color: "#292929",
+                    color: '#292929',
                     fontSize: 14,
-                    alignSelf: "flex-start",
+                    alignSelf: 'flex-start',
                     marginHorizontal: sizeWidth(4),
-                  }}
-                >
+                  }}>
                   {i18n.t(k._85)}
                 </Subtitle>
                 <TextInput
@@ -433,26 +428,25 @@ export default class ProfilePage extends React.Component {
                       marginBottom: sizeHeight(1),
                     },
                   ]}
-                  mode={"flat"}
+                  mode={'flat'}
                   password={false}
-                  onChangeText={(text) =>
-                    this.setState({ fullNameInput: text })
+                  onChangeText={text =>
+                    this.setState({fullNameInput: text})
                   }
                   value={this.state.fullNameInput}
                   returnKeyType="next"
                   numberOfLines={1}
-                  underlineColor={"transparent"}
-                  underlineColorAndroid={"transparent"}
+                  underlineColor={'transparent'}
+                  underlineColorAndroid={'transparent'}
                 />
 
                 <Subtitle
                   style={{
-                    color: "#292929",
+                    color: '#292929',
                     fontSize: 14,
-                    alignSelf: "flex-start",
+                    alignSelf: 'flex-start',
                     marginHorizontal: sizeWidth(4),
-                  }}
-                >
+                  }}>
                   {i18n.t(k._52)}
                 </Subtitle>
                 <TextInput
@@ -462,27 +456,26 @@ export default class ProfilePage extends React.Component {
                       marginVertical: sizeHeight(1),
                     },
                   ]}
-                  mode={"flat"}
+                  mode={'flat'}
                   disabled={!this.state.isEdit}
                   password={false}
-                  onChangeText={(text) =>
-                    this.setState({ fullAddressInput: text })
+                  onChangeText={text =>
+                    this.setState({fullAddressInput: text})
                   }
                   value={this.state.fullAddressInput}
                   returnKeyType="done"
                   numberOfLines={1}
-                  underlineColor={"transparent"}
-                  underlineColorAndroid={"transparent"}
+                  underlineColor={'transparent'}
+                  underlineColorAndroid={'transparent'}
                 />
 
                 <Subtitle
                   style={{
-                    color: "#292929",
+                    color: '#292929',
                     fontSize: 14,
-                    alignSelf: "flex-start",
+                    alignSelf: 'flex-start',
                     marginHorizontal: sizeWidth(4),
-                  }}
-                >{`${i18n.t(k._14)}`}</Subtitle>
+                  }}>{`${i18n.t(k._14)}`}</Subtitle>
                 <TextInput
                   style={[
                     styles.inputStyle,
@@ -490,32 +483,32 @@ export default class ProfilePage extends React.Component {
                       marginVertical: sizeHeight(1),
                     },
                   ]}
-                  mode={"flat"}
+                  mode={'flat'}
                   password={false}
                   value={this.state.city}
-                  onChangeText={(value) => this.fetchCities(value)}
+                  onChangeText={value => this.fetchCities(value)}
                   returnKeyType="done"
                   numberOfLines={1}
-                  underlineColor={"transparent"}
-                  underlineColorAndroid={"transparent"}
+                  underlineColor={'transparent'}
+                  underlineColorAndroid={'transparent'}
                 />
 
                 {this.state.citiesList.length > 0 ? (
                   <View
                     style={{
                       flexGrow: 1,
-                      flexWrap: "wrap",
+                      flexWrap: 'wrap',
                       marginVertical: sizeHeight(2),
-                    }}
-                  >
+                    }}>
                     <FlatList
                       //extraData={this.state}
                       showsVerticalScrollIndicator={true}
                       showsHorizontalScrollIndicator={false}
                       data={this.state.citiesList}
                       nestedScrollEnabled={true}
+                      keyboardShouldPersistTaps={'handled'}
                       keyExtractor={(item, index) => index.toString()}
-                      renderItem={({ item: item, index }) =>
+                      renderItem={({item: item, index}) =>
                         this.renderRowSug(item, index)
                       }
                     />
@@ -524,12 +517,11 @@ export default class ProfilePage extends React.Component {
 
                 <Subtitle
                   style={{
-                    color: "#292929",
+                    color: '#292929',
                     fontSize: 14,
-                    alignSelf: "flex-start",
+                    alignSelf: 'flex-start',
                     marginHorizontal: sizeWidth(4),
-                  }}
-                >
+                  }}>
                   {i18n.t(k._51)}
                 </Subtitle>
                 <TextInput
@@ -539,47 +531,43 @@ export default class ProfilePage extends React.Component {
                       marginVertical: sizeHeight(1),
                     },
                   ]}
-                  mode={"flat"}
+                  mode={'flat'}
                   editable={false}
                   password={false}
                   disabled={true}
                   value={this.state.infoResult.phone}
                   returnKeyType="done"
                   numberOfLines={1}
-                  underlineColor={"transparent"}
-                  underlineColorAndroid={"transparent"}
+                  underlineColor={'transparent'}
+                  underlineColorAndroid={'transparent'}
                 />
 
                 <View
                   style={{
                     marginTop: sizeHeight(2),
-                    flexDirection: "column",
-                  }}
-                >
+                    flexDirection: 'column',
+                  }}>
                   <TouchableWithoutFeedback
-                    onPress={() => this.setState({ showCards: true })}
-                  >
+                    onPress={() => this.setState({showCards: true})}>
                     <View
                       style={{
-                        width: "40%",
+                        width: '40%',
                         marginStart: 16,
                         paddingVertical: 8,
                         backgroundColor: i18n.t(k.DACCF),
                         borderRadius: 0,
-                        alignItems: "center",
-                        alignContent: "center",
+                        alignItems: 'center',
+                        alignContent: 'center',
                         borderRadius: 4,
-                      }}
-                    >
+                      }}>
                       <Subtitle
                         style={{
-                          color: "white",
+                          color: 'white',
                           fontSize: 14,
-                          alignSelf: "center",
+                          alignSelf: 'center',
                           padding: 4,
-                          justifyContent: "center",
-                        }}
-                      >
+                          justifyContent: 'center',
+                        }}>
                         {`${i18n.t(k.methodsofPayment)}`}
                       </Subtitle>
                     </View>
@@ -589,33 +577,31 @@ export default class ProfilePage extends React.Component {
                 <View
                   style={{
                     marginVertical: sizeHeight(2),
-                    flexDirection: "column",
-                  }}
-                >
+                    flexDirection: 'column',
+                  }}>
                   <Subtitle
                     styleName="md-gutter"
                     style={{
-                      color: "#292929",
+                      color: '#292929',
                       fontSize: 14,
-                      alignSelf: "flex-start",
+                      alignSelf: 'flex-start',
                       marginVertical: sizeHeight(0.5),
-                    }}
-                  >
+                    }}>
                     {`${i18n.t(k._86)}`}
                   </Subtitle>
                   <TouchableWithoutFeedback
-                    onPress={() => Linking.openURL("https://bit.ly/callittos")}
-                  >
+                    onPress={() =>
+                      Linking.openURL('https://bit.ly/callittos')
+                    }>
                     <Subtitle
                       styleName="md-gutter"
                       style={{
                         color: Colors.blue500,
                         fontSize: 14,
-                        alignSelf: "flex-start",
+                        alignSelf: 'flex-start',
                         marginVertical: sizeHeight(0),
-                        textDecorationLine: "underline",
-                      }}
-                    >{`${i18n.t(k._87)}`}</Subtitle>
+                        textDecorationLine: 'underline',
+                      }}>{`${i18n.t(k._87)}`}</Subtitle>
                   </TouchableWithoutFeedback>
                 </View>
 
@@ -677,66 +663,62 @@ export default class ProfilePage extends React.Component {
             visible={this.state.showCards}
             contentContainerStyle={{
               height: i18n.t(k._5),
-            }}
-          >
+            }}>
             <View
               style={{
                 flex: 1,
-              }}
-            >
+              }}>
               {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-              <View style={{ flex: 0.1 }}></View>
+              <View style={{flex: 0.1}} />
               <View
                 style={{
                   flex: 0.8,
                   marginTop: sizeHeight(4),
                   marginBottom: sizeHeight(8),
                   marginHorizontal: sizeWidth(4),
-                  backgroundColor: "white",
-                  flexDirection: "column",
-                  position: "relative",
-                }}
-              >
+                  backgroundColor: 'white',
+                  flexDirection: 'column',
+                  position: 'relative',
+                }}>
                 <View
                   style={{
                     flex: 0.1,
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    backgroundColor: "white",
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    backgroundColor: 'white',
                     marginTop: 6,
-                  }}
-                >
+                  }}>
                   <View
                     styleName="horizontal"
-                    style={{ marginStart: sizeWidth(3), alignItems: "center" }}
-                  >
+                    style={{
+                      marginStart: sizeWidth(3),
+                      alignItems: 'center',
+                    }}>
                     <TouchableOpacity
                       onPress={() =>
                         this.setState({
                           showCards: false,
                           //cardList: [],
                         })
-                      }
-                    >
+                      }>
                       <Icon
                         name="arrow-forward"
                         size={36}
                         color="#292929"
                         style={{
-                          alignSelf: "flex-start",
-                          backgroundColor: "transparent",
+                          alignSelf: 'flex-start',
+                          backgroundColor: 'transparent',
                         }}
                       />
                     </TouchableOpacity>
                     <Subtitle
                       styleName="md-gutter"
                       style={{
-                        color: "#292929",
+                        color: '#292929',
                         fontSize: 16,
-                        alignSelf: "center",
-                        fontWeight: "700",
-                      }}
-                    >
+                        alignSelf: 'center',
+                        fontWeight: '700',
+                      }}>
                       {`${i18n.t(k.cardreturnprofile)}`}
                     </Subtitle>
                   </View>
@@ -744,14 +726,13 @@ export default class ProfilePage extends React.Component {
                 <View
                   style={{
                     flex: 0.75,
-                    backgroundColor: "white",
-                    flexDirection: "column",
+                    backgroundColor: 'white',
+                    flexDirection: 'column',
                     marginTop: 4,
-                  }}
-                >
+                  }}>
                   <DummyLoader
                     visibilty={this.state.progressView}
-                    style={{ width: "100%", flexBasis: 1 }}
+                    style={{width: '100%', flexBasis: 1}}
                     center={
                       this.state.cardList.length > 0 ? (
                         <FlatList
@@ -759,99 +740,91 @@ export default class ProfilePage extends React.Component {
                           nestedScrollEnabled={true}
                           style={{
                             marginStart: sizeWidth(3),
-                            backgroundColor: "white",
+                            backgroundColor: 'white',
                           }}
                           showsHorizontalScrollIndicator={false}
                           showsVerticalScrollIndicator={true}
                           data={this.state.cardList}
                           keyExtractor={(item, index) => `${index}`}
-                          renderItem={({ item, index }) =>
+                          renderItem={({item, index}) =>
                             this.renderRowCardsList(item, index)
                           }
                         />
                       ) : (
-                          <Subtitle
-                            styleName="md-gutter"
-                            style={{
-                              color: "#292929",
-                              fontSize: 14,
-                              alignSelf: "center",
-                              justifyContent:'center',
-                              marginVertical: sizeHeight(0.5),
-                            }}
-                          >
-                            {`${i18n.t(k.nosavedcardfound)}`}
-                          </Subtitle>
-                        )
+                        <Subtitle
+                          styleName="md-gutter"
+                          style={{
+                            color: '#292929',
+                            fontSize: 14,
+                            alignSelf: 'center',
+                            justifyContent: 'center',
+                            marginVertical: sizeHeight(0.5),
+                          }}>
+                          {`${i18n.t(k.nosavedcardfound)}`}
+                        </Subtitle>
+                      )
                     }
                   />
                   {this.state.cardList.length > 0 ? (
                     <View
-                      style={{ marginTop: 4 }}
-                      styleName="v-center h-center"
-                    >
+                      style={{marginTop: 4}}
+                      styleName="v-center h-center">
                       <Subtitle
                         style={{
-                          color: "#646464",
+                          color: '#646464',
                           fontSize: 12,
-                          alignSelf: "center",
+                          alignSelf: 'center',
                           marginVertical: sizeHeight(0.5),
-                          justifyContent: "center",
-                        }}
-                      >
+                          justifyContent: 'center',
+                        }}>
                         {`${i18n.t(k.cardsecurity)}`}
                       </Subtitle>
                       <Image
-                        source={require("./../res/images/card.png")}
+                        source={require('./../res/images/card.png')}
                         style={{
                           width: 24,
                           height: 24,
                           marginTop: 8,
-                          tintColor: "#777777",
-                          alignSelf: "center",
-                          justifyContent: "center",
+                          tintColor: '#777777',
+                          alignSelf: 'center',
+                          justifyContent: 'center',
                         }}
                       />
                     </View>
                   ) : null}
                 </View>
-                <View style={{ flex: 0.05, backgroundColor: "white" }}></View>
+                <View style={{flex: 0.05, backgroundColor: 'white'}} />
                 <View
                   style={{
                     flex: 0.1,
-                    backgroundColor: "white",
-                    flexDirection: "column",
+                    backgroundColor: 'white',
+                    flexDirection: 'column',
                     marginTop: 4,
-                  }}
-                >
+                  }}>
                   <View
                     style={{
-                      position: "absolute",
-                      width: "100%",
+                      position: 'absolute',
+                      width: '100%',
                       bottom: 0,
-                      backgroundColor: "white",
-                    }}
-                  >
+                      backgroundColor: 'white',
+                    }}>
                     <TouchableOpacity
                       styleName="flexible"
-                      onPress={this.saveCardsData}
-                    >
+                      onPress={this.saveCardsData}>
                       <View
                         style={styles.buttonStyle}
                         // mode="contained"
                         // dark={true}
                         // onPress={() => this.finalorders(false)}
-                        loading={false}
-                      >
+                        loading={false}>
                         <Subtitle
                           style={{
-                            color: "white",
-                            fontFamily: "Rubik",
+                            color: 'white',
+                            fontFamily: 'Rubik',
                             fontSize: 18,
-                            alignSelf: "center",
-                            justifyContent: "center",
-                          }}
-                        >
+                            alignSelf: 'center',
+                            justifyContent: 'center',
+                          }}>
                           {`${i18n.t(k.savecardsbutton)}`}
                         </Subtitle>
                       </View>
@@ -859,7 +832,7 @@ export default class ProfilePage extends React.Component {
                   </View>
                 </View>
               </View>
-              <View style={{ flex: 0.1 }}></View>
+              <View style={{flex: 0.1}} />
             </View>
           </Modal>
         </Portal>
@@ -868,72 +841,64 @@ export default class ProfilePage extends React.Component {
           <Modal
             dismissable={true}
             visible={this.state.showDelete}
-            onDismiss={() => this.setState({ showDelete: false })}
-          >
+            onDismiss={() => this.setState({showDelete: false})}>
             <View
               styleName="vertical sm-gutter"
               style={{
-                backgroundColor: "white",
+                backgroundColor: 'white',
                 marginHorizontal: sizeWidth(6),
-                flexDirection: "column",
-              }}
-            >
+                flexDirection: 'column',
+              }}>
               <Subtitle
                 style={{
-                  color: "#292929",
-                  fontFamily: "Rubik",
-                  alignSelf: "center",
+                  color: '#292929',
+                  fontFamily: 'Rubik',
+                  alignSelf: 'center',
                   fontSize: 15,
-                  fontWeight: "700",
+                  fontWeight: '700',
                   paddingVertical: 16,
-                }}
-              >{`${i18n.t(k.deletecardsure)}`}</Subtitle>
+                }}>{`${i18n.t(k.deletecardsure)}`}</Subtitle>
               <Button
                 styleName=" muted border"
-                mode={"contained"}
+                mode={'contained'}
                 uppercase={true}
                 dark={true}
                 style={[
                   styles.loginButtonStyle,
-                  { marginVertical: 0, marginHorizontal: sizeWidth(3) },
+                  {marginVertical: 0, marginHorizontal: sizeWidth(3)},
                 ]}
-                onPress={this.saveModal}
-              >
-                <Subtitle style={{ color: "white" }}>{`${i18n.t(
-                  k.cardyes
+                onPress={this.saveModal}>
+                <Subtitle style={{color: 'white'}}>{`${i18n.t(
+                  k.cardyes,
                 )}`}</Subtitle>
               </Button>
               <TouchableWithoutFeedback
-                onPress={() => this.setState({ showDelete: false })}
-              >
+                onPress={() => this.setState({showDelete: false})}>
                 <Subtitle
                   style={{
                     marginTop: sizeHeight(1.5),
-                    color: "#292929",
-                    fontFamily: "Rubik",
-                    alignSelf: "center",
+                    color: '#292929',
+                    fontFamily: 'Rubik',
+                    alignSelf: 'center',
                     fontSize: 15,
                     paddingBottom: 8,
-                  }}
-                >{`${i18n.t(k.cardno)}`}</Subtitle>
+                  }}>{`${i18n.t(k.cardno)}`}</Subtitle>
               </TouchableWithoutFeedback>
             </View>
           </Modal>
         </Portal>
         <Button
           styleName=" muted border"
-          mode={"contained"}
+          mode={'contained'}
           uppercase={true}
           dark={true}
           loading={false}
           style={[styles.loginButtonStyle]}
-          onPress={this.editClick}
-        >
+          onPress={this.editClick}>
           <Subtitle
             style={{
-              color: "white",
-            }}
-          >
+              color: 'white',
+            }}>
             {i18n.t(k._88)}
           </Subtitle>
         </Button>

@@ -66,6 +66,7 @@ export default class TrackOrderPage extends React.Component {
       convertTime: '',
       smp: false,
       orderidList: [],
+      allDatasOg: [],
     };
   }
 
@@ -75,6 +76,10 @@ export default class TrackOrderPage extends React.Component {
     const {navigation} = this.props;
     const item = navigation.getParam('item', null);
     if (item !== null) {
+      const so = item[0].isHistory;
+      if (so === false) {
+        this.setState({progressView: true});
+      }
       Pref.getVal(Pref.bearerToken, value => {
         const tn = Helper.removeQuotes(value);
         this.setState({token: tn}, () => {
@@ -122,6 +127,27 @@ export default class TrackOrderPage extends React.Component {
         this.refresh();
       },
     );
+  }
+
+  componentDidUpdate(prevProp, nextState) {
+    const {navigation} = prevProp;
+    if (navigation !== undefined) {
+      const previtem = navigation.getParam('item', null);
+      if (previtem !== null) {
+        const prevfirstData = previtem[0];
+        const prevallDatas = prevfirstData.data;
+        const prevdatex = prevallDatas[0].orderdate;
+        const item = this.props.navigation.getParam('item', null);
+        if (item !== null) {
+          const firstData = item[0];
+          const allDatas = firstData.data;
+          const datex = allDatas[0].orderdate;
+          if (prevdatex !== datex) {
+            this.fetchData(item);
+          }
+        }
+      }
+    }
   }
 
   refresh = () => {
@@ -173,7 +199,14 @@ export default class TrackOrderPage extends React.Component {
       Object.keys(groupByProduct).map(keyx => {
         let pppp = groupByProduct[keyx];
         Lodash.map(pppp, (firspos, index) => {
-          const {extras, message, price, idorder, serviceName} = firspos;
+          const {
+            extras,
+            message,
+            price,
+            idorder,
+            serviceName,
+            orderdate,
+          } = firspos;
           let total = Number(price);
           let found = false;
           for (let lu = index + 1; lu < pppp.length; lu++) {
@@ -187,12 +220,14 @@ export default class TrackOrderPage extends React.Component {
           //console.log(`found`, found);
           //if (find === undefined) {
           const exstr = Helper.groupExtraWithCountString(extras, found);
+          //console.log(`exstr`, exstr);
           const find = Lodash.filter(
             finalDisplayData,
-            z => z.serviceName === keyx,
+            z => z.orderdate === orderdate,
           );
           if (find.length === 0) {
             finalDisplayData.push({
+              orderdate: orderdate,
               serviceName: keyx,
               extraDisplayArray: exstr,
               message: message,
@@ -204,7 +239,7 @@ export default class TrackOrderPage extends React.Component {
           //}
         });
       });
-
+      //console.log(`finalDisplayData`, finalDisplayData);
       // const mapdataList = Lodash.map(allDatas, (ele, index) => {
       //   const extraDisplayArray = Helper.groupExtraWithCountString(
       //     ele.extras,
@@ -234,6 +269,7 @@ export default class TrackOrderPage extends React.Component {
           idorder: firstData.idorder,
           businessMessage: allDatas[0].business_message,
           deliveryPrices: allDatas[0].deliveryprice,
+          allDatasOg: allDatas,
           orderidList:
             firstData.orderidList === undefined ? [] : firstData.orderidList,
         },
@@ -427,7 +463,8 @@ export default class TrackOrderPage extends React.Component {
   }
 
   cancelOrderClick = () => {
-    const {datas, token, convertTime, idbranch, orderidList} = this.state;
+    const {allDatasOg, token, convertTime, idbranch, orderidList} = this.state;
+    //console.log(`datas`, allDatasOg);
     Alert.alert(``, `${i18n.t(k.cancelContent)}`, [
       {
         text: `${i18n.t(k.NO)}`,
@@ -447,10 +484,13 @@ export default class TrackOrderPage extends React.Component {
               const message = ``;
               const timeformat = `${convertTime}:00:00`;
 
-              Lodash.map(datas, (ele, index) => {
+              Lodash.map(allDatasOg, (ele, index) => {
+                //console.log(`ele`, ele, orderidList);
                 bodyList.push({
                   Id_order:
-                    orderidList.length > 0 ? orderidList[index] : ele.idorder,
+                    orderidList !== undefined && orderidList.length > 0
+                      ? orderidList[index]
+                      : ele.idorder,
                   customerfkO: idcustomer,
                   Expected_date: timeformat,
                   //Expected_date: "",
@@ -461,6 +501,7 @@ export default class TrackOrderPage extends React.Component {
                 });
               });
               const body = JSON.stringify(bodyList);
+              //console.log(`body`, body);
               Helper.networkHelperTokenPost(
                 Pref.CancelOrderUrl,
                 body,
@@ -758,7 +799,8 @@ export default class TrackOrderPage extends React.Component {
                         </Title>
                       ) : null}
 
-                      {this.state.status === -1 ? null : (
+                      {this.state.status === -1 ||
+                      this.state.status === -2 ? null : (
                         <View
                           style={{
                             justifyContent: 'space-evenly',
