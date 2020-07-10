@@ -24,7 +24,9 @@ const AccordationItem = props => {
 
   useEffect(() => {
     if (currentCategory !== '') setclickedCat(currentCategory);
-    return () => {};
+    return () => {
+      setclickedCat('')
+    };
   }, [currentCategory]);
 
   return (

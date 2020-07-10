@@ -194,11 +194,11 @@ export default class TrackOrderPage extends React.Component {
     if (pp !== undefined && pp !== null) {
       const firstData = pp[0];
       const allDatas = firstData.data;
-      const groupByProduct = Lodash.groupBy(allDatas, item => item.serviceName);
+      //const groupByProduct = Lodash.groupBy(allDatas, item => item.serviceName);
       const finalDisplayData = [];
-      Object.keys(groupByProduct).map(keyx => {
-        let pppp = groupByProduct[keyx];
-        Lodash.map(pppp, (firspos, index) => {
+      //Object.keys(groupByProduct).map(keyx => {
+        //let pppp = groupByProduct[keyx];
+        Lodash.map(allDatas, (firspos, index) => {
           const {
             extras,
             message,
@@ -206,49 +206,40 @@ export default class TrackOrderPage extends React.Component {
             idorder,
             serviceName,
             orderdate,
+            quantity,
           } = firspos;
           let total = Number(price);
-          let found = false;
-          for (let lu = index + 1; lu < pppp.length; lu++) {
-            const cc = pppp[lu];
-            const check = this.objectsEqual(extras, cc.extras);
-            if (check && message === cc.message) {
-              found = true;
-              total += Number(cc.price);
-            }
-          }
+          // let found = false;
+          // for (let lu = index + 1; lu < pppp.length; lu++) {
+          //   const cc = pppp[lu];
+          //   const check = this.objectsEqual(extras, cc.extras);
+          //   if (check && message === cc.message) {
+          //     found = true;
+          //     total += Number(cc.price);
+          //   }
+          // }
           //console.log(`found`, found);
           //if (find === undefined) {
-          const exstr = Helper.groupExtraWithCountString(extras, found);
+          const exstr = Helper.groupExtraWithCountString(extras, false);
           //console.log(`exstr`, exstr);
-          const find = Lodash.filter(
-            finalDisplayData,
-            z => z.orderdate === orderdate,
-          );
-          if (find.length === 0) {
+          // const find = Lodash.filter(
+          //   finalDisplayData,
+          //   z => z.orderdate === orderdate,
+          // );
+          //if (find.length === 0) {
             finalDisplayData.push({
               orderdate: orderdate,
-              serviceName: keyx,
+              serviceName: serviceName,
               extraDisplayArray: exstr,
               message: message,
-              price: found ? total : price,
-              counter: found ? pppp.length : 0,
+              price: total,
+              counter: quantity || 0,
             });
-          }
+          //}
 
           //}
-        });
+        //});
       });
-      //console.log(`finalDisplayData`, finalDisplayData);
-      // const mapdataList = Lodash.map(allDatas, (ele, index) => {
-      //   const extraDisplayArray = Helper.groupExtraWithCountString(
-      //     ele.extras,
-      //     false,
-      //   );
-      //   ele.extraDisplayArray = extraDisplayArray;
-      //   return ele;
-      // });
-      //console.log(`extraDisplayArray`, mapdataList);
       this.setState(
         {
           progressView: false,
@@ -270,17 +261,14 @@ export default class TrackOrderPage extends React.Component {
           businessMessage: allDatas[0].business_message,
           deliveryPrices: allDatas[0].deliveryprice,
           allDatasOg: allDatas,
-          orderidList:
-            firstData.orderidList === undefined ? [] : firstData.orderidList,
+          orderidList: firstData.orderidList === undefined ? [] : firstData.orderidList,
         },
         () => {
-          //console.log(`imageUrl`, this.state.imageUrl);
           Helper.networkHelperToken(
             Pref.BusinessBranchDetailUrl + firstData.idbranch,
             Pref.methodGet,
             this.state.token,
             result => {
-              //console.log(`result`, result);
               this.setState({imageUrl: result.imageUrl});
             },
             error => {
@@ -295,12 +283,9 @@ export default class TrackOrderPage extends React.Component {
       Pref.methodGet,
       this.state.token,
       value => {
-        //value
-        //console.log('ServerTimeUrl', value);
         const convertTime = Moment.utc(value)
           .utcOffset(2, false)
           .format('YYYY-MM-DD HH');
-        //console.log('convertTime', convertTime);
         this.setState({convertTime: convertTime});
       },
       error => {

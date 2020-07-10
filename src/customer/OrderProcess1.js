@@ -241,21 +241,21 @@ export default class OrderProcess1 extends React.Component {
   componentDidUpdate(prevProp, nextState) {
     const fkbranchS = prevProp.tabNames[0].data[0].fkbranchS;
     const nextfkbranchS = this.props.tabNames[0].data[0].fkbranchS;
-    if (fkbranchS !== nextfkbranchS) {
-      this.menuServicesSetup();
-    }
     if (nextState.backClicked) {
       this.setState({
         clickedItemPos: nextState.clickedItemPos,
         backClicked: false,
         clickedPos: nextState.clickedPos,
       });
+    } else {
+      if (fkbranchS !== nextfkbranchS) {
+        this.menuServicesSetup();
+      }
     }
   }
 
   menuServicesSetup = () => {
     if (this.props.tabNames !== null && this.props.tabNames.length > 0) {
-      console.log(`this.props.tabNames`, this.props.tabNames);
       const list = [];
       Lodash.map(this.props.tabNames, (item, index) => {
         // const {data} = item;
@@ -372,11 +372,11 @@ export default class OrderProcess1 extends React.Component {
         let day = Moment(this.props.checkerDate).format('YYYY/MM/DD HH:mm');
 
         const cartTime = Moment(Date.now()).format('YYYY/MM/DD HH:mm:ss.SSS');
-        const guid = Helper.guid();
+        //const guid = Helper.guid();
         //console.log(`guidguid`, guid)
         for (let index = 0; index < repeats; index++) {
           this.state.cartDetails.push({
-            guid: guid,
+            guid: '',
             cartTime: cartTime,
             fkcustomero: this.props.customerdt.idcustomer,
             orderdate: day,

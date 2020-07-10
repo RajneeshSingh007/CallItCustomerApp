@@ -104,7 +104,7 @@ class HomePage extends React.Component {
     try {
       Helper.requestPermissions();
     } catch (e) {
-      console.log(e);
+      //console.log(e);
     }
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(

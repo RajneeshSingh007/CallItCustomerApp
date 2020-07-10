@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   FlatList,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {Button, Snackbar, TextInput, Colors, Card} from 'react-native-paper';
 import {
@@ -27,6 +28,7 @@ import {sizeWidth, sizeHeight} from '../util/Size';
 import {AlertDialog} from './../util/AlertDialog';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import NavigationActions from '../util/NavigationActions';
+import Lodash, {filter} from 'lodash';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -51,6 +53,7 @@ export default class Login extends React.Component {
       alertContent: i18n.t(k._4),
       smp: false,
       citiesList: [],
+      cloneOgCitiesList: [],
     };
   }
 
@@ -58,6 +61,18 @@ export default class Login extends React.Component {
     const {navigation} = this.props;
     const number = navigation.getParam('mobile', '') || '';
     this.setState({mobileNo: number});
+    Helper.networkHelperToken(
+      Pref.GetCitiesUrl,
+      Pref.methodGet,
+      Pref.LASTTOKEN,
+      result => {
+        //console.log(`result`, result);
+        this.setState({citiesList: [], cloneOgCitiesList: result});
+      },
+      error => {
+        console.log(error);
+      },
+    );
   }
   /**
    * save account details
@@ -152,6 +167,29 @@ export default class Login extends React.Component {
         errorAdd4: true,
       });
     } else {
+      const {cloneOgCitiesList} = this.state;
+      const find = Lodash.find(cloneOgCitiesList, io => {
+        const {name} = io;
+        if (name !== null && name === this.state.add3) {
+          return io;
+        } else {
+          return undefined;
+        }
+      });
+
+      if (find === undefined) {
+        this.setState({
+          errorMsg: i18n.t(k._14),
+          errorFName: false,
+          errorLName: false,
+          errorAdd1: false,
+          errorAdd2: false,
+          errorAdd3: true,
+          errorAdd4: false,
+        });
+        return false;
+      }
+
       this.setState({progressView: true, smp: true});
       Pref.setVal(Pref.citySave, this.state.add3);
       // " " +
@@ -203,22 +241,34 @@ export default class Login extends React.Component {
   }
 
   fetchCities(value) {
+    const {cloneOgCitiesList} = this.state;
     this.setState({add3: value, citiesList: []});
     if (value !== '') {
-      Helper.networkHelperTokenPost(
-        Pref.GetDeliveryListItemAutoCompleteSearchUrl,
-        JSON.stringify({
-          input: value,
-        }),
-
-        Pref.methodPost,
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwMTA0MjhjYThmMWM0NDlkYmUwOGE2YmM0MTRiNDIyMSIsIm5hbWVpZCI6ImF1dG9jb21wbHQzMiIsImV4cCI6MTkwMTAzMzQ2OSwiaXNzIjoiY2FsbGl0YXBwbGljYXRpb24iLCJhdWQiOiJjYWxsaXRhcHBsaWNhdGlvbiJ9.czeFZoed1-yKdum3YKN7GIqAzbNMFaT3ms60DWFQ83w',
-        result => {
-          this.setState({citiesList: result});
-          console.log(result);
-        },
-        error => {},
-      );
+      if (cloneOgCitiesList.length > 0) {
+        let find = Lodash.filter(
+          JSON.parse(JSON.stringify(cloneOgCitiesList)),
+          ok => {
+            const {name} = ok;
+            return name !== null && name.includes(value.toString());
+          },
+        );
+        this.setState({
+          citiesList: find,
+        });
+      }
+      // Helper.networkHelperTokenPost(
+      //   Pref.GetDeliveryListItemAutoCompleteSearchUrl,
+      //   JSON.stringify({
+      //     input: value,
+      //   }),
+      //   Pref.methodPost,
+      //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwMTA0MjhjYThmMWM0NDlkYmUwOGE2YmM0MTRiNDIyMSIsIm5hbWVpZCI6ImF1dG9jb21wbHQzMiIsImV4cCI6MTkwMTAzMzQ2OSwiaXNzIjoiY2FsbGl0YXBwbGljYXRpb24iLCJhdWQiOiJjYWxsaXRhcHBsaWNhdGlvbiJ9.czeFZoed1-yKdum3YKN7GIqAzbNMFaT3ms60DWFQ83w',
+      //   result => {
+      //     this.setState({citiesList: result});
+      //     console.log(result);
+      //   },
+      //   error => {},
+      // );
     }
   }
 
@@ -314,125 +364,130 @@ export default class Login extends React.Component {
             </View>
           }
         />
+        <KeyboardAvoidingView
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            justifyContent: 'space-evenly',
+          }}>
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps={'handled'}
+            style={{flex: 1}}>
+            <View style={{marginHorizontal: sizeWidth(4)}}>
+              <Subtitle
+                style={{
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                }}>
+                {i18n.t(k._49)}
+              </Subtitle>
+              <TextInput
+                dense={true}
+                style={styles.inputStyle}
+                mode={'flat'}
+                password={false}
+                onBlur={() => !this.state.firstName}
+                onFocus={() => !this.state.errorFName}
+                error={this.state.errorFName}
+                onChangeText={text => {
+                  this.setState({firstName: text});
+                }}
+                value={this.state.firstName}
+                returnKeyType="next"
+                numberOfLines={1}
+                placeholderTextColor={'#DEDEDE'}
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
 
-        <ScrollView
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps={'handled'}
-          style={{flex: 1}}>
-          <View style={{marginHorizontal: sizeWidth(4)}}>
-            <Subtitle
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-              }}>
-              {i18n.t(k._49)}
-            </Subtitle>
-            <TextInput
-              dense={true}
-              style={styles.inputStyle}
-              mode={'flat'}
-              password={false}
-              onBlur={() => !this.state.firstName}
-              onFocus={() => !this.state.errorFName}
-              error={this.state.errorFName}
-              onChangeText={text => {
-                this.setState({firstName: text});
-              }}
-              value={this.state.firstName}
-              returnKeyType="next"
-              numberOfLines={1}
-              placeholderTextColor={'#DEDEDE'}
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
+              <Subtitle
+                styleName="v-center h-center"
+                style={{
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: sizeHeight(1),
+                }}>
+                {i18n.t(k._50)}
+              </Subtitle>
+              <TextInput
+                style={styles.inputStyle}
+                mode={'flat'}
+                onBlur={() => !this.state.errorLName}
+                onFocus={() => !this.state.errorLName}
+                password={false}
+                error={this.state.errorLName}
+                onChangeText={text => {
+                  this.setState({lastName: text});
+                }}
+                value={this.state.lastName}
+                returnKeyType="next"
+                numberOfLines={1}
+                placeholderTextColor={'#DEDEDE'}
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
 
-            <Subtitle
-              styleName="v-center h-center"
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-                marginTop: sizeHeight(1),
-              }}>
-              {i18n.t(k._50)}
-            </Subtitle>
-            <TextInput
-              style={styles.inputStyle}
-              mode={'flat'}
-              onBlur={() => !this.state.errorLName}
-              onFocus={() => !this.state.errorLName}
-              password={false}
-              error={this.state.errorLName}
-              onChangeText={text => {
-                this.setState({lastName: text});
-              }}
-              value={this.state.lastName}
-              returnKeyType="next"
-              numberOfLines={1}
-              placeholderTextColor={'#DEDEDE'}
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
+              <Subtitle
+                styleName="v-center h-center"
+                style={{
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: sizeHeight(1),
+                }}>
+                {i18n.t(k._51)}
+              </Subtitle>
+              <TextInput
+                style={styles.inputStyle}
+                mode={'flat'}
+                value={this.state.mobileNo}
+                editable={false}
+                disabled={true}
+                onChangeText={text => {
+                  this.setState({mobileNo: text});
+                }}
+                placeholderTextColor={'#DEDEDE'}
+                password={false}
+                numberOfLines={1}
+                returnKeyType="next"
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
 
-            <Subtitle
-              styleName="v-center h-center"
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-                marginTop: sizeHeight(1),
-              }}>
-              {i18n.t(k._51)}
-            </Subtitle>
-            <TextInput
-              style={styles.inputStyle}
-              mode={'flat'}
-              value={this.state.mobileNo}
-              editable={false}
-              disabled={true}
-              onChangeText={text => {
-                this.setState({mobileNo: text});
-              }}
-              placeholderTextColor={'#DEDEDE'}
-              password={false}
-              numberOfLines={1}
-              returnKeyType="next"
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
+              <Subtitle
+                styleName="v-center h-center"
+                style={{
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: sizeHeight(1),
+                }}>
+                {i18n.t(k._52)}
+              </Subtitle>
+              <TextInput
+                style={styles.inputStyle}
+                mode={'flat'}
+                onBlur={() => !this.state.errorAdd1}
+                onFocus={() => !this.state.errorAdd1}
+                password={false}
+                placeholderTextColor={'#DEDEDE'}
+                numberOfLines={1}
+                onChangeText={text => {
+                  this.setState({add1: text});
+                }}
+                value={this.state.add1}
+                error={this.state.errorAdd1}
+                multiline={false}
+                returnKeyType="next"
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
 
-            <Subtitle
-              styleName="v-center h-center"
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-                marginTop: sizeHeight(1),
-              }}>
-              {i18n.t(k._52)}
-            </Subtitle>
-            <TextInput
-              style={styles.inputStyle}
-              mode={'flat'}
-              onBlur={() => !this.state.errorAdd1}
-              onFocus={() => !this.state.errorAdd1}
-              password={false}
-              placeholderTextColor={'#DEDEDE'}
-              numberOfLines={1}
-              onChangeText={text => {
-                this.setState({add1: text});
-              }}
-              value={this.state.add1}
-              error={this.state.errorAdd1}
-              multiline={false}
-              returnKeyType="next"
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
-
-            {/* <Subtitle styleName='v-center h-center' style={{ color: '#292929', fontSize: 16, alignSelf: 'flex-start', marginTop: sizeHeight(1)}}>LandMark</Subtitle>
+              {/* <Subtitle styleName='v-center h-center' style={{ color: '#292929', fontSize: 16, alignSelf: 'flex-start', marginTop: sizeHeight(1)}}>LandMark</Subtitle>
                <TextInput
                 style={styles.inputStyle}
                 mode={"flat"}
@@ -451,90 +506,92 @@ export default class Login extends React.Component {
                 underlineColor={"transparent"}
                 underlineColorAndroid={"transparent"}
                /> */}
-            <Subtitle
-              styleName="v-center h-center"
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-                marginTop: sizeHeight(1),
-              }}>
-              {i18n.t(k._14)}
-            </Subtitle>
-            <TextInput
-              style={styles.inputStyle}
-              mode={'flat'}
-              onBlur={() => !this.state.errorAdd3}
-              onFocus={() => !this.state.errorAdd3}
-              password={false}
-              placeholderTextColor={'#DEDEDE'}
-              onChangeText={text => this.fetchCities(text)}
-              value={this.state.add3}
-              error={this.state.errorAdd3}
-              returnKeyType="next"
-              numberOfLines={1}
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
-
-            {this.state.citiesList.length > 0 ? (
-              <View
+              <Subtitle
+                styleName="v-center h-center"
                 style={{
-                  flexGrow: 1,
-                  //flexWrap: 'wrap',
-                  //marginVertical: sizeHeight(2),
-                  //marginHorizontal: sizeWidth(1),
-                  marginTop: -2,
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: sizeHeight(1),
                 }}>
-                <Card elevation={2}>
-                  <FlatList
-                    //extraData={this.state}
-                    showsVerticalScrollIndicator={true}
-                    showsHorizontalScrollIndicator={false}
-                    data={this.state.citiesList}
-                    nestedScrollEnabled={true}
-                    keyboardShouldPersistTaps={'handled'}
-                    ItemSeparatorComponent={() => (
-                      <View style={styles.listservicedivider} />
-                    )}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item: item, index}) =>
-                      this.renderRowSug(item, index)
-                    }
-                  />
-                </Card>
-              </View>
-            ) : null}
+                {i18n.t(k._14)}
+              </Subtitle>
+              <TextInput
+                style={styles.inputStyle}
+                mode={'flat'}
+                onBlur={() => !this.state.errorAdd3}
+                onFocus={() => !this.state.errorAdd3}
+                password={false}
+                placeholderTextColor={'#DEDEDE'}
+                onChangeText={text => this.fetchCities(text)}
+                value={this.state.add3}
+                error={this.state.errorAdd3}
+                returnKeyType="next"
+                numberOfLines={1}
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
 
-            <Subtitle
-              styleName="v-center h-center"
-              style={{
-                color: '#292929',
-                fontSize: 16,
-                alignSelf: 'flex-start',
-                marginTop: sizeHeight(1),
-              }}>
-              {i18n.t(k._53)}
-            </Subtitle>
-            <TextInput
-              onBlur={() => !this.state.errorAdd4}
-              onFocus={() => !this.state.errorAdd4}
-              style={styles.inputStyle}
-              mode={'flat'}
-              placeholderTextColor={'#DEDEDE'}
-              password={false}
-              onChangeText={text => {
-                this.setState({add4: text});
-              }}
-              value={this.state.add4}
-              error={this.state.errorAdd4}
-              returnKeyType="done"
-              numberOfLines={1}
-              underlineColor={'transparent'}
-              underlineColorAndroid={'transparent'}
-            />
-          </View>
-        </ScrollView>
+              {this.state.citiesList.length > 0 ? (
+                <View
+                  style={{
+                    flexGrow: 1,
+                    //flexWrap: 'wrap',
+                    //marginVertical: sizeHeight(2),
+                    //marginHorizontal: sizeWidth(1),
+                    marginTop: -2,
+                    maxHeight: 200,
+                  }}>
+                  <Card elevation={2}>
+                    <FlatList
+                      //extraData={this.state}
+                      showsVerticalScrollIndicator={true}
+                      showsHorizontalScrollIndicator={false}
+                      data={this.state.citiesList}
+                      nestedScrollEnabled={true}
+                      keyboardShouldPersistTaps={'handled'}
+                      ItemSeparatorComponent={() => (
+                        <View style={styles.listservicedivider} />
+                      )}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({item: item, index}) =>
+                        this.renderRowSug(item, index)
+                      }
+                    />
+                  </Card>
+                </View>
+              ) : null}
+
+              <Subtitle
+                styleName="v-center h-center"
+                style={{
+                  color: '#292929',
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                  marginTop: sizeHeight(1),
+                }}>
+                {i18n.t(k._53)}
+              </Subtitle>
+              <TextInput
+                onBlur={() => !this.state.errorAdd4}
+                onFocus={() => !this.state.errorAdd4}
+                style={styles.inputStyle}
+                mode={'flat'}
+                placeholderTextColor={'#DEDEDE'}
+                password={false}
+                onChangeText={text => {
+                  this.setState({add4: text});
+                }}
+                value={this.state.add4}
+                error={this.state.errorAdd4}
+                returnKeyType="done"
+                numberOfLines={1}
+                underlineColor={'transparent'}
+                underlineColorAndroid={'transparent'}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
         <Button
           styleName=" muted border"
           style={styles.loginButtonStyle}
@@ -586,6 +643,7 @@ export default class Login extends React.Component {
 
 const styles = StyleSheet.create({
   inputStyle: {
+    height: 48,
     borderRadius: 2,
     borderColor: '#dedede',
     borderStyle: 'solid',

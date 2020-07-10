@@ -145,6 +145,7 @@ export default class FinalOrder extends React.Component {
       maxQuantity: 0,
       maxTitle: '',
       creditCardImage: require('../res/images/card.png'),
+      paymentDoneAlready:false
     };
   }
 
@@ -485,7 +486,7 @@ export default class FinalOrder extends React.Component {
             result => {
               const {businessHours, hasDelivery, freeDelivery} = result.branch;
               branchData = result.branch;
-              console.log(branchData);
+              //console.log(branchData);
 
               const freeS = result.freeServices;
               //console.log(`freeS`, freeS);
@@ -1169,10 +1170,10 @@ export default class FinalOrder extends React.Component {
                                       explicitArray: false,
                                     })
                                     .then(result => {
-                                      console.log(
-                                        `result`,
-                                        JSON.stringify(result),
-                                      );
+                                      // console.log(
+                                      //   `result`,
+                                      //   JSON.stringify(result),
+                                      // );
                                       const {ashrait} = result;
                                       const {response} = ashrait;
                                       const {
@@ -1202,9 +1203,9 @@ export default class FinalOrder extends React.Component {
                                           o.geolat = geolat;
                                           o.geolng = geolng;
                                           o.cgUid = cgUid;
-                                          if (this.state.insertGuid) {
+                                          //if (this.state.insertGuid) {
                                             o.guid = guid;
-                                          }
+                                          //}
                                           if (this.state.isDeliveryMode) {
                                             if (index == 0) {
                                               o.deliveryprice = Number(
@@ -1269,9 +1270,9 @@ export default class FinalOrder extends React.Component {
                               o.geolat = geolat;
                               o.geolng = geolng;
                               o.cgUid = '';
-                              if (this.state.insertGuid) {
+                              //if (this.state.insertGuid) {
                                 o.guid = guid;
-                              }
+                              //}
                               if (this.state.isDeliveryMode) {
                                 if (index == 0) {
                                   o.deliveryprice = Number(
@@ -1346,13 +1347,14 @@ export default class FinalOrder extends React.Component {
   }
 
   orderapiCallback = (datax, newArr, token, paymentmode) => {
+    //console.log(`datax`, datax);
     Helper.networkHelperTokenPost(
       Pref.PostOrderUrl,
       datax,
       Pref.methodPost,
       token,
       result => {
-        console.log('result', result);
+        //console.log('result', result);
         this.orderDone(newArr, result, paymentmode);
       },
       error => {
@@ -1392,6 +1394,7 @@ export default class FinalOrder extends React.Component {
               this.setState(
                 {
                   insertGuid: true,
+                  paymentDoneAlready: paymentmode,
                 },
                 () => {
                   this.pressPayment();
@@ -1416,40 +1419,9 @@ export default class FinalOrder extends React.Component {
       Pref.setVal(Pref.EditModeEnabled, '');
       NavigationActions.goBack();
     } else {
-      const branches = newArr[0].branchData;
       Pref.setVal(Pref.cartItem, []);
-      const groupedExtra = Lodash.groupBy(newArr, function(exData) {
-        return exData.orderdate;
-      });
-      let allDatas = [];
-      const ooood = result[0];
-      Object.keys(groupedExtra).map(key => {
-        const ooop = groupedExtra[key];
-        const iii = ooop[0];
-        let finalPricess = Lodash.sumBy(ooop, function(o) {
-          return o.price;
-        });
-        if (iii.deliveryprice !== undefined && iii.deliveryprice !== null) {
-          if (Number(iii.deliveryprice) > 0) {
-            finalPricess += iii.deliveryprice;
-          }
-        }
-        allDatas.push({
-          keys: key,
-          orderdate: key,
-          title: branches !== undefined ? branches.name : '',
-          message: i18n.t(k._4),
-          totalPrice: finalPricess,
-          status: 1,
-          paid: iii.paid,
-          data: ooop,
-          idorder: ooood,
-          isHistory: true,
-          imageUrl: branches !== undefined ? branches.imageurl : '',
-          idbranch: branches !== undefined ? branches.idbranch : 0,
-          orderidList: result,
-        });
-      });
+      const {branches, order_Bs} = result;
+      const allDatas = Helper.orderData(order_Bs, branches,true);
       NavigationActions.navigate('TrackOrder', {
         item: allDatas,
       });

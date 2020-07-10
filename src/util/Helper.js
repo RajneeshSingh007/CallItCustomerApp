@@ -373,13 +373,77 @@ export const groupExtraWithCountString = (result, val) => {
         if (index === datass.length - 1) {
           filterExtras += `${ele.name}`;
         } else {
-          filterExtras += `${
-            ele.name
-          }, `;
+          filterExtras += `${ele.name}, `;
         }
       }
     });
     extraString += filterExtras.trim() + '\n';
   });
   return extraString;
+};
+
+/**
+ *
+ * @param {*} arr
+ */
+export const orderData = (arr, branches, isHistory) => {
+  if (arr.length > 0) {
+    const result = [];
+    let mappingData = Lodash.map(arr, io => {
+      const date = Moment(io.orderdate).format('YYYY/MM/DD HH:mm');
+      const find = Lodash.find(
+        result,
+        xm =>
+          xm.fkbranchO === io.fkbranchO &&
+          xm.date === io.date &&
+          xm.cartGuid === io.cartGuid,
+      );
+      const findBranchces = Lodash.find(branches, x => {
+        const br = x.branch;
+        if (Number(br.idbranch) === Number(io.fkbranchO)) {
+          return br;
+        }
+      });
+      const branchFind = findBranchces.branch;
+      if (find === undefined) {
+        const data = [];
+        data.push(io);
+        result.push({
+          keys: date,
+          isdelivery: io.isdelivery,
+          message: '',
+          title: branchFind.name || '',
+          imageUrl: branchFind.imageUrl || '',
+          idbranch: branchFind.idbranch || 0,
+          isHistory: isHistory,
+          orderdate: date,
+          fkbranchO: io.fkbranchO,
+          paid: io.paid,
+          status: io.status,
+          cartGuid: io.cartGuid,
+          data: data,
+          totalPrice: io.price,
+          servicelist: [],
+        });
+      } else {
+        const indx = Lodash.findLastIndex(
+          result,
+          xm =>
+            xm.fkbranchO === io.fkbranchO &&
+            xm.date === io.date &&
+            xm.cartGuid === io.cartGuid,
+        );
+        if (indx !== -1) {
+          const {data} = find;
+          data.push(io);
+          find.data = data;
+          find.totalPrice = Lodash.sumBy(find.data, ix => ix.price);
+          result[indx] = find;
+        }
+      }
+    });
+    return Lodash.orderBy(result, ['keys'], ['desc']);
+  } else {
+    return [];
+  }
 };
