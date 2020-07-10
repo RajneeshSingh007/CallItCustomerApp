@@ -59,6 +59,7 @@ var now = new Date().getDay();
 var currentDate = new Date();
 const circleButtonFreeWidth = 32;
 const circleButtonFreeRadius = 32 / 2;
+let terminalNumbers = '';
 
 export default class FinalOrder extends React.Component {
   constructor(props) {
@@ -145,7 +146,7 @@ export default class FinalOrder extends React.Component {
       maxQuantity: 0,
       maxTitle: '',
       creditCardImage: require('../res/images/card.png'),
-      paymentDoneAlready:false
+      paymentDoneAlready: false,
     };
   }
 
@@ -471,6 +472,7 @@ export default class FinalOrder extends React.Component {
             sumValue += ele.price;
             if (index == 0) {
               branchData = ele.branchData;
+              terminalNumbers = branchData.terminalNumber || '';
             }
             const extraDisplayArray = Helper.groupExtraWithCountString(
               ele.extras,
@@ -486,6 +488,8 @@ export default class FinalOrder extends React.Component {
             result => {
               const {businessHours, hasDelivery, freeDelivery} = result.branch;
               branchData = result.branch;
+              terminalNumbers = branchData.terminalNumber || '';
+
               //console.log(branchData);
 
               const freeS = result.freeServices;
@@ -1204,7 +1208,7 @@ export default class FinalOrder extends React.Component {
                                           o.geolng = geolng;
                                           o.cgUid = cgUid;
                                           //if (this.state.insertGuid) {
-                                            o.guid = guid;
+                                          o.guid = guid;
                                           //}
                                           if (this.state.isDeliveryMode) {
                                             if (index == 0) {
@@ -1271,7 +1275,7 @@ export default class FinalOrder extends React.Component {
                               o.geolng = geolng;
                               o.cgUid = '';
                               //if (this.state.insertGuid) {
-                                o.guid = guid;
+                              o.guid = guid;
                               //}
                               if (this.state.isDeliveryMode) {
                                 if (index == 0) {
@@ -1421,7 +1425,7 @@ export default class FinalOrder extends React.Component {
     } else {
       Pref.setVal(Pref.cartItem, []);
       const {branches, order_Bs} = result;
-      const allDatas = Helper.orderData(order_Bs, branches,true);
+      const allDatas = Helper.orderData(order_Bs, branches, true);
       NavigationActions.navigate('TrackOrder', {
         item: allDatas,
       });
@@ -2193,12 +2197,13 @@ export default class FinalOrder extends React.Component {
   }
 
   renderRowCardsList(item, index) {
+    const image = item.creditCardImage || require('../res/images/card.png');
     return (
       <TouchableWithoutFeedback onPress={() => this.cardSelect(item, index)}>
         <View
           style={{
-            width:'96%',
-            marginStart:8,
+            width: '96%',
+            marginStart: 8,
             //marginHorizontal: sizeWidth(1),
             justifyContent: 'space-between',
             flexDirection: 'row',
@@ -2208,7 +2213,7 @@ export default class FinalOrder extends React.Component {
             borderWidth: 0.5,
             marginVertical: sizeHeight(1),
             paddingHorizontal: 4,
-            paddingVertical:6,
+            paddingVertical: 6,
             backgroundColor: item.selected ? i18n.t(k.DACCF) : `white`,
           }}>
           <View
@@ -2245,7 +2250,7 @@ export default class FinalOrder extends React.Component {
             ) : null}
           </View>
           <Image
-            source={require('../res/images/card.png')}
+            source={image}
             //name="credit-card"
             //size={32}
             //color={"#646464"}
@@ -2318,6 +2323,7 @@ export default class FinalOrder extends React.Component {
         checked: checked,
         selected: false,
         terminalNumber: terminalNumber,
+        creditCardImage: this.state.creditCardImage,
       };
       //console.log(`item`, item);
       this.setState(
@@ -2380,7 +2386,7 @@ export default class FinalOrder extends React.Component {
     });
   };
 
-  returnCardImage = (cardnumber) =>{
+  returnCardImage = cardnumber => {
     let creditCardImage = require('../res/images/card.png');
     if (cardnumber.length > 0) {
       if (cardnumber.length === 8) {
@@ -2408,7 +2414,7 @@ export default class FinalOrder extends React.Component {
       }
     }
     return creditCardImage;
-  }
+  };
 
   render() {
     return (
@@ -2535,9 +2541,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.isDeliveryMode
-                          ? 'white'
-                          : '#777777',
+                        color: this.state.isDeliveryMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2567,9 +2571,7 @@ export default class FinalOrder extends React.Component {
                   <Title
                     styleName="bold"
                     style={{
-                      color: this.state.isDeliveryMode
-                        ? 'white'
-                        : '#777777',
+                      color: this.state.isDeliveryMode ? 'white' : '#777777',
                       fontFamily: 'Rubik',
                       fontSize: 16,
                       fontWeight: '700',
@@ -2619,9 +2621,7 @@ export default class FinalOrder extends React.Component {
                   <Title
                     styleName="bold"
                     style={{
-                      color: !this.state.isDeliveryMode
-                        ? 'white'
-                        : '#777777',
+                      color: !this.state.isDeliveryMode ? 'white' : '#777777',
                       fontFamily: 'Rubik',
                       fontSize: 16,
                       fontWeight: '700',
@@ -2790,9 +2790,9 @@ export default class FinalOrder extends React.Component {
                       fontSize: 15,
                       alignSelf: 'center',
                       fontWeight: '700',
-                    }}>{`${i18n.t(k._17)} ${
-                    this.state.deliveryprices
-                  } ${i18n.t(k._18)}`}</Subtitle>
+                    }}>{`${i18n.t(k._17)} ${this.state.deliveryprices} ${i18n.t(
+                    k._18,
+                  )}`}</Subtitle>
                 ) : (
                   <Subtitle
                     style={{
@@ -2843,11 +2843,13 @@ export default class FinalOrder extends React.Component {
                 height: sizeHeight(7),
               }}>
               <TouchableWithoutFeedback
-                onPress={() =>
-                  this.setState({
-                    selectedMode: true,
-                  })
-                }>
+                onPress={() => {
+                  if (terminalNumbers !== '') {
+                    this.setState({
+                      selectedMode: true,
+                    });
+                  }
+                }}>
                 <View
                   style={{
                     flex: 0.5,

@@ -111,7 +111,7 @@ export default class ProfilePage extends React.Component {
         Pref.methodGet,
         token,
         (result) => {
-          console.log(result);
+          //console.log(result);
           var details = JSON.parse(JSON.stringify(result));
           const fullName = result.firstname + " " + result.lastname;
           const { address } = result;
@@ -263,52 +263,51 @@ export default class ProfilePage extends React.Component {
   };
 
   renderRowCardsList(item, index) {
+        const image =
+          item.creditCardImage || require('../res/images/card.png');
     return (
       <View
         styleName="horizontal space-between"
-        style={{ marginHorizontal: sizeWidth(3) }}
-      >
+        style={{marginHorizontal: sizeWidth(3)}}>
         <View
           style={{
-            flexDirection: "row",
-            alignContent: "flex-start",
-            alignSelf: "flex-start",
-            justifyContent: "flex-start",
+            flexDirection: 'row',
+            alignContent: 'flex-start',
+            alignSelf: 'flex-start',
+            justifyContent: 'flex-start',
             marginVertical: sizeHeight(1),
             marginStart: sizeWidth(2),
-            borderColor: "#dedede",
+            borderColor: '#dedede',
             borderWidth: 0.5,
             paddingVertical: 6,
             paddingHorizontal: 8,
             borderRadius: 4,
-          }}
-        >
+          }}>
           <Title
             styleName="v-start h-start "
             style={{
-              color: "black",
-              fontFamily: "Rubik",
+              color: 'black',
+              fontFamily: 'Rubik',
               fontSize: 15,
-              fontWeight: "400",
-              alignSelf: "center",
-            }}
-          >
+              fontWeight: '400',
+              alignSelf: 'center',
+            }}>
             {`${i18n.t(k.cardsavedtextendwith)}-${item.name}`}
           </Title>
           <Image
-            source={require('../res/images/card.png')}
+            source={image}
             //name="credit-card"
             //size={32}
             //color={"#646464"}
             style={{
-              tintColor: '#646464',
+              //tintColor: '#646464',
               padding: 4,
               marginStart: 8,
-              backgroundColor: "transparent",
-              alignSelf: "center",
-              justifyContent: "center",
+              backgroundColor: 'transparent',
+              alignSelf: 'center',
+              justifyContent: 'center',
               height: 24,
-              width: 24
+              width: 24,
             }}
           />
           {/* <Icon
@@ -322,14 +321,15 @@ export default class ProfilePage extends React.Component {
             }}
           /> */}
         </View>
-        <TouchableWithoutFeedback onPress={() => this.deleteCard(item, index)}>
+        <TouchableWithoutFeedback
+          onPress={() => this.deleteCard(item, index)}>
           <Image
-            source={require("./../res/images/delete.png")}
+            source={require('./../res/images/delete.png')}
             style={{
               width: 14,
               height: 17,
               tintColor: Colors.red500,
-              alignSelf: "center",
+              alignSelf: 'center',
               marginEnd: sizeWidth(2),
             }}
           />

@@ -33,6 +33,7 @@ import Lodash, {filter} from 'lodash';
 export default class Login extends React.Component {
   constructor(props) {
     super(props);
+    this.scrollViewRef = React.createRef();
     this.state = {
       firstName: i18n.t(k._4),
       lastName: i18n.t(k._4),
@@ -365,15 +366,18 @@ export default class Login extends React.Component {
           }
         />
         <KeyboardAvoidingView
+          keyboardVerticalOffset={-500}
+          behavior="padding"
           style={{
             flex: 1,
             flexDirection: 'column',
-            justifyContent: 'space-evenly',
+            justifyContent: 'center',
           }}>
           <ScrollView
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps={'handled'}
+            ref={this.scrollViewRef}
             style={{flex: 1}}>
             <View style={{marginHorizontal: sizeWidth(4)}}>
               <Subtitle
@@ -534,6 +538,24 @@ export default class Login extends React.Component {
 
               {this.state.citiesList.length > 0 ? (
                 <View
+                  onLayout={event => {
+                    let scrollY = event.nativeEvent.layout.y;
+                    if (
+                      this.scrollViewRef !== undefined &&
+                      this.scrollViewRef !== null
+                    ) {
+                      if (this.state.citiesList.length > 0) {
+                        const pos = scrollY - 48;
+                        if (pos > 0) {
+                          this.scrollViewRef.current.scrollTo({
+                            x: 0,
+                            y: scrollY - 48,
+                            animated: false,
+                          });
+                        }
+                      }
+                    }
+                  }}
                   style={{
                     flexGrow: 1,
                     //flexWrap: 'wrap',
@@ -600,9 +622,7 @@ export default class Login extends React.Component {
           loading={this.state.progressView}
           onPress={() => this.onSaveClick()}>
           <Subtitle style={{color: 'white'}}>
-            {this.state.progressView === true
-              ? i18n.t(k._47)
-              : i18n.t(k._54)}
+            {this.state.progressView === true ? i18n.t(k._47) : i18n.t(k._54)}
           </Subtitle>
         </Button>
         <Snackbar

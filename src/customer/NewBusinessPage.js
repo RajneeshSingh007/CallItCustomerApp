@@ -191,16 +191,16 @@ export default class NewBusinessPage extends React.Component {
         token,
         value => {
           //value
-          console.log('ServerTimeUrl', value);
+          //console.log('ServerTimeUrl', value);
           const convertTime = Moment.utc(value)
             .utcOffset(2, false)
             .format('YYYY/MM/DD HH:mm');
           const checkerDate = new Date(convertTime);
-          console.log('convertTime', convertTime, checkerDate);
+          //console.log('convertTime', convertTime, checkerDate);
           this.setState({checkerDate: checkerDate});
         },
         error => {
-          console.log('err', error);
+          //console.log('err', error);
         },
       );
       Helper.networkHelperToken(
@@ -310,6 +310,10 @@ export default class NewBusinessPage extends React.Component {
     return (h1 < h || (h1 == h && m1 <= m)) && (h < h2 || (h == h2 && m <= m2));
   }
 
+  /**
+   * deprecated
+   * @param {} time 
+   */
   checkStatusBiz = time => {
     if (time == undefined || time == null) {
       return false;
@@ -505,7 +509,8 @@ export default class NewBusinessPage extends React.Component {
                 />
               </View>
               <View>
-                {this.state.item !== null && this.state.item !== undefined ? (
+                {this.state.item !== null &&
+                this.state.item !== undefined ? (
                   <View style={{flexDirection: 'column'}}>
                     <View
                       style={{
@@ -550,18 +555,17 @@ export default class NewBusinessPage extends React.Component {
                           />
                           <Subtitle
                             style={{
-                              color: this.checkStatusBiz(
-                                this.state.item.businessHours,
-                              )
-                                ? this.state.hasDelivery === 1
-                                  ? Colors.deepOrange500
-                                  : '#1BB940'
-                                : '#B72727',
+                              color:
+                                this.state.item.isOpen === 'open'
+                                  ? this.state.hasDelivery === 1
+                                    ? Colors.deepOrange500
+                                    : '#1BB940'
+                                  : '#B72727',
                               fontFamily: 'Rubik',
                               alignSelf: 'flex-start',
                               fontSize: 16,
                             }}>
-                            {this.checkStatusBiz(this.state.item.businessHours)
+                            {this.state.item.isOpen === 'open'
                               ? this.state.hasDelivery === 1
                                 ? `${busyBiz}`
                                 : `${openBiz}`
@@ -569,9 +573,12 @@ export default class NewBusinessPage extends React.Component {
                           </Subtitle>
                         </View>
                       </View>
-                      <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+                      <View
+                        style={{flexDirection: 'row', alignSelf: 'center'}}>
                         <TouchableOpacity onPress={() => this.favClick()}>
-                          <Animatable.View animation="wobble" duration={200}>
+                          <Animatable.View
+                            animation="wobble"
+                            duration={200}>
                             <Icon
                               name={
                                 this.state.isFav === false
@@ -580,7 +587,9 @@ export default class NewBusinessPage extends React.Component {
                               }
                               size={24}
                               color={
-                                this.state.isFav === false ? '#777777' : 'red'
+                                this.state.isFav === false
+                                  ? '#777777'
+                                  : 'red'
                               }
                               style={{
                                 padding: 4,
@@ -682,9 +691,12 @@ export default class NewBusinessPage extends React.Component {
                       </View>
                       <TouchableWithoutFeedback
                         onPress={() =>
-                          NavigationActions.navigate(i18n.t(k.REVIEWSPAGE), {
-                            item: this.state.item,
-                          })
+                          NavigationActions.navigate(
+                            i18n.t(k.REVIEWSPAGE),
+                            {
+                              item: this.state.item,
+                            },
+                          )
                         }>
                         <Subtitle
                           style={{
@@ -764,7 +776,8 @@ export default class NewBusinessPage extends React.Component {
                           }}
                         />
 
-                        <TouchableWithoutFeedback onPress={this.locationOpen}>
+                        <TouchableWithoutFeedback
+                          onPress={this.locationOpen}>
                           <Subtitle
                             style={{
                               color: '#3DACCF',
@@ -825,9 +838,7 @@ export default class NewBusinessPage extends React.Component {
                   lol={this.state.lol}
                   namexx={this.state.namexx}
                   currentNames={this.state.item.idbranch}
-                  businessclosedornot={this.checkStatusBiz(
-                    this.state.item.businessHours,
-                  )}
+                  businessclosedornot={this.state.item.isOpen === 'open' ? true : false}
                   checkerDate={this.state.checkerDate}
                   backClicked={this.backScroll}
                 />

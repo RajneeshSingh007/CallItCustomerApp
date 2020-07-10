@@ -485,7 +485,7 @@ export default class OrderProcess1 extends React.Component {
     //this.props.isVis(true);
     const {currentNames, namexx, businessclosedornot, hasDelivery} = this.props;
     //console.log("product", val);
-    if (businessclosedornot) {
+    if (businessclosedornot === true) {
       if (Number(currentNames) === Number(namexx) || Number(namexx) === 0) {
         if (hasDelivery === 0) {
           let kkk = [];
