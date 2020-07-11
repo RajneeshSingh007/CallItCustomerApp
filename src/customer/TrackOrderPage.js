@@ -34,6 +34,7 @@ import DummyLoader from '../util/DummyLoader';
 import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
+import {SafeAreaView} from 'react-navigation';
 
 export default class TrackOrderPage extends React.Component {
   constructor(props) {
@@ -525,6 +526,10 @@ export default class TrackOrderPage extends React.Component {
 
   render() {
     return (
+                <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+
       <Screen
         style={{
           backgroundColor: 'white',
@@ -1131,6 +1136,7 @@ export default class TrackOrderPage extends React.Component {
         />
         <Loader isShow={this.state.smp} />
       </Screen>
+      </SafeAreaView>
     );
   }
 }

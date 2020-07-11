@@ -268,4 +268,5 @@ module.exports = {
   signuptimer: `signuptimer`,
   signuptimer1: `signuptimer1`,
   visaunavailable: 'visaunavailable',
+  deliverynotavailable: 'deliverynotavailable',
 };

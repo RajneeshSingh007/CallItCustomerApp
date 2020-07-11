@@ -3,6 +3,7 @@ import * as Pref from './../util/Pref';
 import {StatusBar} from 'react-native';
 import {Screen} from '@shoutem/ui';
 import * as Helper from './../util/Helper';
+import {SafeAreaView} from 'react-navigation';
 
 /**
  * AuthPage
@@ -24,7 +25,7 @@ export default class AuthPage extends React.Component {
       } else {
         if (mks === 'true') {
           //Helper.itemClick(this.props, 'Login');
-          Helper.itemClick(this.props, "Home");
+          Helper.itemClick(this.props, 'Home');
         } else {
           Helper.itemClick(this.props, 'SignupPage');
         }
@@ -33,6 +34,12 @@ export default class AuthPage extends React.Component {
   }
 
   render() {
-    return <Screen />;
+    return (
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+        <Screen />
+      </SafeAreaView>
+    );
   }
 }

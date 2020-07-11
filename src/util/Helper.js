@@ -153,12 +153,13 @@ export const networkHelperToken = (
       Authorization: 'Bearer ' + token,
     },
   })
-    .then(response => response.json())
+    .then(response => {
+      return response.json();
+    })
     .then(responseJson => {
       callback(responseJson);
     })
     .catch(error => {
-      ////console.log(error);
       errorCallback(error);
     });
 };

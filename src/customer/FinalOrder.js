@@ -50,9 +50,9 @@ import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
 import {Loader} from './Loader';
 import Moment from 'moment';
 import {AlertDialog} from './../util/AlertDialog';
-import {string} from 'prop-types';
 import TextInputMask from 'react-native-text-input-mask';
 import xml2js from 'xml2js';
+import {SafeAreaView} from 'react-navigation';
 
 let branchData = null;
 var now = new Date().getDay();
@@ -784,48 +784,6 @@ export default class FinalOrder extends React.Component {
     return groupedArray.length > 0 ? groupedArray : [];
   };
 
-  checkStatusBiz = (time, checkerDate) => {
-    if (time == undefined || time == null) {
-      return false;
-    }
-    if (time.includes('#')) {
-      if (checkerDate !== null) {
-        const g = time.split('\n');
-        let data = i18n.t(k._4);
-        const day = checkerDate.getDay();
-        for (let index = 0; index < g.length; index++) {
-          if (day === index) {
-            data = g[index]; //+ '-' + g[index + 1] + " :" + g[index+2];
-            break;
-          }
-        }
-        //console.log('day', day);
-        if (data.includes('סגור')) {
-          return false;
-        } else {
-          const fool = data.replace(/#/g, ':');
-          const jj = fool.split(' ');
-
-          const startSp = jj[1].split(':');
-          const endSp = jj[3].split(':');
-
-          const start = Number(startSp[0]) * 60 + Number(startSp[1]);
-          const end = Number(endSp[0]) * 60 + Number(endSp[1]);
-          const now = checkerDate.getHours() * 60 + checkerDate.getMinutes();
-          if (start <= now && now <= end) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  };
-
   /**
    * item remove
    * @param {item} item
@@ -1085,22 +1043,25 @@ export default class FinalOrder extends React.Component {
         });
       } else {
         this.setState({smp: true});
+        // Helper.networkHelperToken(
+        //   Pref.ServerTimeUrl,
+        //   Pref.methodGet,
+        //   token,
+        //   value => {
+        //     const convertTime = Moment.utc(value)
+        //       .utcOffset(2, false)
+        //       .format('YYYY/MM/DD HH:mm');
+        //     const checkerDate = new Date(convertTime);
         Helper.networkHelperToken(
-          Pref.ServerTimeUrl,
+          Pref.BranchStatusUrl + branchData.idbranch,
           Pref.methodGet,
           token,
-          value => {
-            const convertTime = Moment.utc(value)
-              .utcOffset(2, false)
-              .format('YYYY/MM/DD HH:mm');
-            const checkerDate = new Date(convertTime);
-            const checkAv = this.checkStatusBiz(businessHours, checkerDate);
-            //console.log("ch", checkAv, selectedMode);
+          res => {
             this.setState({
               smp: false,
               convertTime: convertTime,
             });
-            if (checkAv === true) {
+            if (res === 'open') {
               if (hasDelivery === 0) {
                 this.checknogps(fullcitiesInput).then(value => {
                   //console.log("value", value);
@@ -1196,7 +1157,7 @@ export default class FinalOrder extends React.Component {
                                       //update card
                                       this.updateCardid(cardTempNumber, cardId);
                                       let shovar = `${fileNumber}${slaveTerminalNumber}${slaveTerminalSequence}`;
-                                      console.log(`shovar`, shovar);
+                                      //console.log(`shovar`, shovar);
                                       //cgUid = findCardSelected.cgUid;
                                       const guid = Helper.guid();
                                       const newArr = Lodash.map(
@@ -1325,10 +1286,7 @@ export default class FinalOrder extends React.Component {
               } else {
                 this.setState({
                   alertTitle: i18n.t(k._4),
-                  alertContent: `לקוחות יקרים, שימו לב:
-בעקבות עומס בהזמנות אצל בית העסק - כרגע לא ניתן לבצע הזמנות חדשות.
-נשמח שתנסו שוב בעוד כמה רגעים. 
-סליחה ותודה.`,
+                  alertContent: i18n.t(k.deliverynotavailable),
                   showAlert: true,
                   flexChanged: true,
                 });
@@ -1343,10 +1301,15 @@ export default class FinalOrder extends React.Component {
               });
             }
           },
-          error => {
-            this.setState({smp: false});
+          e => {
+            console.log(e);
           },
         );
+        //   },
+        //   error => {
+        //     this.setState({smp: false});
+        //   },
+        // );
       }
     }
   }
@@ -1887,7 +1850,7 @@ export default class FinalOrder extends React.Component {
     const cartTime = Moment(Date.now()).format('YYYY/MM/DD HH:mm:ss.SSS');
     const guid = Helper.guid();
     let day = Moment(checkerDate).format('YYYY/MM/DD HH:mm');
-    console.log(`findx.idservice`, findx.idservice);
+    //console.log(`findx.idservice`, findx.idservice);
     const items = {
       guid: guid,
       cartTime: cartTime,
@@ -2403,112 +2366,147 @@ export default class FinalOrder extends React.Component {
 
   render() {
     return (
-      <Screen
-        style={{
-          backgroundColor: 'white',
-        }}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-        <NavigationBar
-          styleName="inline no-border"
-          rightComponent={
-            <View
-              style={{
-                flexDirection: 'row',
-                marginEnd: sizeWidth(5),
-              }}
-            />
-          }
-          leftComponent={
-            <View
-              styleName="horizontal space-between"
-              style={{marginStart: 12}}>
-              <TouchableOpacity onPress={() => NavigationActions.goBack()}>
-                <Icon
-                  name="arrow-forward"
-                  size={36}
-                  color="#292929"
-                  style={{
-                    padding: 4,
-                    alignSelf: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                />
-              </TouchableOpacity>
-
-              <Heading
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+        <Screen
+          style={{
+            backgroundColor: 'white',
+          }}>
+          <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+          <NavigationBar
+            styleName="inline no-border"
+            rightComponent={
+              <View
                 style={{
-                  fontSize: 20,
-                  color: '#292929',
-                  fontFamily: 'Rubik',
-                  fontWeight: '700',
-                  alignSelf: 'center',
-                }}>
-                {i18n.t(k._8)}
-              </Heading>
-            </View>
-          }
-        />
-
-        <ScrollView
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps={'handled'}
-          showsVerticalScrollIndicator={false}>
-          <View
-            styleName="vertical"
-            style={{
-              flex: 1,
-            }}>
-            <DummyLoader
-              visibilty={this.state.progressView}
-              center={
-                this.state.data != null && this.state.data !== undefined ? (
-                  <FlatList
-                    extraData={this.state}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    nestedScrollEnabled={true}
-                    data={this.state.data}
-                    keyExtractor={(item, index) => `${index}`}
-                    renderItem={({item: item, index}) =>
-                      this.renderRow(item, index)
-                    }
+                  flexDirection: 'row',
+                  marginEnd: sizeWidth(5),
+                }}
+              />
+            }
+            leftComponent={
+              <View
+                styleName="horizontal space-between"
+                style={{marginStart: 12}}>
+                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
+                  <Icon
+                    name="arrow-forward"
+                    size={36}
+                    color="#292929"
+                    style={{
+                      padding: 4,
+                      alignSelf: 'center',
+                      backgroundColor: 'transparent',
+                    }}
                   />
-                ) : null
-              }
-            />
+                </TouchableOpacity>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                borderRadius: 1,
-                borderColor: '#dedede',
-                borderStyle: 'solid',
-                borderWidth: 1,
-                marginTop: sizeHeight(1.5),
-                marginHorizontal: sizeWidth(4),
-                height: sizeHeight(7),
-              }}>
-              {this.state.isrealDelivery ? (
-                <TouchableWithoutFeedback
-                  onPress={() => {
-                    if (!this.state.isDeliveryMode) {
-                      if (
-                        Number(this.state.totalAmt) >
-                        Number(this.state.freeDeliveryAmount)
-                      ) {
-                        this.setState({
-                          isDeliveryMode: true,
-                        });
-                      } else {
-                        const dom = this.state.odeliveryprices;
-                        const mixtotal = this.state.totalAmt + dom;
-                        this.setState({
-                          isDeliveryMode: true,
-                          totalAmt: mixtotal,
-                        });
-                      }
-                    }
+                <Heading
+                  style={{
+                    fontSize: 20,
+                    color: '#292929',
+                    fontFamily: 'Rubik',
+                    fontWeight: '700',
+                    alignSelf: 'center',
                   }}>
+                  {i18n.t(k._8)}
+                </Heading>
+              </View>
+            }
+          />
+
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps={'handled'}
+            showsVerticalScrollIndicator={false}>
+            <View
+              styleName="vertical"
+              style={{
+                flex: 1,
+              }}>
+              <DummyLoader
+                visibilty={this.state.progressView}
+                center={
+                  this.state.data != null && this.state.data !== undefined ? (
+                    <FlatList
+                      extraData={this.state}
+                      showsVerticalScrollIndicator={false}
+                      showsHorizontalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      data={this.state.data}
+                      keyExtractor={(item, index) => `${index}`}
+                      renderItem={({item: item, index}) =>
+                        this.renderRow(item, index)
+                      }
+                    />
+                  ) : null
+                }
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  borderRadius: 1,
+                  borderColor: '#dedede',
+                  borderStyle: 'solid',
+                  borderWidth: 1,
+                  marginTop: sizeHeight(1.5),
+                  marginHorizontal: sizeWidth(4),
+                  height: sizeHeight(7),
+                }}>
+                {this.state.isrealDelivery ? (
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      if (!this.state.isDeliveryMode) {
+                        if (
+                          Number(this.state.totalAmt) >
+                          Number(this.state.freeDeliveryAmount)
+                        ) {
+                          this.setState({
+                            isDeliveryMode: true,
+                          });
+                        } else {
+                          const dom = this.state.odeliveryprices;
+                          const mixtotal = this.state.totalAmt + dom;
+                          this.setState({
+                            isDeliveryMode: true,
+                            totalAmt: mixtotal,
+                          });
+                        }
+                      }
+                    }}>
+                    <View
+                      style={{
+                        flex: 0.5,
+                        backgroundColor: this.state.isDeliveryMode
+                          ? '#5EBBD7'
+                          : 'white',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                      }}>
+                      {/* <Image source={require('./../res/images/card.png')}
+                                        style={{ width: 24, height: 24, marginEnd: 16, }}
+                                     /> */}
+                      <Title
+                        styleName="bold"
+                        style={{
+                          color: this.state.isDeliveryMode
+                            ? 'white'
+                            : '#777777',
+                          fontFamily: 'Rubik',
+                          fontSize: 16,
+                          fontWeight: '700',
+                          alignContent: 'center',
+                          justifyContent: 'center',
+                          alignSelf: 'center',
+                        }}>
+                        {`${i18n.t(k._9)}`}{' '}
+                      </Title>
+                    </View>
+                  </TouchableWithoutFeedback>
+                ) : (
                   <View
                     style={{
                       flex: 0.5,
@@ -2534,1063 +2532,1034 @@ export default class FinalOrder extends React.Component {
                         justifyContent: 'center',
                         alignSelf: 'center',
                       }}>
-                      {`${i18n.t(k._9)}`}{' '}
+                      {`${i18n.t(k._10)}`}{' '}
+                    </Title>
+                  </View>
+                )}
+
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    if (this.state.isDeliveryMode) {
+                      if (
+                        Number(this.state.totalAmt) >
+                        Number(this.state.freeDeliveryAmount)
+                      ) {
+                        this.setState({
+                          isDeliveryMode: false,
+                        });
+                      } else {
+                        const dom = this.state.odeliveryprices;
+                        const mixtotal = this.state.totalAmt - dom;
+                        this.setState({
+                          isDeliveryMode: false,
+                          totalAmt: mixtotal,
+                        });
+                      }
+                    }
+                  }}>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      flexDirection: 'row',
+                      backgroundColor: !this.state.isDeliveryMode
+                        ? '#5EBBD7'
+                        : 'white',
+                      alignContent: 'center',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {/* <Image source={require('./../res/images/cash.png')}
+                                        style={{ width: 24, height: 24, marginEnd: 16, }}
+                                     /> */}
+                    <Title
+                      styleName="bold"
+                      style={{
+                        color: !this.state.isDeliveryMode ? 'white' : '#777777',
+                        fontFamily: 'Rubik',
+                        fontSize: 16,
+                        fontWeight: '700',
+                      }}>
+                      {`${i18n.t(k._11)}`}
                     </Title>
                   </View>
                 </TouchableWithoutFeedback>
-              ) : (
+              </View>
+
+              {this.state.isDeliveryMode ? (
                 <View
                   style={{
-                    flex: 0.5,
-                    backgroundColor: this.state.isDeliveryMode
-                      ? '#5EBBD7'
-                      : 'white',
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'row',
+                    flexDirection: 'column',
+                    marginTop: 12,
                   }}>
-                  {/* <Image source={require('./../res/images/card.png')}
-                                        style={{ width: 24, height: 24, marginEnd: 16, }}
-                                     /> */}
-                  <Title
-                    styleName="bold"
+                  <Subtitle
                     style={{
-                      color: this.state.isDeliveryMode ? 'white' : '#777777',
+                      color: '#292929',
                       fontFamily: 'Rubik',
                       fontSize: 16,
-                      fontWeight: '700',
-                      alignContent: 'center',
-                      justifyContent: 'center',
-                      alignSelf: 'center',
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                      marginStart: sizeWidth(4),
+                      fontWeight: '400',
                     }}>
-                    {`${i18n.t(k._10)}`}{' '}
-                  </Title>
-                </View>
-              )}
-
-              <TouchableWithoutFeedback
-                onPress={() => {
-                  if (this.state.isDeliveryMode) {
-                    if (
-                      Number(this.state.totalAmt) >
-                      Number(this.state.freeDeliveryAmount)
-                    ) {
+                    {i18n.t(k._12)}
+                  </Subtitle>
+                  <TextInput
+                    mode="flat"
+                    placeholder={i18n.t(k._13)}
+                    underlineColor="transparent"
+                    underlineColorAndroid="transparent"
+                    style={styles.inputStyle}
+                    placeholderTextColor={i18n.t(k.DEDEDE)}
+                    onChangeText={value =>
                       this.setState({
-                        isDeliveryMode: false,
-                      });
-                    } else {
-                      const dom = this.state.odeliveryprices;
-                      const mixtotal = this.state.totalAmt - dom;
-                      this.setState({
-                        isDeliveryMode: false,
-                        totalAmt: mixtotal,
-                      });
+                        fullAddressInput: value,
+                      })
                     }
-                  }
-                }}>
-                <View
-                  style={{
-                    flex: 0.5,
-                    flexDirection: 'row',
-                    backgroundColor: !this.state.isDeliveryMode
-                      ? '#5EBBD7'
-                      : 'white',
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  {/* <Image source={require('./../res/images/cash.png')}
-                                        style={{ width: 24, height: 24, marginEnd: 16, }}
-                                     /> */}
-                  <Title
-                    styleName="bold"
+                    value={this.state.fullAddressInput}
+                  />
+
+                  <Subtitle
                     style={{
-                      color: !this.state.isDeliveryMode ? 'white' : '#777777',
+                      color: '#292929',
                       fontFamily: 'Rubik',
                       fontSize: 16,
-                      fontWeight: '700',
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                      marginStart: sizeWidth(4),
+                      fontWeight: '400',
                     }}>
-                    {`${i18n.t(k._11)}`}
-                  </Title>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
+                    {`${i18n.t(k._14)}`}
+                  </Subtitle>
+                  <TextInput
+                    mode="flat"
+                    placeholder={`${i18n.t(k._15)}`}
+                    underlineColor="transparent"
+                    underlineColorAndroid="transparent"
+                    style={styles.inputStyle}
+                    placeholderTextColor={i18n.t(k.DEDEDE)}
+                    onChangeText={value => this.filtercities(value)}
+                    value={this.state.fullcitiesInput}
+                  />
 
-            {this.state.isDeliveryMode ? (
+                  {this.state.deliveryCitiesList.length > 0 ? (
+                    <FlatList
+                      extraData={this.state}
+                      data={this.state.deliveryCitiesList}
+                      keyExtractor={(item, index) => index.toString()}
+                      style={{
+                        marginHorizontal: sizeWidth(3),
+                      }}
+                      keyboardShouldPersistTaps={'handled'}
+                      showsHorizontalScrollIndicator={false}
+                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled={true}
+                      renderItem={({item: item, index}) =>
+                        this.renderRowSuggestion(item, index)
+                      }
+                    />
+                  ) : null}
+
+                  <View
+                    style={{
+                      marginStart: sizeWidth(1.5),
+                      flexDirection: 'row',
+                      marginTop: 8,
+                      alignItems: 'flex-end',
+                      alignSelf: 'flex-start',
+                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                      }}>
+                      <Checkbox.Android
+                        status={
+                          this.state.savedAdd
+                            ? i18n.t(k.CHECKED)
+                            : i18n.t(k.UNCHECKED)
+                        }
+                        onPress={() => {
+                          const vl = this.state.address;
+                          //////console.log('v', vl)
+                          this.setState({
+                            fullAddressInput: vl,
+                            savedAdd: !this.state.savedAdd,
+                          });
+                        }}
+                        color={'#3DACCF'}
+                        uncheckedColor={i18n.t(k.DEDEDE1)}
+                      />
+
+                      <Subtitle
+                        style={{
+                          color: '#777777',
+                          fontSize: 14,
+                          alignSelf: 'center',
+                        }}>
+                        {i18n.t(k._16)}
+                      </Subtitle>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginStart: 8,
+                      }}>
+                      <Checkbox.Android
+                        status={
+                          !this.state.gpsChecked
+                            ? i18n.t(k.UNCHECKED)
+                            : i18n.t(k.CHECKED)
+                        }
+                        onPress={this.locationOpen}
+                        color={'#3DACCF'}
+                        uncheckedColor={i18n.t(k.DEDEDE1)}
+                      />
+
+                      <Subtitle
+                        style={{
+                          color: '#777777',
+                          fontSize: 14,
+                          alignSelf: 'center',
+                        }}>
+                        {i18n.t(k.GPS)}
+                      </Subtitle>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
               <View
                 style={{
-                  flexDirection: 'column',
-                  marginTop: 12,
-                }}>
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontFamily: 'Rubik',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                    marginStart: sizeWidth(4),
-                    fontWeight: '400',
-                  }}>
-                  {i18n.t(k._12)}
-                </Subtitle>
-                <TextInput
-                  mode="flat"
-                  placeholder={i18n.t(k._13)}
-                  underlineColor="transparent"
-                  underlineColorAndroid="transparent"
-                  style={styles.inputStyle}
-                  placeholderTextColor={i18n.t(k.DEDEDE)}
-                  onChangeText={value =>
-                    this.setState({
-                      fullAddressInput: value,
-                    })
-                  }
-                  value={this.state.fullAddressInput}
-                />
+                  backgroundColor: '#d9d9d9',
+                  height: 1,
+                  marginHorizontal: sizeWidth(2),
+                  marginVertical: sizeHeight(2),
+                }}
+              />
 
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontFamily: 'Rubik',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                    marginStart: sizeWidth(4),
-                    fontWeight: '400',
-                  }}>
-                  {`${i18n.t(k._14)}`}
-                </Subtitle>
-                <TextInput
-                  mode="flat"
-                  placeholder={`${i18n.t(k._15)}`}
-                  underlineColor="transparent"
-                  underlineColorAndroid="transparent"
-                  style={styles.inputStyle}
-                  placeholderTextColor={i18n.t(k.DEDEDE)}
-                  onChangeText={value => this.filtercities(value)}
-                  value={this.state.fullcitiesInput}
-                />
-
-                {this.state.deliveryCitiesList.length > 0 ? (
-                  <FlatList
-                    extraData={this.state}
-                    data={this.state.deliveryCitiesList}
-                    keyExtractor={(item, index) => index.toString()}
-                    style={{
-                      marginHorizontal: sizeWidth(3),
-                    }}
-                    keyboardShouldPersistTaps={'handled'}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={true}
-                    nestedScrollEnabled={true}
-                    renderItem={({item: item, index}) =>
-                      this.renderRowSuggestion(item, index)
-                    }
-                  />
-                ) : null}
-
-                <View
-                  style={{
-                    marginStart: sizeWidth(1.5),
-                    flexDirection: 'row',
-                    marginTop: 8,
-                    alignItems: 'flex-end',
-                    alignSelf: 'flex-start',
-                  }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                    }}>
-                    <Checkbox.Android
-                      status={
-                        this.state.savedAdd
-                          ? i18n.t(k.CHECKED)
-                          : i18n.t(k.UNCHECKED)
-                      }
-                      onPress={() => {
-                        const vl = this.state.address;
-                        //////console.log('v', vl)
-                        this.setState({
-                          fullAddressInput: vl,
-                          savedAdd: !this.state.savedAdd,
-                        });
-                      }}
-                      color={'#3DACCF'}
-                      uncheckedColor={i18n.t(k.DEDEDE1)}
-                    />
-
+              {this.state.isDeliveryMode ? (
+                this.state.isrealDelivery ? (
+                  //freeDeliveryAmount
+                  Number(this.state.deliveryprices) > 0 ? (
                     <Subtitle
                       style={{
-                        color: '#777777',
-                        fontSize: 14,
+                        color: '#474747',
+                        fontSize: 15,
                         alignSelf: 'center',
-                      }}>
-                      {i18n.t(k._16)}
-                    </Subtitle>
-                  </View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      marginStart: 8,
-                    }}>
-                    <Checkbox.Android
-                      status={
-                        !this.state.gpsChecked
-                          ? i18n.t(k.UNCHECKED)
-                          : i18n.t(k.CHECKED)
-                      }
-                      onPress={this.locationOpen}
-                      color={'#3DACCF'}
-                      uncheckedColor={i18n.t(k.DEDEDE1)}
-                    />
-
+                        fontWeight: '700',
+                      }}>{`${i18n.t(k._17)} ${
+                      this.state.deliveryprices
+                    } ${i18n.t(k._18)}`}</Subtitle>
+                  ) : (
                     <Subtitle
                       style={{
-                        color: '#777777',
-                        fontSize: 14,
+                        color: '#474747',
+                        fontSize: 15,
                         alignSelf: 'center',
-                      }}>
-                      {i18n.t(k.GPS)}
-                    </Subtitle>
-                  </View>
-                </View>
-              </View>
-            ) : null}
-            <View
-              style={{
-                backgroundColor: '#d9d9d9',
-                height: 1,
-                marginHorizontal: sizeWidth(2),
-                marginVertical: sizeHeight(2),
-              }}
-            />
+                        fontWeight: '700',
+                      }}>{`${i18n.t(k._17)} ${i18n.t(
+                      k.freeDeliveryText,
+                    )}`}</Subtitle>
+                  )
+                ) : null
+              ) : null}
 
-            {this.state.isDeliveryMode ? (
-              this.state.isrealDelivery ? (
-                //freeDeliveryAmount
-                Number(this.state.deliveryprices) > 0 ? (
-                  <Subtitle
-                    style={{
-                      color: '#474747',
-                      fontSize: 15,
-                      alignSelf: 'center',
-                      fontWeight: '700',
-                    }}>{`${i18n.t(k._17)} ${this.state.deliveryprices} ${i18n.t(
-                    k._18,
-                  )}`}</Subtitle>
-                ) : (
-                  <Subtitle
-                    style={{
-                      color: '#474747',
-                      fontSize: 15,
-                      alignSelf: 'center',
-                      fontWeight: '700',
-                    }}>{`${i18n.t(k._17)} ${i18n.t(
-                    k.freeDeliveryText,
-                  )}`}</Subtitle>
-                )
-              ) : null
-            ) : null}
-
-            <Title
-              style={{
-                color: '#474747',
-                fontSize: 18,
-                alignSelf: 'center',
-                fontWeight: '700',
-              }}>{`${i18n.t(k._19)} ${this.state.totalAmt} ${i18n.t(
-              k._18,
-            )}`}</Title>
-            <View
-              style={{
-                marginStart: sizeWidth(4),
-                flexDirection: 'row',
-              }}>
-              <Subtitle
+              <Title
                 style={{
-                  color: '#292929',
-                  fontSize: 15,
+                  color: '#474747',
+                  fontSize: 18,
                   alignSelf: 'center',
                   fontWeight: '700',
-                }}>
-                {i18n.t(k._20)}
-              </Subtitle>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                borderRadius: 1,
-                borderColor: '#dedede',
-                borderStyle: 'solid',
-                borderWidth: 1,
-                marginTop: sizeHeight(1.5),
-                marginHorizontal: sizeWidth(4),
-                height: sizeHeight(7),
-              }}>
-              <TouchableWithoutFeedback
-                onPress={() => {
-                  if (terminalNumbers !== '') {
-                    this.setState({
-                      selectedMode: true,
-                    });
-                  }
-                }}>
-                <View
-                  style={{
-                    flex: 0.5,
-                    backgroundColor: this.state.selectedMode
-                      ? '#5EBBD7'
-                      : 'white',
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                  }}>
-                  <Image
-                    source={require('./../res/images/card.png')}
-                    style={{
-                      width: 24,
-                      height: 24,
-                      marginEnd: 16,
-                      tintColor: '#777777',
-                    }}
-                  />
-
-                  <Title
-                    styleName="bold"
-                    style={{
-                      color: this.state.selectedMode ? 'white' : '#777777',
-                      fontFamily: 'Rubik',
-                      fontSize: 16,
-                      fontWeight: '700',
-                      alignContent: 'center',
-                      justifyContent: 'center',
-                      alignSelf: 'center',
-                    }}>
-                    {terminalNumbers !== ''
-                      ? `${i18n.t(k._21)}`
-                      : `${i18n.t(k.visaunavailable)}`}
-                  </Title>
-                </View>
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback
-                onPress={() =>
-                  this.setState({
-                    selectedMode: false,
-                  })
-                }>
-                <View
-                  style={{
-                    flex: 0.5,
-                    flexDirection: 'row',
-                    backgroundColor: !this.state.selectedMode
-                      ? '#5EBBD7'
-                      : 'white',
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <Image
-                    source={require('./../res/images/cash.png')}
-                    style={{
-                      width: 24,
-                      height: 24,
-                      marginEnd: 16,
-                    }}
-                  />
-
-                  <Title
-                    styleName="bold"
-                    style={{
-                      color: !this.state.selectedMode ? 'white' : '#777777',
-                      fontFamily: 'Rubik',
-                      fontSize: 16,
-                      fontWeight: '700',
-                    }}>
-                    {`${i18n.t(k._22)}`}
-                  </Title>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-            {this.state.selectedMode ? (
+                }}>{`${i18n.t(k._19)} ${this.state.totalAmt} ${i18n.t(
+                k._18,
+              )}`}</Title>
               <View
                 style={{
-                  flexDirection: 'column',
-                  marginHorizontal: sizeWidth(4),
-                  marginVertical: sizeHeight(2),
-                  borderRadius: 4,
+                  marginStart: sizeWidth(4),
+                  flexDirection: 'row',
+                }}>
+                <Subtitle
+                  style={{
+                    color: '#292929',
+                    fontSize: 15,
+                    alignSelf: 'center',
+                    fontWeight: '700',
+                  }}>
+                  {i18n.t(k._20)}
+                </Subtitle>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  borderRadius: 1,
                   borderColor: '#dedede',
                   borderStyle: 'solid',
                   borderWidth: 1,
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flex: 1,
-                  }}>
-                  <DummyLoader
-                    visibilty={this.state.progressView}
-                    style={{
-                      width: '100%',
-                      flexBasis: 1,
-                    }}
-                    center={
-                      this.state.cardList.length > 0 ? (
-                        <FlatList
-                          extraData={this.state}
-                          nestedScrollEnabled={true}
-                          style={{
-                            marginVertical: 8,
-                          }}
-                          showsHorizontalScrollIndicator={false}
-                          showsVerticalScrollIndicator={true}
-                          data={this.state.cardList}
-                          keyExtractor={(item, index) => `${index}`}
-                          renderItem={({item, index}) =>
-                            this.renderRowCardsList(item, index)
-                          }
-                        />
-                      ) : (
-                        <Subtitle
-                          styleName="md-gutter"
-                          style={{
-                            color: '#292929',
-                            fontSize: 15,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                            paddingVertical: 8,
-                            marginVertical: sizeHeight(0.5),
-                          }}>
-                          {`${i18n.t(k.nosavedcardfound)}`}
-                        </Subtitle>
-                      )
-                    }
-                  />
-                </View>
-                <View
-                  style={{
-                    backgroundColor: '#d9d9d9',
-                    height: 1,
-                    marginHorizontal: sizeWidth(2),
-                    marginVertical: sizeHeight(2),
-                  }}
-                />
-
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignContent: 'center',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginBottom: 12,
-                  }}>
-                  <TouchableWithoutFeedback
-                    onPress={() =>
-                      this.setState({
-                        showcardAdd: true,
-                      })
-                    }>
-                    <View
-                      style={{
-                        borderRadius: 1,
-                        borderColor: i18n.t(k.DACCF),
-                        borderStyle: 'solid',
-                        borderWidth: 1,
-                        backgroundColor: i18n.t(k.DACCF),
-                        width: '40%',
-                        alignContent: 'center',
-                        borderRadius: 4,
-                        marginHorizontal: sizeWidth(2),
-                        paddingVertical: sizeHeight(0.5),
-                        paddingHorizontal: sizeWidth(1),
-                        justifyContent: 'center',
-                        paddingVertical: 8,
-                      }}>
-                      <Subtitle
-                        style={{
-                          color: 'white',
-                          fontFamily: 'Rubik',
-                          alignSelf: 'center',
-                          fontSize: 14,
-                          fontWeight: '400',
-                        }}>
-                        {`${i18n.t(k.creditcardAdd)}`}
-                      </Subtitle>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </View>
-              </View>
-            ) : null}
-          </View>
-        </ScrollView>
-        {this.state.smp === false ? (
-          this.state.showorderButton === true ? (
-            <Button
-              style={styles.loginButtonStyle}
-              mode="contained"
-              dark={true}
-              uppercase={true}
-              color={'white'}
-              onPress={this.pressPayment}
-              loading={false}>
-              <Subtitle
-                styleName="v-center h-center"
-                style={{
-                  color: 'white',
-                }}>
-                {i18n.t(k._23)}
-              </Subtitle>
-            </Button>
-          ) : null
-        ) : null}
-
-        <Portal>
-          <Modal
-            dismissable={true}
-            onDismiss={() =>
-              this.setState({
-                showcardAdd: false,
-              })
-            }
-            visible={this.state.showcardAdd}
-            contentContainerStyle={{
-              height: i18n.t(k._5),
-            }}>
-            <View
-              style={{
-                flex: 1,
-              }}>
-              {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-              <View style={{flex: 0.15}} />
-              <View
-                style={{
-                  flex: 0.7,
-                  marginTop: sizeHeight(4),
-                  marginBottom: sizeHeight(8),
+                  marginTop: sizeHeight(1.5),
                   marginHorizontal: sizeWidth(4),
-                  backgroundColor: 'white',
-                  flexDirection: 'column',
-                  position: 'relative',
+                  height: sizeHeight(7),
                 }}>
-                <View
-                  style={{
-                    flex: 0.15,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    backgroundColor: 'white',
-                    marginTop: 6,
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    if (terminalNumbers !== '') {
+                      this.setState({
+                        selectedMode: true,
+                      });
+                    }
                   }}>
                   <View
-                    styleName="horizontal"
                     style={{
-                      marginStart: sizeWidth(3),
+                      flex: 0.5,
+                      backgroundColor: this.state.selectedMode
+                        ? '#5EBBD7'
+                        : 'white',
+                      alignContent: 'center',
+                      justifyContent: 'center',
                       alignItems: 'center',
+                      flexDirection: 'row',
                     }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        this.setState({
-                          showcardAdd: false,
-                        })
-                      }>
-                      <Icon
-                        name="arrow-forward"
-                        size={36}
-                        color="#292929"
-                        style={{
-                          alignSelf: 'flex-start',
-                          backgroundColor: 'transparent',
-                        }}
-                      />
-                    </TouchableOpacity>
-                    <Subtitle
+                    <Image
+                      source={require('./../res/images/card.png')}
                       style={{
-                        color: 'black',
+                        width: 24,
+                        height: 24,
+                        marginEnd: 16,
+                        tintColor: '#777777',
+                      }}
+                    />
+
+                    <Title
+                      styleName="bold"
+                      style={{
+                        color: this.state.selectedMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
-                        alignSelf: 'center',
                         fontWeight: '700',
+                        alignContent: 'center',
                         justifyContent: 'center',
-                        marginStart: 16,
+                        alignSelf: 'center',
                       }}>
-                      {`${i18n.t(k.cardaddtext)}`}
-                    </Subtitle>
+                      {terminalNumbers !== ''
+                        ? `${i18n.t(k._21)}`
+                        : `${i18n.t(k.visaunavailable)}`}
+                    </Title>
+                  </View>
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback
+                  onPress={() =>
+                    this.setState({
+                      selectedMode: false,
+                    })
+                  }>
+                  <View
+                    style={{
+                      flex: 0.5,
+                      flexDirection: 'row',
+                      backgroundColor: !this.state.selectedMode
+                        ? '#5EBBD7'
+                        : 'white',
+                      alignContent: 'center',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Image
+                      source={require('./../res/images/cash.png')}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        marginEnd: 16,
+                      }}
+                    />
+
+                    <Title
+                      styleName="bold"
+                      style={{
+                        color: !this.state.selectedMode ? 'white' : '#777777',
+                        fontFamily: 'Rubik',
+                        fontSize: 16,
+                        fontWeight: '700',
+                      }}>
+                      {`${i18n.t(k._22)}`}
+                    </Title>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+              {this.state.selectedMode ? (
+                <View
+                  style={{
+                    flexDirection: 'column',
+                    marginHorizontal: sizeWidth(4),
+                    marginVertical: sizeHeight(2),
+                    borderRadius: 4,
+                    borderColor: '#dedede',
+                    borderStyle: 'solid',
+                    borderWidth: 1,
+                  }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flex: 1,
+                    }}>
+                    <DummyLoader
+                      visibilty={this.state.progressView}
+                      style={{
+                        width: '100%',
+                        flexBasis: 1,
+                      }}
+                      center={
+                        this.state.cardList.length > 0 ? (
+                          <FlatList
+                            extraData={this.state}
+                            nestedScrollEnabled={true}
+                            style={{
+                              marginVertical: 8,
+                            }}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={true}
+                            data={this.state.cardList}
+                            keyExtractor={(item, index) => `${index}`}
+                            renderItem={({item, index}) =>
+                              this.renderRowCardsList(item, index)
+                            }
+                          />
+                        ) : (
+                          <Subtitle
+                            styleName="md-gutter"
+                            style={{
+                              color: '#292929',
+                              fontSize: 15,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                              paddingVertical: 8,
+                              marginVertical: sizeHeight(0.5),
+                            }}>
+                            {`${i18n.t(k.nosavedcardfound)}`}
+                          </Subtitle>
+                        )
+                      }
+                    />
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: '#d9d9d9',
+                      height: 1,
+                      marginHorizontal: sizeWidth(2),
+                      marginVertical: sizeHeight(2),
+                    }}
+                  />
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignContent: 'center',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginBottom: 12,
+                    }}>
+                    <TouchableWithoutFeedback
+                      onPress={() =>
+                        this.setState({
+                          showcardAdd: true,
+                        })
+                      }>
+                      <View
+                        style={{
+                          borderRadius: 1,
+                          borderColor: i18n.t(k.DACCF),
+                          borderStyle: 'solid',
+                          borderWidth: 1,
+                          backgroundColor: i18n.t(k.DACCF),
+                          width: '40%',
+                          alignContent: 'center',
+                          borderRadius: 4,
+                          marginHorizontal: sizeWidth(2),
+                          paddingVertical: sizeHeight(0.5),
+                          paddingHorizontal: sizeWidth(1),
+                          justifyContent: 'center',
+                          paddingVertical: 8,
+                        }}>
+                        <Subtitle
+                          style={{
+                            color: 'white',
+                            fontFamily: 'Rubik',
+                            alignSelf: 'center',
+                            fontSize: 14,
+                            fontWeight: '400',
+                          }}>
+                          {`${i18n.t(k.creditcardAdd)}`}
+                        </Subtitle>
+                      </View>
+                    </TouchableWithoutFeedback>
                   </View>
                 </View>
+              ) : null}
+            </View>
+          </ScrollView>
+          {this.state.smp === false ? (
+            this.state.showorderButton === true ? (
+              <Button
+                style={styles.loginButtonStyle}
+                mode="contained"
+                dark={true}
+                uppercase={true}
+                color={'white'}
+                onPress={this.pressPayment}
+                loading={false}>
+                <Subtitle
+                  styleName="v-center h-center"
+                  style={{
+                    color: 'white',
+                  }}>
+                  {i18n.t(k._23)}
+                </Subtitle>
+              </Button>
+            ) : null
+          ) : null}
 
+          <Portal>
+            <Modal
+              dismissable={true}
+              onDismiss={() =>
+                this.setState({
+                  showcardAdd: false,
+                })
+              }
+              visible={this.state.showcardAdd}
+              contentContainerStyle={{
+                height: i18n.t(k._5),
+              }}>
+              <View
+                style={{
+                  flex: 1,
+                }}>
+                {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
+                <View style={{flex: 0.15}} />
                 <View
                   style={{
                     flex: 0.7,
+                    marginTop: sizeHeight(4),
+                    marginBottom: sizeHeight(8),
+                    marginHorizontal: sizeWidth(4),
                     backgroundColor: 'white',
                     flexDirection: 'column',
-                    alignContent: 'center',
+                    position: 'relative',
                   }}>
-                  <ScrollView
-                    keyboardShouldPersistTaps={'handled'}
-                    style={{flex: 0.7}}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}>
-                    <View>
-                      <View style={{flex: 0.05}} />
-                      <View
-                        style={{
-                          borderColor: 'black',
-                          borderWidth: 0.5,
-                          marginHorizontal: sizeWidth(4),
-                          borderRadius: 4,
-                          paddingHorizontal: 16,
-                          justifyContent: 'center',
-                          flex: 0.6,
-                          paddingVertical: 4,
-                        }}>
-                        <Subtitle
+                  <View
+                    style={{
+                      flex: 0.15,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      backgroundColor: 'white',
+                      marginTop: 6,
+                    }}>
+                    <View
+                      styleName="horizontal"
+                      style={{
+                        marginStart: sizeWidth(3),
+                        alignItems: 'center',
+                      }}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          this.setState({
+                            showcardAdd: false,
+                          })
+                        }>
+                        <Icon
+                          name="arrow-forward"
+                          size={36}
+                          color="#292929"
                           style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            fontSize: 15,
                             alignSelf: 'flex-start',
-                            marginTop: sizeHeight(1),
-                            fontWeight: '400',
-                          }}>
-                          {`${i18n.t(k.cardnumber)}:`}
-                        </Subtitle>
+                            backgroundColor: 'transparent',
+                          }}
+                        />
+                      </TouchableOpacity>
+                      <Subtitle
+                        style={{
+                          color: 'black',
+                          fontFamily: 'Rubik',
+                          fontSize: 16,
+                          alignSelf: 'center',
+                          fontWeight: '700',
+                          justifyContent: 'center',
+                          marginStart: 16,
+                        }}>
+                        {`${i18n.t(k.cardaddtext)}`}
+                      </Subtitle>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      flex: 0.7,
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      alignContent: 'center',
+                    }}>
+                    <ScrollView
+                      keyboardShouldPersistTaps={'handled'}
+                      style={{flex: 0.7}}
+                      showsVerticalScrollIndicator={false}
+                      showsHorizontalScrollIndicator={false}>
+                      <View>
+                        <View style={{flex: 0.05}} />
                         <View
                           style={{
-                            flexDirection: 'row-reverse',
-                            //height: 24,
-                            width: '100%',
-                            borderRadius: 2,
-                            borderColor: i18n.t(k.DEDEDE1),
-                            borderStyle: i18n.t(k.SOLID),
-                            borderWidth: 1,
-                            backgroundColor: i18n.t(k.FFFFFF),
-                            //paddingEnd: 8,
-                            //flex:1,
+                            borderColor: 'black',
+                            borderWidth: 0.5,
+                            marginHorizontal: sizeWidth(4),
+                            borderRadius: 4,
+                            paddingHorizontal: 16,
+                            justifyContent: 'center',
+                            flex: 0.6,
+                            paddingVertical: 4,
                           }}>
-                          <TextInputMask
-                            ref={this.cardnumberRef}
-                            onChangeText={(formatted, extracted) => {
-                              let formyear = formatted.split(' ');
-                              const cardnumber = formyear.join('');
-                              this.setState({
-                                cardnumber: cardnumber,
-                                creditCardImage: this.returnCardImage(
-                                  cardnumber,
-                                ),
-                              });
-                            }}
-                            mask={'[0000] [0000] [0000] [0000]'}
+                          <Subtitle
                             style={{
-                              height: 36,
-                              width: '100%',
-                              flex: 0.95,
-                              //borderRadius: 2,
-                              //borderColor: i18n.t(k.DEDEDE1),
-                              //borderStyle: i18n.t(k.SOLID),
-                              //borderWidth: 1,
-                              backgroundColor: i18n.t(k.FFFFFF),
-                              color: `black`,
-                              fontFamily: i18n.t(k.RUBIK),
+                              color: '#292929',
+                              fontFamily: 'Rubik',
                               fontSize: 15,
-                              fontWeight: i18n.t(k._31),
-                              letterSpacing: 4.5,
-                              paddingEnd: 12,
-                            }}
-                            placeholder={`xxxx-xxxx-xxxx-xxxx`}
-                            underlineColor="transparent"
-                            underlineColorAndroid="transparent"
-                            keyboardType={'numeric'}
-                            value={this.state.cardnumber}
-                            onSubmitEditing={e => {
-                              if (this.cardcvvRef !== undefined) {
-                                this.cardcvvRef.current.input.focus();
-                              }
-                            }}
-                          />
-
-                          <Image
-                            source={{uri: `${this.state.creditCardImage}`}}
+                              alignSelf: 'flex-start',
+                              marginTop: sizeHeight(1),
+                              fontWeight: '400',
+                            }}>
+                            {`${i18n.t(k.cardnumber)}:`}
+                          </Subtitle>
+                          <View
                             style={{
-                              marginEnd: 4,
-                              marginStart: 4,
+                              flexDirection: 'row-reverse',
+                              //height: 24,
+                              width: '100%',
+                              borderRadius: 2,
+                              borderColor: i18n.t(k.DEDEDE1),
+                              borderStyle: i18n.t(k.SOLID),
+                              borderWidth: 1,
+                              backgroundColor: i18n.t(k.FFFFFF),
+                              //paddingEnd: 8,
+                              //flex:1,
+                            }}>
+                            <TextInputMask
+                              ref={this.cardnumberRef}
+                              onChangeText={(formatted, extracted) => {
+                                let formyear = formatted.split(' ');
+                                const cardnumber = formyear.join('');
+                                this.setState({
+                                  cardnumber: cardnumber,
+                                  creditCardImage: this.returnCardImage(
+                                    cardnumber,
+                                  ),
+                                });
+                              }}
+                              mask={'[0000] [0000] [0000] [0000]'}
+                              style={{
+                                height: 36,
+                                width: '100%',
+                                flex: 0.95,
+                                //borderRadius: 2,
+                                //borderColor: i18n.t(k.DEDEDE1),
+                                //borderStyle: i18n.t(k.SOLID),
+                                //borderWidth: 1,
+                                backgroundColor: i18n.t(k.FFFFFF),
+                                color: `black`,
+                                fontFamily: i18n.t(k.RUBIK),
+                                fontSize: 15,
+                                fontWeight: i18n.t(k._31),
+                                letterSpacing: 4.5,
+                                paddingEnd: 12,
+                              }}
+                              placeholder={`xxxx-xxxx-xxxx-xxxx`}
+                              underlineColor="transparent"
+                              underlineColorAndroid="transparent"
+                              keyboardType={'numeric'}
+                              value={this.state.cardnumber}
+                              onSubmitEditing={e => {
+                                if (this.cardcvvRef !== undefined) {
+                                  this.cardcvvRef.current.input.focus();
+                                }
+                              }}
+                            />
+
+                            <Image
+                              source={{uri: `${this.state.creditCardImage}`}}
+                              style={{
+                                marginEnd: 4,
+                                marginStart: 4,
+                                width: 24,
+                                height: 24,
+                                //tintColor: '#777777',
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                              }}
+                            />
+                          </View>
+                          <View
+                            style={{
+                              marginTop: sizeHeight(2.5),
+                              flexDirection: 'row-reverse',
+                              width: '100%',
+                              flex: 1,
+                              //backgroundColor:'yellow'
+                            }}>
+                            <View
+                              style={{
+                                flex: 0.5,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                              }}>
+                              <Subtitle
+                                style={{
+                                  color: '#292929',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 15,
+                                  alignSelf: 'center',
+                                  fontWeight: '400',
+                                  marginEnd: 8,
+                                  justifyContent: 'center',
+                                }}>
+                                {`${i18n.t(k.cardcvv)}:`}
+                              </Subtitle>
+                              <TextInputMask
+                                onKeyPress={keyPress => console.log(keyPress)}
+                                ref={this.cardcvvRef}
+                                onChangeText={(formatted, extracted) => {
+                                  this.setState({
+                                    cardcvv: formatted,
+                                  });
+                                }}
+                                mask={'[000]'}
+                                style={{
+                                  width: '46%',
+                                  height: 32,
+                                  borderRadius: 2,
+                                  borderColor: i18n.t(k.DEDEDE1),
+                                  borderStyle: i18n.t(k.SOLID),
+                                  borderWidth: 1,
+                                  backgroundColor: i18n.t(k.FFFFFF),
+                                  color: `black`,
+                                  fontFamily: i18n.t(k.RUBIK),
+                                  fontSize: 15,
+                                  fontWeight: i18n.t(k._31),
+                                  letterSpacing: 4.5,
+                                  paddingEnd: 8,
+                                  //backgroundColor:'red'
+                                }}
+                                placeholder={`xxx`}
+                                underlineColor="transparent"
+                                underlineColorAndroid="transparent"
+                                keyboardType={'numeric'}
+                                value={this.state.cardcvv}
+                                onSubmitEditing={e => {
+                                  if (this.cardyearRef !== undefined) {
+                                    this.cardyearRef.current.input.focus();
+                                  }
+                                }}
+                              />
+                            </View>
+                            <View
+                              style={{
+                                flex: 0.5,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                              }}>
+                              <Subtitle
+                                style={{
+                                  color: '#292929',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 15,
+                                  alignSelf: 'center',
+                                  fontWeight: '400',
+                                  marginEnd: 8,
+                                }}>
+                                {`${i18n.t(k.carddate)}:`}
+                              </Subtitle>
+                              <TextInputMask
+                                ref={this.cardyearRef}
+                                onChangeText={(formatted, extracted) => {
+                                  let formyear = formatted.replace('/', '');
+                                  this.setState({
+                                    cardyear: formyear,
+                                  });
+                                }}
+                                mask={'[00]{/}[00]'}
+                                style={{
+                                  width: 82,
+                                  height: 32,
+                                  borderRadius: 2,
+                                  borderColor: i18n.t(k.DEDEDE1),
+                                  borderStyle: i18n.t(k.SOLID),
+                                  borderWidth: 1,
+                                  backgroundColor: i18n.t(k.FFFFFF),
+                                  color: `black`,
+                                  fontFamily: i18n.t(k.RUBIK),
+                                  fontSize: 15,
+                                  fontWeight: i18n.t(k._31),
+                                  letterSpacing: 4.5,
+                                  paddingEnd: 8,
+                                  paddingStart: 8,
+                                  //backgroundColor:'blue'
+                                }}
+                                placeholder={`00/00`}
+                                underlineColor="transparent"
+                                underlineColorAndroid="transparent"
+                                keyboardType={'numeric'}
+                                value={this.state.cardyear}
+                              />
+                            </View>
+                          </View>
+
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignSelf: 'flex-start',
+                              marginTop: sizeHeight(2),
+                            }}>
+                            <Checkbox.Android
+                              status={
+                                this.state.cardSave
+                                  ? i18n.t(k.CHECKED)
+                                  : i18n.t(k.UNCHECKED)
+                              }
+                              onPress={() =>
+                                this.setState({
+                                  cardSave: !this.state.cardSave,
+                                })
+                              }
+                              color={'#3DACCF'}
+                              uncheckedColor={i18n.t(k.DEDEDE1)}
+                            />
+                            <Subtitle
+                              style={{
+                                color: '#292929',
+                                fontSize: 15,
+                                alignSelf: 'center',
+                              }}>
+                              {i18n.t(k.savecardcheckbox)}
+                            </Subtitle>
+                          </View>
+                        </View>
+                        <View
+                          style={{
+                            flex: 0.25,
+                            alignItems: 'center',
+                            alignContent: 'center',
+                          }}>
+                          <Subtitle
+                            style={{
+                              color: '#646464',
+                              fontSize: 12,
+                              alignSelf: 'center',
+                              marginTop: sizeHeight(1.5),
+                              justifyContent: 'center',
+                            }}>
+                            {`${i18n.t(k.cardsecurity)}`}
+                          </Subtitle>
+                          <Image
+                            source={require('./../res/images/card.png')}
+                            style={{
                               width: 24,
                               height: 24,
-                              //tintColor: '#777777',
+                              marginTop: 8,
+                              tintColor: '#777777',
                               alignSelf: 'center',
                               justifyContent: 'center',
                             }}
                           />
                         </View>
-                        <View
-                          style={{
-                            marginTop: sizeHeight(2.5),
-                            flexDirection: 'row-reverse',
-                            width: '100%',
-                            flex: 1,
-                            //backgroundColor:'yellow'
-                          }}>
-                          <View
-                            style={{
-                              flex: 0.5,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              alignContent: 'center',
-                            }}>
-                            <Subtitle
-                              style={{
-                                color: '#292929',
-                                fontFamily: 'Rubik',
-                                fontSize: 15,
-                                alignSelf: 'center',
-                                fontWeight: '400',
-                                marginEnd: 8,
-                                justifyContent: 'center',
-                              }}>
-                              {`${i18n.t(k.cardcvv)}:`}
-                            </Subtitle>
-                            <TextInputMask
-                              onKeyPress={keyPress => console.log(keyPress)}
-                              ref={this.cardcvvRef}
-                              onChangeText={(formatted, extracted) => {
-                                this.setState({
-                                  cardcvv: formatted,
-                                });
-                              }}
-                              mask={'[000]'}
-                              style={{
-                                width: '46%',
-                                height: 32,
-                                borderRadius: 2,
-                                borderColor: i18n.t(k.DEDEDE1),
-                                borderStyle: i18n.t(k.SOLID),
-                                borderWidth: 1,
-                                backgroundColor: i18n.t(k.FFFFFF),
-                                color: `black`,
-                                fontFamily: i18n.t(k.RUBIK),
-                                fontSize: 15,
-                                fontWeight: i18n.t(k._31),
-                                letterSpacing: 4.5,
-                                paddingEnd: 8,
-                                //backgroundColor:'red'
-                              }}
-                              placeholder={`xxx`}
-                              underlineColor="transparent"
-                              underlineColorAndroid="transparent"
-                              keyboardType={'numeric'}
-                              value={this.state.cardcvv}
-                              onSubmitEditing={e => {
-                                if (this.cardyearRef !== undefined) {
-                                  this.cardyearRef.current.input.focus();
-                                }
-                              }}
-                            />
-                          </View>
-                          <View
-                            style={{
-                              flex: 0.5,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              alignContent: 'center',
-                            }}>
-                            <Subtitle
-                              style={{
-                                color: '#292929',
-                                fontFamily: 'Rubik',
-                                fontSize: 15,
-                                alignSelf: 'center',
-                                fontWeight: '400',
-                                marginEnd: 8,
-                              }}>
-                              {`${i18n.t(k.carddate)}:`}
-                            </Subtitle>
-                            <TextInputMask
-                              ref={this.cardyearRef}
-                              onChangeText={(formatted, extracted) => {
-                                let formyear = formatted.replace('/', '');
-                                this.setState({
-                                  cardyear: formyear,
-                                });
-                              }}
-                              mask={'[00]{/}[00]'}
-                              style={{
-                                width: 82,
-                                height: 32,
-                                borderRadius: 2,
-                                borderColor: i18n.t(k.DEDEDE1),
-                                borderStyle: i18n.t(k.SOLID),
-                                borderWidth: 1,
-                                backgroundColor: i18n.t(k.FFFFFF),
-                                color: `black`,
-                                fontFamily: i18n.t(k.RUBIK),
-                                fontSize: 15,
-                                fontWeight: i18n.t(k._31),
-                                letterSpacing: 4.5,
-                                paddingEnd: 8,
-                                paddingStart: 8,
-                                //backgroundColor:'blue'
-                              }}
-                              placeholder={`00/00`}
-                              underlineColor="transparent"
-                              underlineColorAndroid="transparent"
-                              keyboardType={'numeric'}
-                              value={this.state.cardyear}
-                            />
-                          </View>
-                        </View>
-
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignSelf: 'flex-start',
-                            marginTop: sizeHeight(2),
-                          }}>
-                          <Checkbox.Android
-                            status={
-                              this.state.cardSave
-                                ? i18n.t(k.CHECKED)
-                                : i18n.t(k.UNCHECKED)
-                            }
-                            onPress={() =>
-                              this.setState({
-                                cardSave: !this.state.cardSave,
-                              })
-                            }
-                            color={'#3DACCF'}
-                            uncheckedColor={i18n.t(k.DEDEDE1)}
-                          />
-                          <Subtitle
-                            style={{
-                              color: '#292929',
-                              fontSize: 15,
-                              alignSelf: 'center',
-                            }}>
-                            {i18n.t(k.savecardcheckbox)}
-                          </Subtitle>
-                        </View>
                       </View>
-                      <View
-                        style={{
-                          flex: 0.25,
-                          alignItems: 'center',
-                          alignContent: 'center',
-                        }}>
-                        <Subtitle
-                          style={{
-                            color: '#646464',
-                            fontSize: 12,
-                            alignSelf: 'center',
-                            marginTop: sizeHeight(1.5),
-                            justifyContent: 'center',
-                          }}>
-                          {`${i18n.t(k.cardsecurity)}`}
-                        </Subtitle>
-                        <Image
-                          source={require('./../res/images/card.png')}
-                          style={{
-                            width: 24,
-                            height: 24,
-                            marginTop: 8,
-                            tintColor: '#777777',
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                          }}
-                        />
-                      </View>
-                    </View>
-                  </ScrollView>
-                </View>
-                <View
-                  style={{
-                    flex: 0.15,
-                    backgroundColor: 'white',
-                    flexDirection: 'column',
-                    marginTop: 4,
-                  }}>
+                    </ScrollView>
+                  </View>
                   <View
                     style={{
-                      position: 'absolute',
-                      width: '100%',
-                      bottom: 0,
+                      flex: 0.15,
                       backgroundColor: 'white',
+                      flexDirection: 'column',
+                      marginTop: 4,
                     }}>
-                    <TouchableOpacity
-                      styleName="flexible"
-                      onPress={this.saveCardsData}>
-                      <View
-                        style={styles.buttonStyle}
-                        // mode="contained"
-                        // dark={true}
-                        // onPress={() => this.finalorders(false)}
-                        loading={false}>
-                        <Subtitle
-                          style={{
-                            color: 'white',
-                            fontFamily: 'Rubik',
-                            fontSize: 18,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                          }}>
-                          {`${i18n.t(k.cardconfirmfinal)}`}
-                        </Subtitle>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-              <View style={{flex: 0.15}} />
-            </View>
-          </Modal>
-        </Portal>
-
-        <Portal>
-          <Modal
-            dismissable={true}
-            visible={this.state.showFreeServiceModal}
-            onDismiss={() =>
-              this.setState({
-                showFreeServiceModal: false,
-              })
-            }
-            contentContainerStyle={{
-              height: i18n.t(k._5),
-            }}>
-            <View style={{flex: 1}}>
-              <View style={{flex: 0.05}} />
-              <View
-                style={{
-                  flex: 0.8,
-                  marginTop: sizeHeight(4),
-                  marginBottom: sizeHeight(8),
-                  marginHorizontal: sizeWidth(4),
-                  backgroundColor: 'white',
-                  flexDirection: 'column',
-                  position: 'relative',
-                }}>
-                <View
-                  style={{
-                    flex: 0.15,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    backgroundColor: 'white',
-                    marginTop: 6,
-                  }}>
-                  <View
-                    styleName="horizontal"
-                    style={{
-                      marginStart: sizeWidth(3),
-                      alignItems: 'center',
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        this.setState({
-                          showFreeServiceModal: false,
-                        })
-                      }>
-                      <Icon
-                        name="arrow-forward"
-                        size={36}
-                        color="#292929"
-                        style={{
-                          alignSelf: 'flex-start',
-                          backgroundColor: 'transparent',
-                        }}
-                      />
-                    </TouchableOpacity>
-                    <Subtitle
-                      style={{
-                        color: 'black',
-                        fontFamily: 'Rubik',
-                        fontSize: 16,
-                        alignSelf: 'center',
-                        fontWeight: '700',
-                        justifyContent: 'center',
-                        marginStart: 16,
-                      }}>
-                      {`${i18n.t(k.freeServiceTextHeader1)} ${
-                        this.state.maxQuantity
-                      } ${i18n.t(k.freeServiceTextHeader)}!`}
-                    </Subtitle>
-                  </View>
-                </View>
-                <FlatList
-                  extraData={this.state}
-                  nestedScrollEnabled={true}
-                  style={{flex: 0.7}}
-                  showsHorizontalScrollIndicator={false}
-                  showsVerticalScrollIndicator={true}
-                  data={this.state.freeServiceList}
-                  keyExtractor={(item, index) => `${index}`}
-                  renderItem={({item, index}) =>
-                    this.renderRowFreeServiceList(item, index)
-                  }
-                  ItemSeparatorComponent={() => (
                     <View
                       style={{
-                        height: 1,
-                        backgroundColor: '#dedede',
-                      }}
-                    />
-                  )}
-                />
+                        position: 'absolute',
+                        width: '100%',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        styleName="flexible"
+                        onPress={this.saveCardsData}>
+                        <View
+                          style={styles.buttonStyle}
+                          // mode="contained"
+                          // dark={true}
+                          // onPress={() => this.finalorders(false)}
+                          loading={false}>
+                          <Subtitle
+                            style={{
+                              color: 'white',
+                              fontFamily: 'Rubik',
+                              fontSize: 18,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            {`${i18n.t(k.cardconfirmfinal)}`}
+                          </Subtitle>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+                <View style={{flex: 0.15}} />
+              </View>
+            </Modal>
+          </Portal>
+
+          <Portal>
+            <Modal
+              dismissable={true}
+              visible={this.state.showFreeServiceModal}
+              onDismiss={() =>
+                this.setState({
+                  showFreeServiceModal: false,
+                })
+              }
+              contentContainerStyle={{
+                height: i18n.t(k._5),
+              }}>
+              <View style={{flex: 1}}>
+                <View style={{flex: 0.05}} />
                 <View
                   style={{
-                    flex: 0.15,
+                    flex: 0.8,
+                    marginTop: sizeHeight(4),
+                    marginBottom: sizeHeight(8),
+                    marginHorizontal: sizeWidth(4),
                     backgroundColor: 'white',
                     flexDirection: 'column',
-                    marginTop: 4,
+                    position: 'relative',
                   }}>
                   <View
                     style={{
-                      position: 'absolute',
-                      width: '100%',
-                      bottom: 0,
+                      flex: 0.15,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
                       backgroundColor: 'white',
+                      marginTop: 6,
                     }}>
-                    <TouchableOpacity
-                      styleName="flexible"
-                      onPress={this.saveFreeData}>
-                      <View
-                        style={styles.buttonStyle}
-                        // mode="contained"
-                        // dark={true}
-                        // onPress={() => this.finalorders(false)}
-                        loading={false}>
-                        <Subtitle
+                    <View
+                      styleName="horizontal"
+                      style={{
+                        marginStart: sizeWidth(3),
+                        alignItems: 'center',
+                      }}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          this.setState({
+                            showFreeServiceModal: false,
+                          })
+                        }>
+                        <Icon
+                          name="arrow-forward"
+                          size={36}
+                          color="#292929"
                           style={{
-                            color: 'white',
-                            fontFamily: 'Rubik',
-                            fontSize: 18,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                          }}>
-                          {`${i18n.t(k.freeServiceButton)}`}
-                        </Subtitle>
-                      </View>
-                    </TouchableOpacity>
+                            alignSelf: 'flex-start',
+                            backgroundColor: 'transparent',
+                          }}
+                        />
+                      </TouchableOpacity>
+                      <Subtitle
+                        style={{
+                          color: 'black',
+                          fontFamily: 'Rubik',
+                          fontSize: 16,
+                          alignSelf: 'center',
+                          fontWeight: '700',
+                          justifyContent: 'center',
+                          marginStart: 16,
+                        }}>
+                        {`${i18n.t(k.freeServiceTextHeader1)} ${
+                          this.state.maxQuantity
+                        } ${i18n.t(k.freeServiceTextHeader)}!`}
+                      </Subtitle>
+                    </View>
+                  </View>
+                  <FlatList
+                    extraData={this.state}
+                    nestedScrollEnabled={true}
+                    style={{flex: 0.7}}
+                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={true}
+                    data={this.state.freeServiceList}
+                    keyExtractor={(item, index) => `${index}`}
+                    renderItem={({item, index}) =>
+                      this.renderRowFreeServiceList(item, index)
+                    }
+                    ItemSeparatorComponent={() => (
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: '#dedede',
+                        }}
+                      />
+                    )}
+                  />
+                  <View
+                    style={{
+                      flex: 0.15,
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      marginTop: 4,
+                    }}>
+                    <View
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        styleName="flexible"
+                        onPress={this.saveFreeData}>
+                        <View
+                          style={styles.buttonStyle}
+                          // mode="contained"
+                          // dark={true}
+                          // onPress={() => this.finalorders(false)}
+                          loading={false}>
+                          <Subtitle
+                            style={{
+                              color: 'white',
+                              fontFamily: 'Rubik',
+                              fontSize: 18,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            {`${i18n.t(k.freeServiceButton)}`}
+                          </Subtitle>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
+                <View style={{flex: 0.15}} />
               </View>
-              <View style={{flex: 0.15}} />
-            </View>
-          </Modal>
-        </Portal>
-        {this.state.showAlert ? (
-          <AlertDialog
-            isShow={true}
-            title={this.state.alertTitle}
-            content={this.state.alertContent}
-            flexChanged={this.state.flexChanged}
-            callbacks={() =>
-              this.setState({
-                showAlert: false,
-                flexChanged: false,
-              })
-            }
-          />
-        ) : null}
-        <Loader isShow={this.state.smp} />
-      </Screen>
+            </Modal>
+          </Portal>
+          {this.state.showAlert ? (
+            <AlertDialog
+              isShow={true}
+              title={this.state.alertTitle}
+              content={this.state.alertContent}
+              flexChanged={this.state.flexChanged}
+              callbacks={() =>
+                this.setState({
+                  showAlert: false,
+                  flexChanged: false,
+                })
+              }
+            />
+          ) : null}
+          <Loader isShow={this.state.smp} />
+        </Screen>
+      </SafeAreaView>
     );
   }
 }

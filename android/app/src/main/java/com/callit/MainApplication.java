@@ -9,6 +9,8 @@ import com.facebook.react.PackageList;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.rnpermissions.RNPermissionsPackage;
+import com.wix.reactnativenotifications.RNNotificationsPackage;
 import com.microsoft.codepush.react.CodePush;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.github.douglasjunior.reactNativeGetLocation.ReactNativeGetLocationPackage;

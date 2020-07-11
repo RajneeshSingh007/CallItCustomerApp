@@ -1,6 +1,6 @@
-import i18n from "i18next";
-import k from "./../i18n/keys";
-import React from "react";
+import i18n from 'i18next';
+import k from './../i18n/keys';
+import React from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -9,8 +9,8 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Linking,
-} from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
   List,
   TextInput,
@@ -20,7 +20,7 @@ import {
   Button,
   Portal,
   Modal,
-} from "react-native-paper";
+} from 'react-native-paper';
 import {
   Divider,
   Heading,
@@ -31,15 +31,15 @@ import {
   View,
   Subtitle,
   Title,
-} from "@shoutem/ui";
-import * as Helper from "./../util/Helper";
-import * as Pref from "./../util/Pref";
-import { Loader } from "./Loader";
-import { sizeHeight, sizeWidth, sizeFont } from "./../util/Size";
-import DummyLoader from "./../util/DummyLoader";
-import NavigationActions from "../util/NavigationActions";
-import Lodash from "lodash";
-
+} from '@shoutem/ui';
+import * as Helper from './../util/Helper';
+import * as Pref from './../util/Pref';
+import {Loader} from './Loader';
+import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
+import DummyLoader from './../util/DummyLoader';
+import NavigationActions from '../util/NavigationActions';
+import Lodash from 'lodash';
+import {SafeAreaView} from 'react-navigation';
 
 let itemDelete = null;
 
@@ -58,7 +58,7 @@ export default class ProfilePage extends React.Component {
       fullAddressInput: i18n.t(k._4),
       infoResult: [],
       isEdit: true,
-      tokenout: "",
+      tokenout: '',
       smp: false,
       citiesList: [],
       cloneList: [],
@@ -69,29 +69,29 @@ export default class ProfilePage extends React.Component {
   }
 
   componentDidMount() {
-    BackHandler.addEventListener("hardwareBackPress", this.backClick);
+    BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(
-      "willFocus",
+      'willFocus',
       () => {
-        this.setState({ progressView: true });
-      }
+        this.setState({progressView: true});
+      },
     );
-    this.focusListener = this.props.navigation.addListener("didFocus", () => {
-      this.setState({ progressView: true });
+    this.focusListener = this.props.navigation.addListener('didFocus', () => {
+      this.setState({progressView: true});
       this.fetchAllInfo();
     });
   }
 
   backClick = () => {
     if (this.state.showCards) {
-      this.setState({ showCards: false, cardList: [] });
+      this.setState({showCards: false, cardList: []});
       return true;
     }
     return false;
   };
 
   componentWillUnmount() {
-    BackHandler.removeEventListener("hardwareBackPress", this.backClick);
+    BackHandler.removeEventListener('hardwareBackPress', this.backClick);
     if (this.focusListener !== undefined) {
       this.focusListener.remove();
     }
@@ -100,31 +100,31 @@ export default class ProfilePage extends React.Component {
     }
   }
 
-	/**
-	 * Fetch All info
-	 */
+  /**
+   * Fetch All info
+   */
   fetchAllInfo() {
-    Pref.getVal(Pref.bearerToken, (value) => {
+    Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
       Helper.networkHelperToken(
         Pref.GetInfoUrl,
         Pref.methodGet,
         token,
-        (result) => {
+        result => {
           //console.log(result);
           var details = JSON.parse(JSON.stringify(result));
-          const fullName = result.firstname + " " + result.lastname;
-          const { address } = result;
-          let addressx = "";
+          const fullName = result.firstname + ' ' + result.lastname;
+          const {address} = result;
+          let addressx = '';
           let city = i18n.t(k._4);
-          if (address.includes("@")) {
-            const sp = address.split("@");
+          if (address.includes('@')) {
+            const sp = address.split('@');
             addressx = sp[0];
             city = sp[1];
           } else {
             addressx = address;
           }
-          Pref.getVal(Pref.citySave, (value) => {
+          Pref.getVal(Pref.citySave, value => {
             city = Helper.removeQuotes(value);
             this.setState({
               smp: false,
@@ -138,30 +138,30 @@ export default class ProfilePage extends React.Component {
             });
           });
         },
-        (error) => { }
+        error => {},
       );
     });
 
-    Pref.getVal(Pref.cardList, (value) => {
+    Pref.getVal(Pref.cardList, value => {
       const val = JSON.parse(value);
       if (
-        val === "" ||
+        val === '' ||
         val === null ||
         (val === undefined && val.length === 0)
       ) {
       } else {
-        this.setState({ cardList: val });
+        this.setState({cardList: val});
       }
     });
   }
 
   editClick = () => {
     if (this.state.isEdit) {
-      this.setState({ smp: true });
-      const split = this.state.fullNameInput.split(" ");
+      this.setState({smp: true});
+      const split = this.state.fullNameInput.split(' ');
       let add = this.state.fullAddressInput;
-      if (this.state.city != "") {
-        add += "@" + this.state.city;
+      if (this.state.city != '') {
+        add += '@' + this.state.city;
       }
       const data = JSON.stringify({
         firstname: split[0],
@@ -175,23 +175,23 @@ export default class ProfilePage extends React.Component {
         data,
         Pref.methodPut,
         this.state.tokenout,
-        (result) => {
+        result => {
           //alert(result);
           this.fetchAllInfo();
           //this.setState({ smp: false, isEdit: true, });
         },
-        (error) => {
-          this.setState({ isEdit: true, smp: false });
-        }
+        error => {
+          this.setState({isEdit: true, smp: false});
+        },
       );
     } else {
-      this.setState({ isEdit: true, smp: false });
+      this.setState({isEdit: true, smp: false});
     }
   };
 
   fetchCities(value) {
-    this.setState({ city: value, citiesList: [] });
-    if (value !== "") {
+    this.setState({city: value, citiesList: []});
+    if (value !== '') {
       Helper.networkHelperTokenPost(
         Pref.GetDeliveryListItemAutoCompleteSearchUrl,
         JSON.stringify({
@@ -200,11 +200,11 @@ export default class ProfilePage extends React.Component {
 
         Pref.methodPost,
         this.state.tokenout,
-        (result) => {
-          this.setState({ citiesList: result });
+        result => {
+          this.setState({citiesList: result});
           console.log(result);
         },
-        (error) => { }
+        error => {},
       );
     }
   }
@@ -213,32 +213,29 @@ export default class ProfilePage extends React.Component {
     return (
       <View
         style={{
-          flexDirection: "row",
-          alignContent: "flex-start",
-          alignSelf: "flex-start",
-          justifyContent: "flex-start",
+          flexDirection: 'row',
+          alignContent: 'flex-start',
+          alignSelf: 'flex-start',
+          justifyContent: 'flex-start',
           marginVertical: sizeHeight(1),
           marginHorizontal: sizeWidth(6),
-          width: "100%",
-        }}
-      >
+          width: '100%',
+        }}>
         <TouchableWithoutFeedback
           style={{
-            backgroundColor: "transparent",
+            backgroundColor: 'transparent',
           }}
           onPress={() => {
-            this.setState({ city: item.name, citiesList: [] });
-          }}
-        >
+            this.setState({city: item.name, citiesList: []});
+          }}>
           <Title
             styleName="v-start h-start "
             style={{
-              color: "#292929",
-              fontFamily: "Rubik",
+              color: '#292929',
+              fontFamily: 'Rubik',
               fontSize: 15,
-              fontWeight: "400",
-            }}
-          >
+              fontWeight: '400',
+            }}>
             {`${item.name}`}
           </Title>
         </TouchableWithoutFeedback>
@@ -248,23 +245,25 @@ export default class ProfilePage extends React.Component {
 
   deleteCard(item, index) {
     itemDelete = item;
-    this.setState({ showDelete: true});
+    this.setState({showDelete: true});
   }
 
-  saveModal = () => { 
-    if (itemDelete !== null){
+  saveModal = () => {
+    if (itemDelete !== null) {
       //console.log(`itemDelete`, itemDelete)
-      const filter = Lodash.filter(this.state.cardList, io => io.name !== itemDelete.name);
+      const filter = Lodash.filter(
+        this.state.cardList,
+        io => io.name !== itemDelete.name,
+      );
       //console.log(`filter`, filter)
-      this.setState({ showDelete: false, cardList: filter },() =>{
+      this.setState({showDelete: false, cardList: filter}, () => {
         Pref.setVal(Pref.cardList, filter);
       });
     }
   };
 
   renderRowCardsList(item, index) {
-        const image =
-          item.creditCardImage || require('../res/images/card.png');
+    const image = item.creditCardImage || `${Pref.VisaCardImage}card.png`;
     return (
       <View
         styleName="horizontal space-between"
@@ -295,7 +294,7 @@ export default class ProfilePage extends React.Component {
             {`${i18n.t(k.cardsavedtextendwith)}-${item.name}`}
           </Title>
           <Image
-            source={image}
+            source={{uri: `${image}`}}
             //name="credit-card"
             //size={32}
             //color={"#646464"}
@@ -321,8 +320,7 @@ export default class ProfilePage extends React.Component {
             }}
           /> */}
         </View>
-        <TouchableWithoutFeedback
-          onPress={() => this.deleteCard(item, index)}>
+        <TouchableWithoutFeedback onPress={() => this.deleteCard(item, index)}>
           <Image
             source={require('./../res/images/delete.png')}
             style={{
@@ -342,40 +340,43 @@ export default class ProfilePage extends React.Component {
     this.setState({
       showCards: false,
       //cardList: [],
-    })
-   };
+    });
+  };
 
   render() {
     return (
-      <Screen
-        style={{
-          backgroundColor: 'white',
-        }}>
-        <StatusBar barStyle="dark-content" backgroundColor="white" />
-        <NavigationBar
-          styleName="inline no-border"
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+        <Screen
           style={{
-            rightComponent: {
-              flex: 0.4,
-            },
+            backgroundColor: 'white',
+          }}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
+          <NavigationBar
+            styleName="inline no-border"
+            style={{
+              rightComponent: {
+                flex: 0.4,
+              },
 
-            leftComponent: {
-              flex: 0.4,
-            },
+              leftComponent: {
+                flex: 0.4,
+              },
 
-            centerComponent: {
-              flex: 0.2,
-            },
+              centerComponent: {
+                flex: 0.2,
+              },
 
-            componentsContainer: {
-              flex: 1,
-            },
-          }}
-          leftComponent={
-            <View
-              styleName="horizontal space-between"
-              style={{marginStart: 12}}>
-              {/* <TouchableOpacity
+              componentsContainer: {
+                flex: 1,
+              },
+            }}
+            leftComponent={
+              <View
+                styleName="horizontal space-between"
+                style={{marginStart: 12}}>
+                {/* <TouchableOpacity
                 onPress={() => Helper.itemClick(this.props, "Home")}
                >
                 <Icon
@@ -389,223 +390,221 @@ export default class ProfilePage extends React.Component {
                 />
                 פרופיל
                </TouchableOpacity> */}
-              <Heading
-                style={{
-                  fontSize: 20,
-                  color: '#292929',
-                  fontFamily: 'Rubik',
-                  fontWeight: '700',
-                }}>
-                {`${i18n.t(k._84)}`}
-              </Heading>
-            </View>
-          }
-        />
-
-        <ScrollView
-          keyboardShouldPersistTaps={'handled'}
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}>
-          <DummyLoader
-            visibilty={this.state.progressView}
-            center={
-              <View
-                styleName="vertical"
-                style={{marginHorizontal: sizeWidth(1)}}>
-                <Subtitle
+                <Heading
                   style={{
+                    fontSize: 20,
                     color: '#292929',
-                    fontSize: 14,
-                    alignSelf: 'flex-start',
-                    marginHorizontal: sizeWidth(4),
+                    fontFamily: 'Rubik',
+                    fontWeight: '700',
                   }}>
-                  {i18n.t(k._85)}
-                </Subtitle>
-                <TextInput
-                  style={[
-                    styles.inputStyle,
-                    {
-                      marginBottom: sizeHeight(1),
-                    },
-                  ]}
-                  mode={'flat'}
-                  password={false}
-                  onChangeText={text =>
-                    this.setState({fullNameInput: text})
-                  }
-                  value={this.state.fullNameInput}
-                  returnKeyType="next"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
+                  {`${i18n.t(k._84)}`}
+                </Heading>
+              </View>
+            }
+          />
 
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontSize: 14,
-                    alignSelf: 'flex-start',
-                    marginHorizontal: sizeWidth(4),
-                  }}>
-                  {i18n.t(k._52)}
-                </Subtitle>
-                <TextInput
-                  style={[
-                    styles.inputStyle,
-                    {
-                      marginVertical: sizeHeight(1),
-                    },
-                  ]}
-                  mode={'flat'}
-                  disabled={!this.state.isEdit}
-                  password={false}
-                  onChangeText={text =>
-                    this.setState({fullAddressInput: text})
-                  }
-                  value={this.state.fullAddressInput}
-                  returnKeyType="done"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
-
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontSize: 14,
-                    alignSelf: 'flex-start',
-                    marginHorizontal: sizeWidth(4),
-                  }}>{`${i18n.t(k._14)}`}</Subtitle>
-                <TextInput
-                  style={[
-                    styles.inputStyle,
-                    {
-                      marginVertical: sizeHeight(1),
-                    },
-                  ]}
-                  mode={'flat'}
-                  password={false}
-                  value={this.state.city}
-                  onChangeText={value => this.fetchCities(value)}
-                  returnKeyType="done"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
-
-                {this.state.citiesList.length > 0 ? (
-                  <View
-                    style={{
-                      flexGrow: 1,
-                      flexWrap: 'wrap',
-                      marginVertical: sizeHeight(2),
-                    }}>
-                    <FlatList
-                      //extraData={this.state}
-                      showsVerticalScrollIndicator={true}
-                      showsHorizontalScrollIndicator={false}
-                      data={this.state.citiesList}
-                      nestedScrollEnabled={true}
-                      keyboardShouldPersistTaps={'handled'}
-                      keyExtractor={(item, index) => index.toString()}
-                      renderItem={({item: item, index}) =>
-                        this.renderRowSug(item, index)
-                      }
-                    />
-                  </View>
-                ) : null}
-
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontSize: 14,
-                    alignSelf: 'flex-start',
-                    marginHorizontal: sizeWidth(4),
-                  }}>
-                  {i18n.t(k._51)}
-                </Subtitle>
-                <TextInput
-                  style={[
-                    styles.inputStyle,
-                    {
-                      marginVertical: sizeHeight(1),
-                    },
-                  ]}
-                  mode={'flat'}
-                  editable={false}
-                  password={false}
-                  disabled={true}
-                  value={this.state.infoResult.phone}
-                  returnKeyType="done"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
-
+          <ScrollView
+            keyboardShouldPersistTaps={'handled'}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}>
+            <DummyLoader
+              visibilty={this.state.progressView}
+              center={
                 <View
-                  style={{
-                    marginTop: sizeHeight(2),
-                    flexDirection: 'column',
-                  }}>
-                  <TouchableWithoutFeedback
-                    onPress={() => this.setState({showCards: true})}>
-                    <View
-                      style={{
-                        width: '40%',
-                        marginStart: 16,
-                        paddingVertical: 8,
-                        backgroundColor: i18n.t(k.DACCF),
-                        borderRadius: 0,
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        borderRadius: 4,
-                      }}>
-                      <Subtitle
-                        style={{
-                          color: 'white',
-                          fontSize: 14,
-                          alignSelf: 'center',
-                          padding: 4,
-                          justifyContent: 'center',
-                        }}>
-                        {`${i18n.t(k.methodsofPayment)}`}
-                      </Subtitle>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </View>
-
-                <View
-                  style={{
-                    marginVertical: sizeHeight(2),
-                    flexDirection: 'column',
-                  }}>
+                  styleName="vertical"
+                  style={{marginHorizontal: sizeWidth(1)}}>
                   <Subtitle
-                    styleName="md-gutter"
                     style={{
                       color: '#292929',
                       fontSize: 14,
                       alignSelf: 'flex-start',
-                      marginVertical: sizeHeight(0.5),
+                      marginHorizontal: sizeWidth(4),
                     }}>
-                    {`${i18n.t(k._86)}`}
+                    {i18n.t(k._85)}
                   </Subtitle>
-                  <TouchableWithoutFeedback
-                    onPress={() =>
-                      Linking.openURL('https://bit.ly/callittos')
-                    }>
+                  <TextInput
+                    style={[
+                      styles.inputStyle,
+                      {
+                        marginBottom: sizeHeight(1),
+                      },
+                    ]}
+                    mode={'flat'}
+                    password={false}
+                    onChangeText={text => this.setState({fullNameInput: text})}
+                    value={this.state.fullNameInput}
+                    returnKeyType="next"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
+
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontSize: 14,
+                      alignSelf: 'flex-start',
+                      marginHorizontal: sizeWidth(4),
+                    }}>
+                    {i18n.t(k._52)}
+                  </Subtitle>
+                  <TextInput
+                    style={[
+                      styles.inputStyle,
+                      {
+                        marginVertical: sizeHeight(1),
+                      },
+                    ]}
+                    mode={'flat'}
+                    disabled={!this.state.isEdit}
+                    password={false}
+                    onChangeText={text =>
+                      this.setState({fullAddressInput: text})
+                    }
+                    value={this.state.fullAddressInput}
+                    returnKeyType="done"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
+
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontSize: 14,
+                      alignSelf: 'flex-start',
+                      marginHorizontal: sizeWidth(4),
+                    }}>{`${i18n.t(k._14)}`}</Subtitle>
+                  <TextInput
+                    style={[
+                      styles.inputStyle,
+                      {
+                        marginVertical: sizeHeight(1),
+                      },
+                    ]}
+                    mode={'flat'}
+                    password={false}
+                    value={this.state.city}
+                    onChangeText={value => this.fetchCities(value)}
+                    returnKeyType="done"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
+
+                  {this.state.citiesList.length > 0 ? (
+                    <View
+                      style={{
+                        flexGrow: 1,
+                        flexWrap: 'wrap',
+                        marginVertical: sizeHeight(2),
+                      }}>
+                      <FlatList
+                        //extraData={this.state}
+                        showsVerticalScrollIndicator={true}
+                        showsHorizontalScrollIndicator={false}
+                        data={this.state.citiesList}
+                        nestedScrollEnabled={true}
+                        keyboardShouldPersistTaps={'handled'}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({item: item, index}) =>
+                          this.renderRowSug(item, index)
+                        }
+                      />
+                    </View>
+                  ) : null}
+
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontSize: 14,
+                      alignSelf: 'flex-start',
+                      marginHorizontal: sizeWidth(4),
+                    }}>
+                    {i18n.t(k._51)}
+                  </Subtitle>
+                  <TextInput
+                    style={[
+                      styles.inputStyle,
+                      {
+                        marginVertical: sizeHeight(1),
+                      },
+                    ]}
+                    mode={'flat'}
+                    editable={false}
+                    password={false}
+                    disabled={true}
+                    value={this.state.infoResult.phone}
+                    returnKeyType="done"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
+
+                  <View
+                    style={{
+                      marginTop: sizeHeight(2),
+                      flexDirection: 'column',
+                    }}>
+                    <TouchableWithoutFeedback
+                      onPress={() => this.setState({showCards: true})}>
+                      <View
+                        style={{
+                          width: '40%',
+                          marginStart: 16,
+                          paddingVertical: 8,
+                          backgroundColor: i18n.t(k.DACCF),
+                          borderRadius: 0,
+                          alignItems: 'center',
+                          alignContent: 'center',
+                          borderRadius: 4,
+                        }}>
+                        <Subtitle
+                          style={{
+                            color: 'white',
+                            fontSize: 14,
+                            alignSelf: 'center',
+                            padding: 4,
+                            justifyContent: 'center',
+                          }}>
+                          {`${i18n.t(k.methodsofPayment)}`}
+                        </Subtitle>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </View>
+
+                  <View
+                    style={{
+                      marginVertical: sizeHeight(2),
+                      flexDirection: 'column',
+                    }}>
                     <Subtitle
                       styleName="md-gutter"
                       style={{
-                        color: Colors.blue500,
+                        color: '#292929',
                         fontSize: 14,
                         alignSelf: 'flex-start',
-                        marginVertical: sizeHeight(0),
-                        textDecorationLine: 'underline',
-                      }}>{`${i18n.t(k._87)}`}</Subtitle>
-                  </TouchableWithoutFeedback>
-                </View>
+                        marginVertical: sizeHeight(0.5),
+                      }}>
+                      {`${i18n.t(k._86)}`}
+                    </Subtitle>
+                    <TouchableWithoutFeedback
+                      onPress={() =>
+                        Linking.openURL('https://bit.ly/callittos')
+                      }>
+                      <Subtitle
+                        styleName="md-gutter"
+                        style={{
+                          color: Colors.blue500,
+                          fontSize: 14,
+                          alignSelf: 'flex-start',
+                          marginVertical: sizeHeight(0),
+                          textDecorationLine: 'underline',
+                        }}>{`${i18n.t(k._87)}`}</Subtitle>
+                    </TouchableWithoutFeedback>
+                  </View>
 
-                {/* <View style={{
+                  {/* <View style={{
                   height: 1,
                   backgroundColor: '#dedede', marginVertical: sizeHeight(2), marginHorizontal: sizeWidth(4)
                  }} />
@@ -646,264 +645,265 @@ export default class ProfilePage extends React.Component {
                   underlineColor={"transparent"}
                   underlineColorAndroid={"transparent"}
                  /> */}
-              </View>
-            }
-          />
-        </ScrollView>
+                </View>
+              }
+            />
+          </ScrollView>
 
-        <Portal>
-          <Modal
-            dismissable={true}
-            onDismiss={() =>
-              this.setState({
-                showCards: false,
-                //cardList: [],
-              })
-            }
-            visible={this.state.showCards}
-            contentContainerStyle={{
-              height: i18n.t(k._5),
-            }}>
-            <View
-              style={{
-                flex: 1,
+          <Portal>
+            <Modal
+              dismissable={true}
+              onDismiss={() =>
+                this.setState({
+                  showCards: false,
+                  //cardList: [],
+                })
+              }
+              visible={this.state.showCards}
+              contentContainerStyle={{
+                height: i18n.t(k._5),
               }}>
-              {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-              <View style={{flex: 0.1}} />
               <View
                 style={{
-                  flex: 0.8,
-                  marginTop: sizeHeight(4),
-                  marginBottom: sizeHeight(8),
-                  marginHorizontal: sizeWidth(4),
-                  backgroundColor: 'white',
-                  flexDirection: 'column',
-                  position: 'relative',
+                  flex: 1,
                 }}>
+                {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
+                <View style={{flex: 0.1}} />
                 <View
                   style={{
-                    flex: 0.1,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    backgroundColor: 'white',
-                    marginTop: 6,
-                  }}>
-                  <View
-                    styleName="horizontal"
-                    style={{
-                      marginStart: sizeWidth(3),
-                      alignItems: 'center',
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        this.setState({
-                          showCards: false,
-                          //cardList: [],
-                        })
-                      }>
-                      <Icon
-                        name="arrow-forward"
-                        size={36}
-                        color="#292929"
-                        style={{
-                          alignSelf: 'flex-start',
-                          backgroundColor: 'transparent',
-                        }}
-                      />
-                    </TouchableOpacity>
-                    <Subtitle
-                      styleName="md-gutter"
-                      style={{
-                        color: '#292929',
-                        fontSize: 16,
-                        alignSelf: 'center',
-                        fontWeight: '700',
-                      }}>
-                      {`${i18n.t(k.cardreturnprofile)}`}
-                    </Subtitle>
-                  </View>
-                </View>
-                <View
-                  style={{
-                    flex: 0.75,
+                    flex: 0.8,
+                    marginTop: sizeHeight(4),
+                    marginBottom: sizeHeight(8),
+                    marginHorizontal: sizeWidth(4),
                     backgroundColor: 'white',
                     flexDirection: 'column',
-                    marginTop: 4,
-                  }}>
-                  <DummyLoader
-                    visibilty={this.state.progressView}
-                    style={{width: '100%', flexBasis: 1}}
-                    center={
-                      this.state.cardList.length > 0 ? (
-                        <FlatList
-                          extraData={this.state}
-                          nestedScrollEnabled={true}
-                          style={{
-                            marginStart: sizeWidth(3),
-                            backgroundColor: 'white',
-                          }}
-                          showsHorizontalScrollIndicator={false}
-                          showsVerticalScrollIndicator={true}
-                          data={this.state.cardList}
-                          keyExtractor={(item, index) => `${index}`}
-                          renderItem={({item, index}) =>
-                            this.renderRowCardsList(item, index)
-                          }
-                        />
-                      ) : (
-                        <Subtitle
-                          styleName="md-gutter"
-                          style={{
-                            color: '#292929',
-                            fontSize: 14,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                            marginVertical: sizeHeight(0.5),
-                          }}>
-                          {`${i18n.t(k.nosavedcardfound)}`}
-                        </Subtitle>
-                      )
-                    }
-                  />
-                  {this.state.cardList.length > 0 ? (
-                    <View
-                      style={{marginTop: 4}}
-                      styleName="v-center h-center">
-                      <Subtitle
-                        style={{
-                          color: '#646464',
-                          fontSize: 12,
-                          alignSelf: 'center',
-                          marginVertical: sizeHeight(0.5),
-                          justifyContent: 'center',
-                        }}>
-                        {`${i18n.t(k.cardsecurity)}`}
-                      </Subtitle>
-                      <Image
-                        source={require('./../res/images/card.png')}
-                        style={{
-                          width: 24,
-                          height: 24,
-                          marginTop: 8,
-                          tintColor: '#777777',
-                          alignSelf: 'center',
-                          justifyContent: 'center',
-                        }}
-                      />
-                    </View>
-                  ) : null}
-                </View>
-                <View style={{flex: 0.05, backgroundColor: 'white'}} />
-                <View
-                  style={{
-                    flex: 0.1,
-                    backgroundColor: 'white',
-                    flexDirection: 'column',
-                    marginTop: 4,
+                    position: 'relative',
                   }}>
                   <View
                     style={{
-                      position: 'absolute',
-                      width: '100%',
-                      bottom: 0,
+                      flex: 0.1,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
                       backgroundColor: 'white',
+                      marginTop: 6,
                     }}>
-                    <TouchableOpacity
-                      styleName="flexible"
-                      onPress={this.saveCardsData}>
+                    <View
+                      styleName="horizontal"
+                      style={{
+                        marginStart: sizeWidth(3),
+                        alignItems: 'center',
+                      }}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          this.setState({
+                            showCards: false,
+                            //cardList: [],
+                          })
+                        }>
+                        <Icon
+                          name="arrow-forward"
+                          size={36}
+                          color="#292929"
+                          style={{
+                            alignSelf: 'flex-start',
+                            backgroundColor: 'transparent',
+                          }}
+                        />
+                      </TouchableOpacity>
+                      <Subtitle
+                        styleName="md-gutter"
+                        style={{
+                          color: '#292929',
+                          fontSize: 16,
+                          alignSelf: 'center',
+                          fontWeight: '700',
+                        }}>
+                        {`${i18n.t(k.cardreturnprofile)}`}
+                      </Subtitle>
+                    </View>
+                  </View>
+                  <View
+                    style={{
+                      flex: 0.75,
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      marginTop: 4,
+                    }}>
+                    <DummyLoader
+                      visibilty={this.state.progressView}
+                      style={{width: '100%', flexBasis: 1}}
+                      center={
+                        this.state.cardList.length > 0 ? (
+                          <FlatList
+                            extraData={this.state}
+                            nestedScrollEnabled={true}
+                            style={{
+                              marginStart: sizeWidth(3),
+                              backgroundColor: 'white',
+                            }}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={true}
+                            data={this.state.cardList}
+                            keyExtractor={(item, index) => `${index}`}
+                            renderItem={({item, index}) =>
+                              this.renderRowCardsList(item, index)
+                            }
+                          />
+                        ) : (
+                          <Subtitle
+                            styleName="md-gutter"
+                            style={{
+                              color: '#292929',
+                              fontSize: 14,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                              marginVertical: sizeHeight(0.5),
+                            }}>
+                            {`${i18n.t(k.nosavedcardfound)}`}
+                          </Subtitle>
+                        )
+                      }
+                    />
+                    {this.state.cardList.length > 0 ? (
                       <View
-                        style={styles.buttonStyle}
-                        // mode="contained"
-                        // dark={true}
-                        // onPress={() => this.finalorders(false)}
-                        loading={false}>
+                        style={{marginTop: 4}}
+                        styleName="v-center h-center">
                         <Subtitle
                           style={{
-                            color: 'white',
-                            fontFamily: 'Rubik',
-                            fontSize: 18,
+                            color: '#646464',
+                            fontSize: 12,
                             alignSelf: 'center',
+                            marginVertical: sizeHeight(0.5),
                             justifyContent: 'center',
                           }}>
-                          {`${i18n.t(k.savecardsbutton)}`}
+                          {`${i18n.t(k.cardsecurity)}`}
                         </Subtitle>
+                        <Image
+                          source={require('./../res/images/card.png')}
+                          style={{
+                            width: 24,
+                            height: 24,
+                            marginTop: 8,
+                            tintColor: '#777777',
+                            alignSelf: 'center',
+                            justifyContent: 'center',
+                          }}
+                        />
                       </View>
-                    </TouchableOpacity>
+                    ) : null}
+                  </View>
+                  <View style={{flex: 0.05, backgroundColor: 'white'}} />
+                  <View
+                    style={{
+                      flex: 0.1,
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      marginTop: 4,
+                    }}>
+                    <View
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                      }}>
+                      <TouchableOpacity
+                        styleName="flexible"
+                        onPress={this.saveCardsData}>
+                        <View
+                          style={styles.buttonStyle}
+                          // mode="contained"
+                          // dark={true}
+                          // onPress={() => this.finalorders(false)}
+                          loading={false}>
+                          <Subtitle
+                            style={{
+                              color: 'white',
+                              fontFamily: 'Rubik',
+                              fontSize: 18,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            {`${i18n.t(k.savecardsbutton)}`}
+                          </Subtitle>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
+                <View style={{flex: 0.1}} />
               </View>
-              <View style={{flex: 0.1}} />
-            </View>
-          </Modal>
-        </Portal>
+            </Modal>
+          </Portal>
 
-        <Portal>
-          <Modal
-            dismissable={true}
-            visible={this.state.showDelete}
-            onDismiss={() => this.setState({showDelete: false})}>
-            <View
-              styleName="vertical sm-gutter"
-              style={{
-                backgroundColor: 'white',
-                marginHorizontal: sizeWidth(6),
-                flexDirection: 'column',
-              }}>
-              <Subtitle
+          <Portal>
+            <Modal
+              dismissable={true}
+              visible={this.state.showDelete}
+              onDismiss={() => this.setState({showDelete: false})}>
+              <View
+                styleName="vertical sm-gutter"
                 style={{
-                  color: '#292929',
-                  fontFamily: 'Rubik',
-                  alignSelf: 'center',
-                  fontSize: 15,
-                  fontWeight: '700',
-                  paddingVertical: 16,
-                }}>{`${i18n.t(k.deletecardsure)}`}</Subtitle>
-              <Button
-                styleName=" muted border"
-                mode={'contained'}
-                uppercase={true}
-                dark={true}
-                style={[
-                  styles.loginButtonStyle,
-                  {marginVertical: 0, marginHorizontal: sizeWidth(3)},
-                ]}
-                onPress={this.saveModal}>
-                <Subtitle style={{color: 'white'}}>{`${i18n.t(
-                  k.cardyes,
-                )}`}</Subtitle>
-              </Button>
-              <TouchableWithoutFeedback
-                onPress={() => this.setState({showDelete: false})}>
+                  backgroundColor: 'white',
+                  marginHorizontal: sizeWidth(6),
+                  flexDirection: 'column',
+                }}>
                 <Subtitle
                   style={{
-                    marginTop: sizeHeight(1.5),
                     color: '#292929',
                     fontFamily: 'Rubik',
                     alignSelf: 'center',
                     fontSize: 15,
-                    paddingBottom: 8,
-                  }}>{`${i18n.t(k.cardno)}`}</Subtitle>
-              </TouchableWithoutFeedback>
-            </View>
-          </Modal>
-        </Portal>
-        <Button
-          styleName=" muted border"
-          mode={'contained'}
-          uppercase={true}
-          dark={true}
-          loading={false}
-          style={[styles.loginButtonStyle]}
-          onPress={this.editClick}>
-          <Subtitle
-            style={{
-              color: 'white',
-            }}>
-            {i18n.t(k._88)}
-          </Subtitle>
-        </Button>
-        <Loader isShow={this.state.smp} />
-      </Screen>
+                    fontWeight: '700',
+                    paddingVertical: 16,
+                  }}>{`${i18n.t(k.deletecardsure)}`}</Subtitle>
+                <Button
+                  styleName=" muted border"
+                  mode={'contained'}
+                  uppercase={true}
+                  dark={true}
+                  style={[
+                    styles.loginButtonStyle,
+                    {marginVertical: 0, marginHorizontal: sizeWidth(3)},
+                  ]}
+                  onPress={this.saveModal}>
+                  <Subtitle style={{color: 'white'}}>{`${i18n.t(
+                    k.cardyes,
+                  )}`}</Subtitle>
+                </Button>
+                <TouchableWithoutFeedback
+                  onPress={() => this.setState({showDelete: false})}>
+                  <Subtitle
+                    style={{
+                      marginTop: sizeHeight(1.5),
+                      color: '#292929',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 15,
+                      paddingBottom: 8,
+                    }}>{`${i18n.t(k.cardno)}`}</Subtitle>
+                </TouchableWithoutFeedback>
+              </View>
+            </Modal>
+          </Portal>
+          <Button
+            styleName=" muted border"
+            mode={'contained'}
+            uppercase={true}
+            dark={true}
+            loading={false}
+            style={[styles.loginButtonStyle]}
+            onPress={this.editClick}>
+            <Subtitle
+              style={{
+                color: 'white',
+              }}>
+              {i18n.t(k._88)}
+            </Subtitle>
+          </Button>
+          <Loader isShow={this.state.smp} />
+        </Screen>
+      </SafeAreaView>
     );
   }
 }
@@ -915,8 +915,8 @@ const styles = StyleSheet.create({
   inputStyle: {
     height: sizeHeight(8),
     borderRadius: 2,
-    borderColor: "#dedede",
-    borderStyle: "solid",
+    borderColor: '#dedede',
+    borderStyle: 'solid',
     borderWidth: 1,
     backgroundColor: i18n.t(k.FFFFFF),
     marginHorizontal: sizeWidth(4),
@@ -934,7 +934,7 @@ const styles = StyleSheet.create({
     marginBottom: sizeHeight(2),
     marginTop: sizeHeight(2),
     backgroundColor: i18n.t(k.DACCF),
-    textAlign: "center",
+    textAlign: 'center',
     bottom: 0,
   },
   buttonStyle: {

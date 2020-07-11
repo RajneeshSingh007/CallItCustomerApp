@@ -1,28 +1,31 @@
+import 'react-native-gesture-handler';
 import * as React from 'react';
-import * as ReactNative from 'react-native';
-import {StatusBar, StyleSheet, View} from 'react-native';
+import {StatusBar, StyleSheet, View, NativeModules} from 'react-native';
 import {AppContainer} from './src/util/AppRouter';
 import NavigationActions from './src/util/NavigationActions';
 import {inject, observer} from 'mobx-react';
 import * as Helper from './src/util/Helper';
 import * as Pref from './src/util/Pref';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
-import PushNotificationAndroid from 'react-native-push-android';
-import {Snackbar} from 'react-native-paper';
 import {CustomToast} from './src/util/CustomToast';
+import {Notifications} from 'react-native-notifications';
+import {requestNotifications} from 'react-native-permissions';
+import {Snackbar} from 'react-native-paper';
 import messaging from '@react-native-firebase/messaging';
 import firebase from '@react-native-firebase/app';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
 
 //@inject('navigationStore')
 //@observer
-class App extends React.Component {
+class AppIos extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showToast: false,
       message: '',
+      fcmToken: '',
     };
-    changeNavigationBarColor('white', true);
+    changeNavigationBarColor('black', true);
   }
 
   /**
@@ -30,25 +33,34 @@ class App extends React.Component {
    * @returns {Promise<void>}
    */
   componentDidMount() {
+    PushNotificationIOS.requestPermissions().then(op => {
+      messaging()
+        .getToken()
+        .then(token => {
+          this.setState({fcmToken: token});
+        });
+    });
+    this.registerForPushNotificationsAsync();
+
+    StatusBar.setBarStyle('dark-content', true);
+    StatusBar.setTranslucent(true);
     Pref.setVal(Pref.TrackHomePageData, '');
-    this._notificationEvent = PushNotificationAndroid.addEventListener(
-      'notification',
-      details => {
-        console.log('notifyOrder', details);
-        const {fcm} = details;
-        const title = fcm.title;
-        this.setState({message: title, showToast: true});
-        // setTimeout(()=>{
-        //     this.setState({message:'', showToast:false});
-        //     clearTimeout()
-        // }, 15000);
+    requestNotifications(['alert', 'badge', 'sound']).then(
+      ({status, settings}) => {
+        Notifications.registerRemoteNotifications();
+
+        Notifications.events().registerNotificationReceivedForeground(
+          (notification, completion) => {
+            const {title} = notification;
+            this.setState({showToast: true, message: title});
+          },
+        );
       },
     );
 
     this.onTokenRefreshListener = firebase
       .messaging()
       .onTokenRefresh(fcmToken => {
-        console.log('fcmToken', fcmToken);
         if (fcmToken) {
           Pref.getVal(Pref.userDeviceID, userDeviceID => {
             const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
@@ -61,25 +73,30 @@ class App extends React.Component {
 
     Pref.getVal(Pref.userDeviceID, userDeviceID => {
       const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
+      let tokenx = this.state.fcmToken;
+      if (tokenx == '' || tokenx == null) {
+        tokenx = NativeModules.Workaround.getToken();
+      }
       if (trimuserDeviceID === '') {
-        messaging()
-          .getToken()
-          .then(fcmToken => {
-            if (fcmToken) {
-              this.refreshToken(fcmToken);
-            }
-          });
+        this.refreshToken(tokenx);
       } else {
-        messaging()
-          .getToken()
-          .then(fcmToken => {
-            if (fcmToken && fcmToken !== trimuserDeviceID) {
-              this.refreshToken(fcmToken);
-            }
-          });
+        if (tokenx !== trimuserDeviceID) {
+          this.refreshToken(tokenx);
+        }
       }
     });
   }
+
+  registerForPushNotificationsAsync = async () => {
+    try {
+      await messaging().requestPermission();
+      const fcmToken = await messaging().getToken();
+      // Save
+      this.setState({fcmToken: fcmToken});
+    } catch (error) {
+      //alert(error);
+    }
+  };
 
   refreshToken(fcmToken) {
     Pref.getVal(Pref.bearerToken, value => {
@@ -117,10 +134,6 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this._notificationEvent !== undefined) {
-      this._notificationEvent.remove();
-    }
-
     if (this.onTokenRefreshListener !== undefined) {
       this.onTokenRefreshListener();
     }
@@ -132,18 +145,25 @@ class App extends React.Component {
         style={{
           flex: 1,
         }}>
+        <StatusBar setBarStyle={'dark-content'} />
         <AppContainer
           ref={ref => NavigationActions.setTopLevelNavigator(ref)}
           onNavigationStateChange={this.handleNavigationChange}
         />
 
-        <CustomToast
-          isShow={this.state.showToast}
-          content={this.state.message}
-          callbacks={() => {
-            this.setState({showToast: false, message: ''});
+        <Snackbar
+          visible={this.state.showToast}
+          duration={Snackbar.DURATION_MEDIUM}
+          style={{backgroundColor: '#3daccf'}}
+          action={{
+            label: 'סגור',
+            onPress: () => {
+              this.setState({message: '', showToast: false});
+            },
           }}
-        />
+          onDismiss={() => this.setState({message: '', showToast: false})}>
+          {this.state.message}
+        </Snackbar>
       </View>
     );
   }

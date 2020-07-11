@@ -3,7 +3,6 @@ import k from './../i18n/keys';
 import React from 'react';
 import {
   FlatList,
-  SafeAreaView,
   StatusBar,
   Text,
   StyleSheet,
@@ -45,6 +44,7 @@ import PushNotificationAndroid from 'react-native-push-android';
 import Moment from 'moment';
 import Lodash from 'lodash';
 import {EmptyMessage} from './EmptyMessage';
+import {SafeAreaView} from 'react-navigation';
 
 const difff = `ההזמנה שלך מוכנה לאיסוף`;
 const deliveryText = `ההזמנה בדרך אליך`;
@@ -644,6 +644,10 @@ export default class OrdersPage extends React.Component {
 
   render() {
     return (
+          <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+
       <Screen
         style={{
           backgroundColor: 'white',
@@ -798,6 +802,8 @@ export default class OrdersPage extends React.Component {
           />
         </View>
       </Screen>
+    
+      </SafeAreaView>
     );
   }
 }

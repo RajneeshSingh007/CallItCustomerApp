@@ -29,6 +29,7 @@ import {AlertDialog} from './../util/AlertDialog';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import NavigationActions from '../util/NavigationActions';
 import Lodash, {filter} from 'lodash';
+import {SafeAreaView} from 'react-navigation';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -311,6 +312,10 @@ export default class Login extends React.Component {
 
   render() {
     return (
+            <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+
       <Screen
         style={{
           backgroundColor: 'white',
@@ -657,6 +662,7 @@ export default class Login extends React.Component {
         ) : null}
         <Loader isShow={this.state.smp} />
       </Screen>
+      </SafeAreaView>
     );
   }
 }

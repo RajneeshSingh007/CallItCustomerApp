@@ -21,6 +21,7 @@ import {AlertDialog} from './../util/AlertDialog';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Loader} from './Loader';
 import {sizeHeight} from '../util/Size';
+import {SafeAreaView} from 'react-navigation';
 
 export default class SignupPage extends React.Component {
   constructor(props) {
@@ -184,7 +185,7 @@ export default class SignupPage extends React.Component {
       } else if (this.state.mobile === '9876543210') {
         this.setState({message: i18n.t(k._100)});
       } else {
-        this.setState({smp: true, timercounter:30}, () =>{
+        this.setState({smp: true, timercounter: 30}, () => {
           if (this.timerlisterner !== undefined) {
             clearInterval(this.timerlisterner);
           }
@@ -299,16 +300,15 @@ export default class SignupPage extends React.Component {
       .signInWithPhoneNumber(to, bal)
       .then(confirmResult => {
         //////console.log(confirmResult);
-        this.setState(
-          {
-            visibility: true,
-            mode: 1,
-            confirmResult: confirmResult,
-            progressView: false,
-            smp: false,
-            firstTime: true,
-            timercounter:30
-          });
+        this.setState({
+          visibility: true,
+          mode: 1,
+          confirmResult: confirmResult,
+          progressView: false,
+          smp: false,
+          firstTime: true,
+          timercounter: 30,
+        });
       })
       .catch(error => {
         //////console.log('error', error);
@@ -352,23 +352,45 @@ export default class SignupPage extends React.Component {
         ? `${i18n.t(k._96)}`
         : ``;
     return (
-      <Screen style={{backgroundColor: 'white'}}>
-        <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <SafeAreaView
+        style={{flex: 1, backgroundColor: 'white'}}
+        forceInset={{top: 'never'}}>
+        <Screen style={{backgroundColor: 'white'}}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-        <ScrollView contentContainerStyle={{flexGrow: 1}}>
-          <View style={{flex: 1, justifyContent: 'space-between'}}>
-            <View style={{flex: 0.2}}>
-              {this.state.visibility ? (
-                <View
-                  style={{
-                    marginStart: 12,
-                    alignSelf: 'flex-start',
-                    padding: 4,
-                    marginTop: 8,
-                  }}>
-                  <TouchableWithoutFeedback onPress={this.backclick}>
+          <ScrollView contentContainerStyle={{flexGrow: 1}}>
+            <View style={{flex: 1, justifyContent: 'space-between'}}>
+              <View style={{flex: 0.2}}>
+                {this.state.visibility ? (
+                  <View
+                    style={{
+                      marginStart: 12,
+                      alignSelf: 'flex-start',
+                      padding: 4,
+                      marginTop: 8,
+                    }}>
+                    <TouchableWithoutFeedback onPress={this.backclick}>
+                      <Icon
+                        name="arrow-forward"
+                        size={36}
+                        color="#292929"
+                        style={{
+                          alignSelf: 'center',
+                          backgroundColor: 'transparent',
+                        }}
+                      />
+                    </TouchableWithoutFeedback>
+                  </View>
+                ) : (
+                  <View
+                    style={{
+                      marginStart: 12,
+                      alignSelf: 'flex-start',
+                      padding: 4,
+                      marginTop: 8,
+                    }}>
                     <Icon
-                      name="arrow-forward"
+                      name=""
                       size={36}
                       color="#292929"
                       style={{
@@ -376,177 +398,157 @@ export default class SignupPage extends React.Component {
                         backgroundColor: 'transparent',
                       }}
                     />
-                  </TouchableWithoutFeedback>
-                </View>
-              ) : (
-                <View
+                  </View>
+                )}
+
+                <Heading
                   style={{
-                    marginStart: 12,
-                    alignSelf: 'flex-start',
-                    padding: 4,
-                    marginTop: 8,
+                    color: '#292929',
+                    fontWeight: '700',
+                    fontSize: 22,
+                    alignSelf: 'center',
                   }}>
-                  <Icon
-                    name=""
-                    size={36}
-                    color="#292929"
-                    style={{
-                      alignSelf: 'center',
-                      backgroundColor: 'transparent',
-                    }}
-                  />
-                </View>
-              )}
-
-              <Heading
-                style={{
-                  color: '#292929',
-                  fontWeight: '700',
-                  fontSize: 22,
-                  alignSelf: 'center',
-                }}>
-                {' '}
-                {`${i18n.t(k._93)}`}
-              </Heading>
-            </View>
-            <View
-              styleName="v-center h-center"
-              style={{
-                flex: 0.5,
-                marginVertical: sizeHeight(1),
-                justifyContent: 'space-between',
-              }}>
-              <Subtitle
+                  {' '}
+                  {`${i18n.t(k._93)}`}
+                </Heading>
+              </View>
+              <View
                 styleName="v-center h-center"
-                style={{color: '#292929', fontSize: 16}}>
-                {i18n.t(k._94)}
-              </Subtitle>
-              <TextInput
-                mode="flat"
-                underlineColor="transparent"
-                underlineColorAndroid="transparent"
-                style={[styles.inputStyle, {justifyContent: 'center'}]}
-                placeholderTextColor={'#DEDEDE'}
-                keyboardType={'numeric'}
-                maxLength={10}
-                onChangeText={value => this.setState({mobile: value})}
-                value={this.state.mobile}
-              />
+                style={{
+                  flex: 0.5,
+                  marginVertical: sizeHeight(1),
+                  justifyContent: 'space-between',
+                }}>
+                <Subtitle
+                  styleName="v-center h-center"
+                  style={{color: '#292929', fontSize: 16}}>
+                  {i18n.t(k._94)}
+                </Subtitle>
+                <TextInput
+                  mode="flat"
+                  underlineColor="transparent"
+                  underlineColorAndroid="transparent"
+                  style={[styles.inputStyle, {justifyContent: 'center'}]}
+                  placeholderTextColor={'#DEDEDE'}
+                  keyboardType={'numeric'}
+                  maxLength={10}
+                  onChangeText={value => this.setState({mobile: value})}
+                  value={this.state.mobile}
+                />
 
-              {this.state.mode > 0 ? (
-                <View style={{marginTop: 16}}>
-                  <Subtitle
-                    styleName="v-center h-center"
-                    style={{color: '#292929', fontSize: 16}}>
-                    {i18n.t(k._95)}
-                  </Subtitle>
-                  <TextInput
-                    mode="flat"
-                    underlineColor="transparent"
-                    underlineColorAndroid="transparent"
-                    placeholderTextColor={i18n.t(k.DEDEDE)}
-                    style={[styles.inputStyle]}
-                    maxLength={8}
-                    keyboardType={i18n.t(k.NUMBER_PAD)}
-                    onChangeText={value => this.setState({otp: value})}
-                    value={this.state.otp}
-                  />
-                </View>
-              ) : (
-                <View>
-                  <Subtitle
-                    styleName="v-center h-center"
-                    style={{color: '#292929', fontSize: 16}}
-                  />
-                  <View style={[styles.box]} />
-                </View>
-              )}
-              {this.state.mode !== 0 ? (
-                <TouchableWithoutFeedback
-                  onPress={() => {
-                    if (timer === 2) {
-                      this.setState({timercounter:30}, () =>{
-                        if (
-                          this.timerlisterner !==
-                          undefined
-                        ) {
-                          clearInterval(
-                            this.timerlisterner,
+                {this.state.mode > 0 ? (
+                  <View style={{marginTop: 16}}>
+                    <Subtitle
+                      styleName="v-center h-center"
+                      style={{color: '#292929', fontSize: 16}}>
+                      {i18n.t(k._95)}
+                    </Subtitle>
+                    <TextInput
+                      mode="flat"
+                      underlineColor="transparent"
+                      underlineColorAndroid="transparent"
+                      placeholderTextColor={i18n.t(k.DEDEDE)}
+                      style={[styles.inputStyle]}
+                      maxLength={8}
+                      keyboardType={i18n.t(k.NUMBER_PAD)}
+                      onChangeText={value => this.setState({otp: value})}
+                      value={this.state.otp}
+                    />
+                  </View>
+                ) : (
+                  <View>
+                    <Subtitle
+                      styleName="v-center h-center"
+                      style={{color: '#292929', fontSize: 16}}
+                    />
+                    <View style={[styles.box]} />
+                  </View>
+                )}
+                {this.state.mode !== 0 ? (
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      if (timer === 2) {
+                        this.setState({timercounter: 30}, () => {
+                          if (this.timerlisterner !== undefined) {
+                            clearInterval(this.timerlisterner);
+                          }
+                          this.timerlisterner = setInterval(
+                            this.runtimer,
+                            1000,
                           );
-                        }
-                        this.timerlisterner = setInterval(
-                          this.runtimer,
-                          1000,
-                        );
-                      })
-                      this.sendOTPCode(true);
-                    }
-                  }}>
+                        });
+                        this.sendOTPCode(true);
+                      }
+                    }}>
+                    <Subtitle
+                      styleName={i18n.t(k.V_CENTER_H_CENTER)}
+                      style={{
+                        marginTop: sizeHeight(1.8),
+                        fontSize: timer === 1 ? 17 : 16,
+                      }}>
+                      {`${textmiddle}`}
+                    </Subtitle>
+                  </TouchableWithoutFeedback>
+                ) : (
                   <Subtitle
                     styleName={i18n.t(k.V_CENTER_H_CENTER)}
-                    style={{marginTop: sizeHeight(1.8), fontSize: timer === 1 ? 17 : 16}}>
-                    {`${textmiddle}`}
+                    style={{marginTop: sizeHeight(3)}}>
+                    {' '}
                   </Subtitle>
-                </TouchableWithoutFeedback>
-              ) : (
-                <Subtitle
-                  styleName={i18n.t(k.V_CENTER_H_CENTER)}
-                  style={{marginTop: sizeHeight(3)}}>
-                  {' '}
-                </Subtitle>
-              )}
-            </View>
-            <Image
-              styleName="large-wide v-center h-center"
-              source={require('./../res/images/loginbg.png')}
-              style={{flex: 0.22, resizeMode: 'contain'}}
-            />
+                )}
+              </View>
+              <Image
+                styleName="large-wide v-center h-center"
+                source={require('./../res/images/loginbg.png')}
+                style={{flex: 0.22, resizeMode: 'contain'}}
+              />
 
-            <TouchableWithoutFeedback onPress={() => this.signIn()}>
-              <Button
-                styleName="muted border"
-                mode={'flat'}
-                uppercase={true}
-                dark={true}
-                loading={this.state.progressView}
-                style={styles.loginButtonStyle}
-                onPress={() => this.signIn()}>
-                <Subtitle
-                  style={{
-                    color: 'white',
-                    textAlign: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  {this.state.progressView === true
-                    ? i18n.t(k._47)
-                    : this.state.mode === 0
-                    ? i18n.t(k._54)
-                    : i18n.t(k._97)}
-                </Subtitle>
-              </Button>
-            </TouchableWithoutFeedback>
-          </View>
-        </ScrollView>
-        {this.state.showAlert ? (
-          <AlertDialog
-            isShow={true}
-            title={i18n.t(k._29)}
-            content={this.state.alertContent}
-            callbacks={() => this.setState({showAlert: false})}
-          />
-        ) : null}
-        <Snackbar
-          visible={this.state.message === '' ? false : true}
-          duration={1000}
-          onDismiss={() =>
-            this.setState({
-              message: i18n.t(k._4),
-            })
-          }>
-          {this.state.message}
-        </Snackbar>
-        <Loader isShow={this.state.smp} />
-      </Screen>
+              <TouchableWithoutFeedback onPress={() => this.signIn()}>
+                <Button
+                  styleName="muted border"
+                  mode={'flat'}
+                  uppercase={true}
+                  dark={true}
+                  loading={this.state.progressView}
+                  style={styles.loginButtonStyle}
+                  onPress={() => this.signIn()}>
+                  <Subtitle
+                    style={{
+                      color: 'white',
+                      textAlign: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    {this.state.progressView === true
+                      ? i18n.t(k._47)
+                      : this.state.mode === 0
+                      ? i18n.t(k._54)
+                      : i18n.t(k._97)}
+                  </Subtitle>
+                </Button>
+              </TouchableWithoutFeedback>
+            </View>
+          </ScrollView>
+          {this.state.showAlert ? (
+            <AlertDialog
+              isShow={true}
+              title={i18n.t(k._29)}
+              content={this.state.alertContent}
+              callbacks={() => this.setState({showAlert: false})}
+            />
+          ) : null}
+          <Snackbar
+            visible={this.state.message === '' ? false : true}
+            duration={1000}
+            onDismiss={() =>
+              this.setState({
+                message: i18n.t(k._4),
+              })
+            }>
+            {this.state.message}
+          </Snackbar>
+          <Loader isShow={this.state.smp} />
+        </Screen>
+      </SafeAreaView>
     );
   }
 }

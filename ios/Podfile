@@ -39,7 +39,7 @@ target 'CallIt' do
 
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
 
-  pod 'react-native-geolocation', path: '../node_modules/@react-native-community/geolocation'
+  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
 
   pod 'react-native-slider', :path => '../node_modules/@react-native-community/slider'
 
@@ -47,7 +47,11 @@ target 'CallIt' do
 
   pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
 
-  pod 'CodePush', :path => '../node_modules/react-native-code-push'
+  pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
+
+  pod 'react-native-notifications', :path => '../node_modules/react-native-notifications'
+
+  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
   target 'CallItTests' do
     inherit! :search_paths

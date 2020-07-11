@@ -1,8 +1,10 @@
 /** @format */
+import 'react-native-gesture-handler';
 import './src/i18n/init';
 import React, { Component } from "react";
-import { AppRegistry } from "react-native";
+import { AppRegistry,Platform } from "react-native";
 import App from "./App";
+//import AppIos from './AppIos';
 import { name as appName } from "./app.json";
 import {
     Colors,
@@ -37,11 +39,12 @@ console.disableYellowBox = true;
 
 function Main() {
     return (
-        <Provider {...stores}>
-            <PaperProvider theme={theme}>
-                <App />
-            </PaperProvider>
-        </Provider>
+      <Provider {...stores}>
+        <PaperProvider theme={theme}>
+          {/* {Platform.OS == 'ios' ? <AppIos /> : <App />} */}
+          <App />
+        </PaperProvider>
+      </Provider>
     );
 }
 
