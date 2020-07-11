@@ -265,6 +265,7 @@ module.exports = {
   freeServiceTextHeader: `freeServiceTextHeader`,
   freeServiceTextHeader1: `freeServiceTextHeader1`,
   freeDeliveryText: `freeDeliveryText`,
-  signuptimer:`signuptimer`,
-  signuptimer1:`signuptimer1`
+  signuptimer: `signuptimer`,
+  signuptimer1: `signuptimer1`,
+  visaunavailable: 'visaunavailable',
 };

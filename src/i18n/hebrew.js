@@ -60,7 +60,7 @@ module.exports = {
   [k._18]: `ש"ח`,
   [k._19]: `סה"כ:`,
   [k._20]: `איך לשלם?`,
-  [k._21]: `בקרוב`,
+  [k._21]: `ויזה`,
   [k._22]: `מזומן`,
   [k.V_CENTER_H_CENTER]: `v-center h-center`,
   [k._23]: `סיום הזמנה`,
@@ -274,4 +274,5 @@ module.exports = {
   [k.freeDeliveryText]: `חינם`,
   [k.signuptimer]: `ניתן לקבל קוד אימות חדש בעוד:`,
   [k.signuptimer1]: `שניות`,
+  [k.visaunavailable]: `ויזה - לא זמין`,
 };

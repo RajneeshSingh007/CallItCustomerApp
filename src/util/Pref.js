@@ -47,7 +47,7 @@ export const PRODUCTION_CODE_PUSH = "LviuK_U1uxkfbpaDPsguwAzF5uc67oaNfJDnC";
  * Customer Server url
  */
 export const BASEURL = "http://djangoman123-001-site1.btempurl.com/";
-
+export const VisaCardImage = `${BASEURL}MyStaticFiles/Cards/`;
 export const SignUpUrl = `${BASEURL}api/CreateCustomer`;
 export const AllBusinessListUrl = `${BASEURL}api/getBusinessesForCustomer`;
 export const BusinessBranchUrl = `${BASEURL}api/BranchesByBusinessId/`;

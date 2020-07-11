@@ -145,9 +145,10 @@ export default class FinalOrder extends React.Component {
       freemodalTitleCount: '',
       maxQuantity: 0,
       maxTitle: '',
-      creditCardImage: require('../res/images/card.png'),
+      creditCardImage: `${Pref.VisaCardImage}card.png`,
       paymentDoneAlready: false,
     };
+    console.log(this.state.creditCardImage);
   }
 
   componentDidMount() {
@@ -2197,7 +2198,7 @@ export default class FinalOrder extends React.Component {
   }
 
   renderRowCardsList(item, index) {
-    const image = item.creditCardImage || require('../res/images/card.png');
+    const image = item.creditCardImage || `${Pref.VisaCardImage}card.png`;
     return (
       <TouchableWithoutFeedback onPress={() => this.cardSelect(item, index)}>
         <View
@@ -2250,7 +2251,7 @@ export default class FinalOrder extends React.Component {
             ) : null}
           </View>
           <Image
-            source={image}
+            source={{uri: `${image}`}}
             //name="credit-card"
             //size={32}
             //color={"#646464"}
@@ -2271,7 +2272,7 @@ export default class FinalOrder extends React.Component {
   }
 
   saveCardsData = () => {
-    const {cardnumber, cardcvv, cardyear} = this.state;
+    const {cardnumber, cardcvv, cardyear, cardList} = this.state;
     //console.log(`cardDetails`, cardnumber, cardcvv, cardyear);
     if (cardnumber === '' || cardcvv === '' || cardyear === '') {
       alert(`${i18n.t(k.carddetailsEmpty)}`);
@@ -2310,11 +2311,11 @@ export default class FinalOrder extends React.Component {
       //           //console.log(`additionalInfo`, additionalInfo);
       //           if (additionalInfo.toString().includes(`SUCCESS`)) {
       this.setState({showcardAdd: false});
-      //const {cardId, cgUid} = doDeal;
       const sub = cardnumber.toString().slice(cardnumber.length - 4);
       const checked = this.state.cardSave;
-      let check = checked;
+
       const firsttwo = sub.substr(0, 1);
+
       const item = {
         id: `${sub}${firsttwo}`,
         cardyear: cardyear,
@@ -2325,37 +2326,21 @@ export default class FinalOrder extends React.Component {
         terminalNumber: terminalNumber,
         creditCardImage: this.state.creditCardImage,
       };
-      //console.log(`item`, item);
-      this.setState(
-        {
-          cardList: [...this.state.cardList, item],
-          showcardAdd: false,
-          cardTempNumber: cardnumber,
-          cardTempcvv: cardcvv,
-          cardTempyear: cardyear,
-          cardnumber: '',
-          cardcvv: '',
-          cardyear: '',
-          cardSave: false,
-        },
-        () => {
-          if (check) {
-            Pref.setVal(Pref.cardList, this.state.cardList);
-          }
-        },
-      );
-      //       } else {
-      // this.setState({
-      //   showAlert: true,
-      //   alertContent: `${i18n.t(k.invalidCard)}`,
-      // });
-      //       }
-      //     });
-      // })
-      // .catch(e => {
-      //   this.setState({smp: false, showcardAdd: false});
-      //   //console.log(`e`, e);
-      // });
+      cardList.push(item);
+      if (this.state.cardSave) {
+        Pref.setVal(Pref.cardList, cardList);
+      }
+      this.setState({
+        cardList: cardList,
+        showcardAdd: false,
+        cardTempNumber: cardnumber,
+        cardTempcvv: cardcvv,
+        cardTempyear: cardyear,
+        cardnumber: '',
+        cardcvv: '',
+        cardyear: '',
+        cardSave: false,
+      });
     }
   };
 
@@ -2387,16 +2372,16 @@ export default class FinalOrder extends React.Component {
   };
 
   returnCardImage = cardnumber => {
-    let creditCardImage = require('../res/images/card.png');
+    let creditCardImage = `${Pref.VisaCardImage}card.png`;
     if (cardnumber.length > 0) {
       if (cardnumber.length === 8) {
-        creditCardImage = require('../res/images/isracart.png');
+        creditCardImage = `${Pref.VisaCardImage}isracart.png`;
       } else {
         const sp = cardnumber.substr(0, 2);
         if (sp === '30' || sp === '36' || sp === '38') {
-          creditCardImage = require('../res/images/dinners.png');
+          creditCardImage = `${Pref.VisaCardImage}DINERS.png`;
         } else if (sp === '37' || sp === '34') {
-          creditCardImage = require('../res/images/amexcard.png');
+          creditCardImage = `${Pref.VisaCardImage}AMEX.png`;
         } else if (
           sp === '51' ||
           sp === '52' ||
@@ -2404,11 +2389,11 @@ export default class FinalOrder extends React.Component {
           sp === '54' ||
           sp === '55'
         ) {
-          creditCardImage = require('../res/images/master.png');
+          creditCardImage = `${Pref.VisaCardImage}MASTERCARD.png`;
         } else {
           const sp = cardnumber.substr(0, 1);
           if (sp === '4') {
-            creditCardImage = require('../res/images/visacard.png');
+            creditCardImage = `${Pref.VisaCardImage}VISA.png`;
           }
         }
       }
@@ -2718,7 +2703,7 @@ export default class FinalOrder extends React.Component {
                     style={{
                       flexDirection: 'row',
                     }}>
-                    <Checkbox
+                    <Checkbox.Android
                       status={
                         this.state.savedAdd
                           ? i18n.t(k.CHECKED)
@@ -2733,6 +2718,7 @@ export default class FinalOrder extends React.Component {
                         });
                       }}
                       color={'#3DACCF'}
+                      uncheckedColor={i18n.t(k.DEDEDE1)}
                     />
 
                     <Subtitle
@@ -2749,7 +2735,7 @@ export default class FinalOrder extends React.Component {
                       flexDirection: 'row',
                       marginStart: 8,
                     }}>
-                    <Checkbox
+                    <Checkbox.Android
                       status={
                         !this.state.gpsChecked
                           ? i18n.t(k.UNCHECKED)
@@ -2757,6 +2743,7 @@ export default class FinalOrder extends React.Component {
                       }
                       onPress={this.locationOpen}
                       color={'#3DACCF'}
+                      uncheckedColor={i18n.t(k.DEDEDE1)}
                     />
 
                     <Subtitle
@@ -2882,7 +2869,9 @@ export default class FinalOrder extends React.Component {
                       justifyContent: 'center',
                       alignSelf: 'center',
                     }}>
-                    {`${i18n.t(k._21)}`}{' '}
+                    {terminalNumbers !== ''
+                      ? `${i18n.t(k._21)}`
+                      : `${i18n.t(k.visaunavailable)}`}
                   </Title>
                 </View>
               </TouchableWithoutFeedback>
@@ -3221,7 +3210,7 @@ export default class FinalOrder extends React.Component {
                           />
 
                           <Image
-                            source={this.state.creditCardImage}
+                            source={{uri: `${this.state.creditCardImage}`}}
                             style={{
                               marginEnd: 4,
                               marginStart: 4,
@@ -3352,11 +3341,11 @@ export default class FinalOrder extends React.Component {
 
                         <View
                           style={{
-                            flexDirection: 'row-reverse',
+                            flexDirection: 'row',
                             alignSelf: 'flex-start',
                             marginTop: sizeHeight(2),
                           }}>
-                          <Checkbox
+                          <Checkbox.Android
                             status={
                               this.state.cardSave
                                 ? i18n.t(k.CHECKED)
@@ -3368,6 +3357,7 @@ export default class FinalOrder extends React.Component {
                               })
                             }
                             color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
                           />
                           <Subtitle
                             style={{
