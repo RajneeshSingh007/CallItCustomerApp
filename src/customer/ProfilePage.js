@@ -9,6 +9,8 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Linking,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -410,201 +412,210 @@ export default class ProfilePage extends React.Component {
             <DummyLoader
               visibilty={this.state.progressView}
               center={
-                <View
-                  styleName="vertical"
-                  style={{marginHorizontal: sizeWidth(1)}}>
-                  <Subtitle
-                    style={{
-                      color: '#292929',
-                      fontSize: 14,
-                      alignSelf: 'flex-start',
-                      marginHorizontal: sizeWidth(4),
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : ''}
+                  style={{flex: 1}}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      Keyboard.dismiss();
                     }}>
-                    {i18n.t(k._85)}
-                  </Subtitle>
-                  <TextInput
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginBottom: sizeHeight(1),
-                      },
-                    ]}
-                    mode={'flat'}
-                    password={false}
-                    onChangeText={text => this.setState({fullNameInput: text})}
-                    value={this.state.fullNameInput}
-                    returnKeyType="next"
-                    numberOfLines={1}
-                    underlineColor={'transparent'}
-                    underlineColorAndroid={'transparent'}
-                  />
-
-                  <Subtitle
-                    style={{
-                      color: '#292929',
-                      fontSize: 14,
-                      alignSelf: 'flex-start',
-                      marginHorizontal: sizeWidth(4),
-                    }}>
-                    {i18n.t(k._52)}
-                  </Subtitle>
-                  <TextInput
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginVertical: sizeHeight(1),
-                      },
-                    ]}
-                    mode={'flat'}
-                    disabled={!this.state.isEdit}
-                    password={false}
-                    onChangeText={text =>
-                      this.setState({fullAddressInput: text})
-                    }
-                    value={this.state.fullAddressInput}
-                    returnKeyType="done"
-                    numberOfLines={1}
-                    underlineColor={'transparent'}
-                    underlineColorAndroid={'transparent'}
-                  />
-
-                  <Subtitle
-                    style={{
-                      color: '#292929',
-                      fontSize: 14,
-                      alignSelf: 'flex-start',
-                      marginHorizontal: sizeWidth(4),
-                    }}>{`${i18n.t(k._14)}`}</Subtitle>
-                  <TextInput
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginVertical: sizeHeight(1),
-                      },
-                    ]}
-                    mode={'flat'}
-                    password={false}
-                    value={this.state.city}
-                    onChangeText={value => this.fetchCities(value)}
-                    returnKeyType="done"
-                    numberOfLines={1}
-                    underlineColor={'transparent'}
-                    underlineColorAndroid={'transparent'}
-                  />
-
-                  {this.state.citiesList.length > 0 ? (
                     <View
-                      style={{
-                        flexGrow: 1,
-                        flexWrap: 'wrap',
-                        marginVertical: sizeHeight(2),
-                      }}>
-                      <FlatList
-                        //extraData={this.state}
-                        showsVerticalScrollIndicator={true}
-                        showsHorizontalScrollIndicator={false}
-                        data={this.state.citiesList}
-                        nestedScrollEnabled={true}
-                        keyboardShouldPersistTaps={'handled'}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item: item, index}) =>
-                          this.renderRowSug(item, index)
-                        }
-                      />
-                    </View>
-                  ) : null}
-
-                  <Subtitle
-                    style={{
-                      color: '#292929',
-                      fontSize: 14,
-                      alignSelf: 'flex-start',
-                      marginHorizontal: sizeWidth(4),
-                    }}>
-                    {i18n.t(k._51)}
-                  </Subtitle>
-                  <TextInput
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginVertical: sizeHeight(1),
-                      },
-                    ]}
-                    mode={'flat'}
-                    editable={false}
-                    password={false}
-                    disabled={true}
-                    value={this.state.infoResult.phone}
-                    returnKeyType="done"
-                    numberOfLines={1}
-                    underlineColor={'transparent'}
-                    underlineColorAndroid={'transparent'}
-                  />
-
-                  <View
-                    style={{
-                      marginTop: sizeHeight(2),
-                      flexDirection: 'column',
-                    }}>
-                    <TouchableWithoutFeedback
-                      onPress={() => this.setState({showCards: true})}>
-                      <View
-                        style={{
-                          width: '40%',
-                          marginStart: 16,
-                          paddingVertical: 8,
-                          backgroundColor: i18n.t(k.DACCF),
-                          borderRadius: 0,
-                          alignItems: 'center',
-                          alignContent: 'center',
-                          borderRadius: 4,
-                        }}>
-                        <Subtitle
-                          style={{
-                            color: 'white',
-                            fontSize: 14,
-                            alignSelf: 'center',
-                            padding: 4,
-                            justifyContent: 'center',
-                          }}>
-                          {`${i18n.t(k.methodsofPayment)}`}
-                        </Subtitle>
-                      </View>
-                    </TouchableWithoutFeedback>
-                  </View>
-
-                  <View
-                    style={{
-                      marginVertical: sizeHeight(2),
-                      flexDirection: 'column',
-                    }}>
-                    <Subtitle
-                      styleName="md-gutter"
-                      style={{
-                        color: '#292929',
-                        fontSize: 14,
-                        alignSelf: 'flex-start',
-                        marginVertical: sizeHeight(0.5),
-                      }}>
-                      {`${i18n.t(k._86)}`}
-                    </Subtitle>
-                    <TouchableWithoutFeedback
-                      onPress={() =>
-                        Linking.openURL('https://bit.ly/callittos')
-                      }>
+                      styleName="vertical"
+                      style={{marginHorizontal: sizeWidth(1)}}>
                       <Subtitle
-                        styleName="md-gutter"
                         style={{
-                          color: Colors.blue500,
+                          color: '#292929',
                           fontSize: 14,
                           alignSelf: 'flex-start',
-                          marginVertical: sizeHeight(0),
-                          textDecorationLine: 'underline',
-                        }}>{`${i18n.t(k._87)}`}</Subtitle>
-                    </TouchableWithoutFeedback>
-                  </View>
+                          marginHorizontal: sizeWidth(4),
+                        }}>
+                        {i18n.t(k._85)}
+                      </Subtitle>
+                      <TextInput
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginBottom: sizeHeight(1),
+                          },
+                        ]}
+                        mode={'flat'}
+                        password={false}
+                        onChangeText={text =>
+                          this.setState({fullNameInput: text})
+                        }
+                        value={this.state.fullNameInput}
+                        returnKeyType="next"
+                        numberOfLines={1}
+                        underlineColor={'transparent'}
+                        underlineColorAndroid={'transparent'}
+                      />
 
-                  {/* <View style={{
+                      <Subtitle
+                        style={{
+                          color: '#292929',
+                          fontSize: 14,
+                          alignSelf: 'flex-start',
+                          marginHorizontal: sizeWidth(4),
+                        }}>
+                        {i18n.t(k._52)}
+                      </Subtitle>
+                      <TextInput
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginVertical: sizeHeight(1),
+                          },
+                        ]}
+                        mode={'flat'}
+                        disabled={!this.state.isEdit}
+                        password={false}
+                        onChangeText={text =>
+                          this.setState({fullAddressInput: text})
+                        }
+                        value={this.state.fullAddressInput}
+                        returnKeyType="done"
+                        numberOfLines={1}
+                        underlineColor={'transparent'}
+                        underlineColorAndroid={'transparent'}
+                      />
+
+                      <Subtitle
+                        style={{
+                          color: '#292929',
+                          fontSize: 14,
+                          alignSelf: 'flex-start',
+                          marginHorizontal: sizeWidth(4),
+                        }}>{`${i18n.t(k._14)}`}</Subtitle>
+                      <TextInput
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginVertical: sizeHeight(1),
+                          },
+                        ]}
+                        mode={'flat'}
+                        password={false}
+                        value={this.state.city}
+                        onChangeText={value => this.fetchCities(value)}
+                        returnKeyType="done"
+                        numberOfLines={1}
+                        underlineColor={'transparent'}
+                        underlineColorAndroid={'transparent'}
+                      />
+
+                      {this.state.citiesList.length > 0 ? (
+                        <View
+                          style={{
+                            flexGrow: 1,
+                            flexWrap: 'wrap',
+                            marginVertical: sizeHeight(2),
+                          }}>
+                          <FlatList
+                            //extraData={this.state}
+                            showsVerticalScrollIndicator={true}
+                            showsHorizontalScrollIndicator={false}
+                            data={this.state.citiesList}
+                            nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps={'handled'}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({item: item, index}) =>
+                              this.renderRowSug(item, index)
+                            }
+                          />
+                        </View>
+                      ) : null}
+
+                      <Subtitle
+                        style={{
+                          color: '#292929',
+                          fontSize: 14,
+                          alignSelf: 'flex-start',
+                          marginHorizontal: sizeWidth(4),
+                        }}>
+                        {i18n.t(k._51)}
+                      </Subtitle>
+                      <TextInput
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginVertical: sizeHeight(1),
+                          },
+                        ]}
+                        mode={'flat'}
+                        editable={false}
+                        password={false}
+                        disabled={true}
+                        value={this.state.infoResult.phone}
+                        returnKeyType="done"
+                        numberOfLines={1}
+                        underlineColor={'transparent'}
+                        underlineColorAndroid={'transparent'}
+                      />
+
+                      <View
+                        style={{
+                          marginTop: sizeHeight(2),
+                          flexDirection: 'column',
+                        }}>
+                        <TouchableWithoutFeedback
+                          onPress={() => this.setState({showCards: true})}>
+                          <View
+                            style={{
+                              width: '40%',
+                              marginStart: 16,
+                              paddingVertical: 8,
+                              backgroundColor: i18n.t(k.DACCF),
+                              borderRadius: 0,
+                              alignItems: 'center',
+                              alignContent: 'center',
+                              borderRadius: 4,
+                            }}>
+                            <Subtitle
+                              style={{
+                                color: 'white',
+                                fontSize: 14,
+                                alignSelf: 'center',
+                                padding: 4,
+                                justifyContent: 'center',
+                              }}>
+                              {`${i18n.t(k.methodsofPayment)}`}
+                            </Subtitle>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      </View>
+
+                      <View
+                        style={{
+                          marginVertical: sizeHeight(2),
+                          flexDirection: 'column',
+                        }}>
+                        <Subtitle
+                          styleName="md-gutter"
+                          style={{
+                            color: '#292929',
+                            fontSize: 14,
+                            alignSelf: 'flex-start',
+                            marginVertical: sizeHeight(0.5),
+                          }}>
+                          {`${i18n.t(k._86)}`}
+                        </Subtitle>
+                        <TouchableWithoutFeedback
+                          onPress={() =>
+                            Linking.openURL('https://bit.ly/callittos')
+                          }>
+                          <Subtitle
+                            styleName="md-gutter"
+                            style={{
+                              color: Colors.blue500,
+                              fontSize: 14,
+                              alignSelf: 'flex-start',
+                              marginVertical: sizeHeight(0),
+                              textDecorationLine: 'underline',
+                            }}>{`${i18n.t(k._87)}`}</Subtitle>
+                        </TouchableWithoutFeedback>
+                      </View>
+
+                      {/* <View style={{
                   height: 1,
                   backgroundColor: '#dedede', marginVertical: sizeHeight(2), marginHorizontal: sizeWidth(4)
                  }} />
@@ -645,7 +656,9 @@ export default class ProfilePage extends React.Component {
                   underlineColor={"transparent"}
                   underlineColorAndroid={"transparent"}
                  /> */}
-                </View>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
               }
             />
           </ScrollView>

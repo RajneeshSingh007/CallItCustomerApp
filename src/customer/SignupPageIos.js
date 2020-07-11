@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   FlatList,
   KeyboardAvoidingView,
+  NativeModules,
 } from 'react-native';
 import {Button, Snackbar, TextInput, Card} from 'react-native-paper';
 import {
@@ -29,8 +30,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import NavigationActions from '../util/NavigationActions';
 import Lodash from 'lodash';
 import {SafeAreaView} from 'react-navigation';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import {requestNotifications} from 'react-native-permissions';
 
-export default class SignupPage extends React.Component {
+export default class SignupPageIos extends React.Component {
   constructor(props) {
     super(props);
     this.fourRef = React.createRef();
@@ -58,6 +61,7 @@ export default class SignupPage extends React.Component {
       smp: false,
       citiesList: [],
       cloneOgCitiesList: [],
+      fcmToken: '',
     };
   }
 
@@ -77,7 +81,32 @@ export default class SignupPage extends React.Component {
         console.log(error);
       },
     );
+    requestNotifications(['alert', 'badge', 'sound']).then(() => {
+      //alert('granted');
+    });
+    PushNotificationIOS.requestPermissions().then(() => {
+      messaging()
+        .getToken()
+        .then(token => {
+          this.setState({fcmToken: token});
+        });
+    });
+    this.registerForPushNotificationsAsync();
   }
+
+  registerForPushNotificationsAsync = async () => {
+    try {
+      //official one
+      await messaging().requestPermission();
+      const fcmToken = await messaging().getToken();
+      // Save
+      this.setState({fcmToken: fcmToken});
+    } catch (error) {
+      // Handle error
+      //alert(error);
+    }
+  };
+
   /**
    * save account details
    */
@@ -200,47 +229,45 @@ export default class SignupPage extends React.Component {
       //   this.state.add2 +
       const fullAddress =
         this.state.add1 + ' ' + this.state.add3 + ' ' + this.state.add4;
-      messaging()
-        .getToken()
-        .then(fcmToken => {
-          if (fcmToken) {
-            const data = JSON.stringify({
-              phone: this.state.mobileNo,
-              firstname: this.state.firstName,
-              lastname: this.state.lastName,
-              Address: fullAddress,
-              Deviceid: fcmToken,
-            });
-
-            Helper.networkHelper(
-              Pref.SignUpUrl,
-              data,
-              Pref.methodPost,
-              result => {
-                this.setState({progressView: false, smp: false});
-                const token = result['token'];
-                //alert(JSON.stringify(result));
-                if (token !== '') {
-                  Pref.setVal(Pref.bearerToken, token);
-                  Pref.setVal(Pref.loggedStatus, true);
-                  //////console.log(token);
-                  Helper.itemClick(this.props, 'Home');
-                }
-              },
-              () => {
-                this.setState({progressView: false, smp: false});
-              },
-            );
-          } else {
-            // alert('Failed to Register');
-            //"ההרשמה נכשלה"
-            this.setState({
-              alertContent: i18n.t(k._56),
-              showAlert: true,
-              smp: false,
-            });
-          }
+      let token = this.state.fcmToken;
+      if (token == '' || token == null) {
+        token = NativeModules.Workaround.getToken();
+      }
+      if (token) {
+        const data = JSON.stringify({
+          phone: this.state.mobileNo,
+          firstname: this.state.firstName,
+          lastname: this.state.lastName,
+          Address: fullAddress,
+          Deviceid: fcmToken,
         });
+
+        Helper.networkHelper(
+          Pref.SignUpUrl,
+          data,
+          Pref.methodPost,
+          result => {
+            this.setState({progressView: false, smp: false});
+            const token = result['token'];
+            //alert(JSON.stringify(result));
+            if (token !== '') {
+              Pref.setVal(Pref.bearerToken, token);
+              Pref.setVal(Pref.loggedStatus, true);
+              //////console.log(token);
+              Helper.itemClick(this.props, 'Home');
+            }
+          },
+          () => {
+            this.setState({progressView: false, smp: false});
+          },
+        );
+      } else {
+        this.setState({
+          alertContent: i18n.t(k._56),
+          showAlert: true,
+          smp: false,
+        });
+      }
     }
   }
 
@@ -345,8 +372,7 @@ export default class SignupPage extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity
-                  onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -380,129 +406,133 @@ export default class SignupPage extends React.Component {
               flexDirection: 'column',
               justifyContent: 'center',
             }}>
-            <ScrollView
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps={'handled'}
-              showsVerticalScrollIndicator={true}
-              ref={this.scrollViewRef}
-              style={{flex: 1}}>
-              <View style={{marginHorizontal: sizeWidth(4)}}>
-                <Subtitle
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                  }}>
-                  {i18n.t(k._49)}
-                </Subtitle>
-                <TextInput
-                  dense={true}
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  password={false}
-                  onBlur={() => !this.state.firstName}
-                  onFocus={() => !this.state.errorFName}
-                  error={this.state.errorFName}
-                  onChangeText={text => {
-                    this.setState({firstName: text});
-                  }}
-                  value={this.state.firstName}
-                  returnKeyType="next"
-                  numberOfLines={1}
-                  placeholderTextColor={'#DEDEDE'}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
+            <TouchableWithoutFeedback
+              onPress={() => {
+                Keyboard.dismiss();
+              }}>
+              <ScrollView
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps={'handled'}
+                showsVerticalScrollIndicator={true}
+                ref={this.scrollViewRef}
+                style={{flex: 1}}>
+                <View style={{marginHorizontal: sizeWidth(4)}}>
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                    }}>
+                    {i18n.t(k._49)}
+                  </Subtitle>
+                  <TextInput
+                    dense={true}
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    password={false}
+                    onBlur={() => !this.state.firstName}
+                    onFocus={() => !this.state.errorFName}
+                    error={this.state.errorFName}
+                    onChangeText={text => {
+                      this.setState({firstName: text});
+                    }}
+                    value={this.state.firstName}
+                    returnKeyType="next"
+                    numberOfLines={1}
+                    placeholderTextColor={'#DEDEDE'}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
 
-                <Subtitle
-                  styleName="v-center h-center"
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                  }}>
-                  {i18n.t(k._50)}
-                </Subtitle>
-                <TextInput
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  onBlur={() => !this.state.errorLName}
-                  onFocus={() => !this.state.errorLName}
-                  password={false}
-                  error={this.state.errorLName}
-                  onChangeText={text => {
-                    this.setState({lastName: text});
-                  }}
-                  value={this.state.lastName}
-                  returnKeyType="next"
-                  numberOfLines={1}
-                  placeholderTextColor={'#DEDEDE'}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
+                  <Subtitle
+                    styleName="v-center h-center"
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                    }}>
+                    {i18n.t(k._50)}
+                  </Subtitle>
+                  <TextInput
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    onBlur={() => !this.state.errorLName}
+                    onFocus={() => !this.state.errorLName}
+                    password={false}
+                    error={this.state.errorLName}
+                    onChangeText={text => {
+                      this.setState({lastName: text});
+                    }}
+                    value={this.state.lastName}
+                    returnKeyType="next"
+                    numberOfLines={1}
+                    placeholderTextColor={'#DEDEDE'}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
 
-                <Subtitle
-                  styleName="v-center h-center"
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                  }}>
-                  {i18n.t(k._51)}
-                </Subtitle>
-                <TextInput
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  value={this.state.mobileNo}
-                  editable={false}
-                  disabled={true}
-                  onChangeText={text => {
-                    this.setState({mobileNo: text});
-                  }}
-                  placeholderTextColor={'#DEDEDE'}
-                  password={false}
-                  numberOfLines={1}
-                  returnKeyType="next"
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
+                  <Subtitle
+                    styleName="v-center h-center"
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                    }}>
+                    {i18n.t(k._51)}
+                  </Subtitle>
+                  <TextInput
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    value={this.state.mobileNo}
+                    editable={false}
+                    disabled={true}
+                    onChangeText={text => {
+                      this.setState({mobileNo: text});
+                    }}
+                    placeholderTextColor={'#DEDEDE'}
+                    password={false}
+                    numberOfLines={1}
+                    returnKeyType="next"
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
 
-                <Subtitle
-                  styleName="v-center h-center"
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                  }}>
-                  {i18n.t(k._52)}
-                </Subtitle>
-                <TextInput
-                  ref={this.fourRef}
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  onBlur={() => !this.state.errorAdd1}
-                  onFocus={() => !this.state.errorAdd1}
-                  password={false}
-                  placeholderTextColor={'#DEDEDE'}
-                  numberOfLines={1}
-                  onChangeText={text => {
-                    this.setState({add1: text});
-                  }}
-                  value={this.state.add1}
-                  error={this.state.errorAdd1}
-                  multiline={false}
-                  returnKeyType="next"
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                  onSubmitEditing={() => {
-                    this.fiveRef.current.focus();
-                  }}
-                />
+                  <Subtitle
+                    styleName="v-center h-center"
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                    }}>
+                    {i18n.t(k._52)}
+                  </Subtitle>
+                  <TextInput
+                    ref={this.fourRef}
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    onBlur={() => !this.state.errorAdd1}
+                    onFocus={() => !this.state.errorAdd1}
+                    password={false}
+                    placeholderTextColor={'#DEDEDE'}
+                    numberOfLines={1}
+                    onChangeText={text => {
+                      this.setState({add1: text});
+                    }}
+                    value={this.state.add1}
+                    error={this.state.errorAdd1}
+                    multiline={false}
+                    returnKeyType="next"
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                    onSubmitEditing={() => {
+                      this.fiveRef.current.focus();
+                    }}
+                  />
 
-                {/* <Subtitle styleName='v-center h-center' style={{ color: '#292929', fontSize: 16, alignSelf: 'flex-start', marginTop: sizeHeight(1)}}>LandMark</Subtitle>
+                  {/* <Subtitle styleName='v-center h-center' style={{ color: '#292929', fontSize: 16, alignSelf: 'flex-start', marginTop: sizeHeight(1)}}>LandMark</Subtitle>
                <TextInput
                 style={styles.inputStyle}
                 mode={"flat"}
@@ -521,114 +551,115 @@ export default class SignupPage extends React.Component {
                 underlineColor={"transparent"}
                 underlineColorAndroid={"transparent"}
                /> */}
-                <Subtitle
-                  styleName="v-center h-center"
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                  }}>
-                  {i18n.t(k._14)}
-                </Subtitle>
-                <TextInput
-                  ref={this.fiveRef}
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  onBlur={() => !this.state.errorAdd3}
-                  onFocus={() => !this.state.errorAdd3}
-                  password={false}
-                  placeholderTextColor={'#DEDEDE'}
-                  onChangeText={text => this.fetchCities(text)}
-                  value={this.state.add3}
-                  error={this.state.errorAdd3}
-                  returnKeyType="next"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                  onSubmitEditing={() => {
-                    this.sixRef.current.focus();
-                  }}
-                />
+                  <Subtitle
+                    styleName="v-center h-center"
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                    }}>
+                    {i18n.t(k._14)}
+                  </Subtitle>
+                  <TextInput
+                    ref={this.fiveRef}
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    onBlur={() => !this.state.errorAdd3}
+                    onFocus={() => !this.state.errorAdd3}
+                    password={false}
+                    placeholderTextColor={'#DEDEDE'}
+                    onChangeText={text => this.fetchCities(text)}
+                    value={this.state.add3}
+                    error={this.state.errorAdd3}
+                    returnKeyType="next"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                    onSubmitEditing={() => {
+                      this.sixRef.current.focus();
+                    }}
+                  />
 
-                {this.state.citiesList.length > 0 ? (
-                  <View
-                    onLayout={event => {
-                      let scrollY = event.nativeEvent.layout.y;
-                      if (
-                        this.scrollViewRef !== undefined &&
-                        this.scrollViewRef !== null
-                      ) {
-                        if (this.state.citiesList.length > 0) {
-                          const pos = scrollY - 48;
-                          if (pos > 0) {
-                            this.scrollViewRef.current.scrollTo({
-                              x: 0,
-                              y: scrollY - 48,
-                              animated: false,
-                            });
+                  {this.state.citiesList.length > 0 ? (
+                    <View
+                      onLayout={event => {
+                        let scrollY = event.nativeEvent.layout.y;
+                        if (
+                          this.scrollViewRef !== undefined &&
+                          this.scrollViewRef !== null
+                        ) {
+                          if (this.state.citiesList.length > 0) {
+                            const pos = scrollY - 48;
+                            if (pos > 0) {
+                              this.scrollViewRef.current.scrollTo({
+                                x: 0,
+                                y: scrollY - 48,
+                                animated: false,
+                              });
+                            }
                           }
                         }
-                      }
-                    }}
-                    style={{
-                      flexGrow: 1,
-                      //flexWrap: 'wrap',
-                      //marginVertical: sizeHeight(2),
-                      //marginHorizontal: sizeWidth(1),
-                      marginTop: -2,
-                      maxHeight: 200,
-                    }}>
-                    <Card elevation={2}>
-                      <FlatList
-                        //extraData={this.state}
-                        showsVerticalScrollIndicator={true}
-                        showsHorizontalScrollIndicator={false}
-                        data={this.state.citiesList}
-                        nestedScrollEnabled={true}
-                        keyboardShouldPersistTaps={'handled'}
-                        ItemSeparatorComponent={() => (
-                          <View style={styles.listservicedivider} />
-                        )}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item: item, index}) =>
-                          this.renderRowSug(item)
-                        }
-                      />
-                    </Card>
-                  </View>
-                ) : null}
+                      }}
+                      style={{
+                        flexGrow: 1,
+                        //flexWrap: 'wrap',
+                        //marginVertical: sizeHeight(2),
+                        //marginHorizontal: sizeWidth(1),
+                        marginTop: -2,
+                        maxHeight: 200,
+                      }}>
+                      <Card elevation={2}>
+                        <FlatList
+                          //extraData={this.state}
+                          showsVerticalScrollIndicator={true}
+                          showsHorizontalScrollIndicator={false}
+                          data={this.state.citiesList}
+                          nestedScrollEnabled={true}
+                          keyboardShouldPersistTaps={'handled'}
+                          ItemSeparatorComponent={() => (
+                            <View style={styles.listservicedivider} />
+                          )}
+                          keyExtractor={(item, index) => index.toString()}
+                          renderItem={({item: item, index}) =>
+                            this.renderRowSug(item)
+                          }
+                        />
+                      </Card>
+                    </View>
+                  ) : null}
 
-                <Subtitle
-                  styleName="v-center h-center"
-                  style={{
-                    color: '#292929',
-                    fontSize: 16,
-                    alignSelf: 'flex-start',
-                    marginTop: sizeHeight(1),
-                  }}>
-                  {i18n.t(k._53)}
-                </Subtitle>
-                <TextInput
-                  ref={this.sixRef}
-                  onBlur={() => !this.state.errorAdd4}
-                  onFocus={() => !this.state.errorAdd4}
-                  style={styles.inputStyle}
-                  mode={'flat'}
-                  placeholderTextColor={'#DEDEDE'}
-                  password={false}
-                  onChangeText={text => {
-                    this.setState({add4: text});
-                  }}
-                  value={this.state.add4}
-                  error={this.state.errorAdd4}
-                  returnKeyType="done"
-                  numberOfLines={1}
-                  underlineColor={'transparent'}
-                  underlineColorAndroid={'transparent'}
-                />
-              </View>
-            </ScrollView>
+                  <Subtitle
+                    styleName="v-center h-center"
+                    style={{
+                      color: '#292929',
+                      fontSize: 16,
+                      alignSelf: 'flex-start',
+                      marginTop: sizeHeight(1),
+                    }}>
+                    {i18n.t(k._53)}
+                  </Subtitle>
+                  <TextInput
+                    ref={this.sixRef}
+                    onBlur={() => !this.state.errorAdd4}
+                    onFocus={() => !this.state.errorAdd4}
+                    style={styles.inputStyle}
+                    mode={'flat'}
+                    placeholderTextColor={'#DEDEDE'}
+                    password={false}
+                    onChangeText={text => {
+                      this.setState({add4: text});
+                    }}
+                    value={this.state.add4}
+                    error={this.state.errorAdd4}
+                    returnKeyType="done"
+                    numberOfLines={1}
+                    underlineColor={'transparent'}
+                    underlineColorAndroid={'transparent'}
+                  />
+                </View>
+              </ScrollView>
+            </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
           <Button
             styleName=" muted border"
@@ -638,9 +669,7 @@ export default class SignupPage extends React.Component {
             loading={this.state.progressView}
             onPress={() => this.onSaveClick()}>
             <Subtitle style={{color: 'white'}}>
-              {this.state.progressView === true
-                ? i18n.t(k._47)
-                : i18n.t(k._54)}
+              {this.state.progressView === true ? i18n.t(k._47) : i18n.t(k._54)}
             </Subtitle>
           </Button>
           <Snackbar

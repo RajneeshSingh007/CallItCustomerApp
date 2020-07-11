@@ -8,33 +8,31 @@ import {
   ScrollView,
   BackHandler,
   AppState,
-  Platform,
   Alert,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {Card, Colors, List, Button} from 'react-native-paper';
+import {Colors, Button} from 'react-native-paper';
 import {
   Image,
-  Divider,
   NavigationBar,
-  Row,
   Screen,
   Subtitle,
   Title,
   TouchableOpacity,
-  Heading,
   View,
 } from '@shoutem/ui';
 import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import NavigationActions from '../util/NavigationActions';
-import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
+import {sizeHeight, sizeWidth} from './../util/Size';
 import PushNotificationAndroid from 'react-native-push-android';
 import DummyLoader from '../util/DummyLoader';
 import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
 import {SafeAreaView} from 'react-navigation';
+import {Notifications} from 'react-native-notifications';
 
 export default class TrackOrderPage extends React.Component {
   constructor(props) {
@@ -100,7 +98,7 @@ export default class TrackOrderPage extends React.Component {
                 convertTime: convertTime,
               });
             },
-            error => {
+            () => {
               //console.log('err', error);
             },
           );
@@ -121,13 +119,53 @@ export default class TrackOrderPage extends React.Component {
     //     this.fetchData(item);
     //   }
     // });
-    this._notificationEvent = PushNotificationAndroid.addEventListener(
-      'notification',
-      details => {
-        PushNotificationAndroid.notify(details);
-        this.refresh();
-      },
-    );
+    if (Platform.OS === 'ios') {
+      Notifications.registerRemoteNotifications();
+
+      Notifications.events().registerNotificationReceivedForeground(
+        (notification, completion) => {
+          this.setState(
+            prevState => {
+              return {
+                status: prevState.status + 1,
+              };
+            },
+            () => {
+              this.refresh();
+            },
+          );
+          completion({
+            alert: false,
+            sound: true,
+            badge: false,
+          });
+        },
+      );
+
+      Notifications.events().registerNotificationOpened(
+        (notification, completion) => {
+          this.setState(
+            prevState => {
+              return {
+                status: prevState.status + 1,
+              };
+            },
+            () => {
+              this.refresh();
+            },
+          );
+          completion();
+        },
+      );
+    } else {
+      this._notificationEvent = PushNotificationAndroid.addEventListener(
+        'notification',
+        details => {
+          PushNotificationAndroid.notify(details);
+          this.refresh();
+        },
+      );
+    }
   }
 
   componentDidUpdate(prevProp, nextState) {
@@ -171,7 +209,7 @@ export default class TrackOrderPage extends React.Component {
             });
           }
         },
-        error => {
+        () => {
           this.setState({progressView: false});
         },
       );
@@ -198,47 +236,46 @@ export default class TrackOrderPage extends React.Component {
       //const groupByProduct = Lodash.groupBy(allDatas, item => item.serviceName);
       const finalDisplayData = [];
       //Object.keys(groupByProduct).map(keyx => {
-        //let pppp = groupByProduct[keyx];
-        Lodash.map(allDatas, (firspos, index) => {
-          const {
-            extras,
-            message,
-            price,
-            idorder,
-            serviceName,
-            orderdate,
-            quantity,
-          } = firspos;
-          let total = Number(price);
-          // let found = false;
-          // for (let lu = index + 1; lu < pppp.length; lu++) {
-          //   const cc = pppp[lu];
-          //   const check = this.objectsEqual(extras, cc.extras);
-          //   if (check && message === cc.message) {
-          //     found = true;
-          //     total += Number(cc.price);
-          //   }
-          // }
-          //console.log(`found`, found);
-          //if (find === undefined) {
-          const exstr = Helper.groupExtraWithCountString(extras, false);
-          //console.log(`exstr`, exstr);
-          // const find = Lodash.filter(
-          //   finalDisplayData,
-          //   z => z.orderdate === orderdate,
-          // );
-          //if (find.length === 0) {
-            finalDisplayData.push({
-              orderdate: orderdate,
-              serviceName: serviceName,
-              extraDisplayArray: exstr,
-              message: message,
-              price: total,
-              counter: quantity || 0,
-            });
-          //}
+      //let pppp = groupByProduct[keyx];
+      Lodash.map(allDatas, firspos => {
+        const {
+          extras,
+          message,
+          price,
+          serviceName,
+          orderdate,
+          quantity,
+        } = firspos;
+        let total = Number(price);
+        // let found = false;
+        // for (let lu = index + 1; lu < pppp.length; lu++) {
+        //   const cc = pppp[lu];
+        //   const check = this.objectsEqual(extras, cc.extras);
+        //   if (check && message === cc.message) {
+        //     found = true;
+        //     total += Number(cc.price);
+        //   }
+        // }
+        //console.log(`found`, found);
+        //if (find === undefined) {
+        const exstr = Helper.groupExtraWithCountString(extras, false);
+        //console.log(`exstr`, exstr);
+        // const find = Lodash.filter(
+        //   finalDisplayData,
+        //   z => z.orderdate === orderdate,
+        // );
+        //if (find.length === 0) {
+        finalDisplayData.push({
+          orderdate: orderdate,
+          serviceName: serviceName,
+          extraDisplayArray: exstr,
+          message: message,
+          price: total,
+          counter: quantity || 0,
+        });
+        //}
 
-          //}
+        //}
         //});
       });
       this.setState(
@@ -262,7 +299,8 @@ export default class TrackOrderPage extends React.Component {
           businessMessage: allDatas[0].business_message,
           deliveryPrices: allDatas[0].deliveryprice,
           allDatasOg: allDatas,
-          orderidList: firstData.orderidList === undefined ? [] : firstData.orderidList,
+          orderidList:
+            firstData.orderidList === undefined ? [] : firstData.orderidList,
         },
         () => {
           Helper.networkHelperToken(
@@ -272,7 +310,7 @@ export default class TrackOrderPage extends React.Component {
             result => {
               this.setState({imageUrl: result.imageUrl});
             },
-            error => {
+            () => {
               //error
             },
           );
@@ -289,7 +327,7 @@ export default class TrackOrderPage extends React.Component {
           .format('YYYY-MM-DD HH');
         this.setState({convertTime: convertTime});
       },
-      error => {
+      () => {
         //console.log('err', error);
       },
     );
@@ -357,7 +395,7 @@ export default class TrackOrderPage extends React.Component {
   //   return fias;
   // }
 
-  renderRow(itemx, index) {
+  renderRow(itemx) {
     return (
       <View
         style={{
@@ -512,12 +550,12 @@ export default class TrackOrderPage extends React.Component {
                     );
                   }
                 },
-                er => {
+                () => {
                   this.setState({smp: false});
                 },
               );
             },
-            error => {},
+            () => {},
           );
         },
       },
@@ -526,195 +564,185 @@ export default class TrackOrderPage extends React.Component {
 
   render() {
     return (
-                <SafeAreaView
+      <SafeAreaView
         style={{flex: 1, backgroundColor: 'white'}}
         forceInset={{top: 'never'}}>
-
-      <Screen
-        style={{
-          backgroundColor: 'white',
-        }}>
-        <StatusBar barStyle="dark-content" backgroundColor="white" />
-        <DummyLoader
-          visibilty={this.state.progressView}
-          center={
-            <ScrollView
-              showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}>
-              <View>
-                {this.state.item !== null && this.state.item !== undefined ? (
-                  <Image
-                    styleName="large-wide"
-                    source={{uri: `${Pref.BASEURL}${this.state.imageUrl}`}}
-                    style={{height: sizeHeight(24), resizeMode: 'contain'}}
-                  />
-                ) : null}
-                <View
-                  style={{
-                    position: 'absolute',
-                    backgroundColor: 'transparent',
-                  }}>
-                  <NavigationBar
-                    styleName="inline no-border clear"
-                    leftComponent={
-                      <View
-                        styleName="horizontal space-between"
-                        style={{
-                          marginStart: 12,
-                        }}>
-                        <TouchableOpacity
-                          onPress={() => NavigationActions.goBack()}>
-                          <Icon
-                            name="arrow-forward"
-                            size={36}
-                            color="#292929"
-                            style={{
-                              padding: 4,
-                              backgroundColor: 'transparent',
-                            }}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    }
-                  />
-                </View>
-                {this.state.item !== null && this.state.item !== undefined ? (
-                  <>
-                    <View
-                      style={{
-                        flexDirection: 'column',
-                        marginStart: sizeWidth(4),
-                        marginVertical: sizeHeight(2),
-                        paddingHorizontal: sizeWidth(1),
-                      }}>
+        <Screen
+          style={{
+            backgroundColor: 'white',
+          }}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
+          <DummyLoader
+            visibilty={this.state.progressView}
+            center={
+              <ScrollView
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}>
+                <View>
+                  {this.state.item !== null && this.state.item !== undefined ? (
+                    <Image
+                      styleName="large-wide"
+                      source={{uri: `${Pref.BASEURL}${this.state.imageUrl}`}}
+                      style={{height: sizeHeight(24), resizeMode: 'contain'}}
+                    />
+                  ) : null}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      backgroundColor: 'transparent',
+                    }}>
+                    <NavigationBar
+                      styleName="inline no-border clear"
+                      leftComponent={
+                        <View
+                          styleName="horizontal space-between"
+                          style={{
+                            marginStart: 12,
+                          }}>
+                          <TouchableOpacity
+                            onPress={() => NavigationActions.goBack()}>
+                            <Icon
+                              name="arrow-forward"
+                              size={36}
+                              color="#292929"
+                              style={{
+                                padding: 4,
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      }
+                    />
+                  </View>
+                  {this.state.item !== null && this.state.item !== undefined ? (
+                    <>
                       <View
                         style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
+                          flexDirection: 'column',
+                          marginStart: sizeWidth(4),
+                          marginVertical: sizeHeight(2),
+                          paddingHorizontal: sizeWidth(1),
                         }}>
-                        {this.state.businessName !== '' &&
-                        this.state.businessName !== null &&
-                        this.state.businessName !== undefined ? (
-                          <View style={{flexDirection: 'row'}}>
-                            <Title
-                              styleName="bold"
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}>
+                          {this.state.businessName !== '' &&
+                          this.state.businessName !== null &&
+                          this.state.businessName !== undefined ? (
+                            <View style={{flexDirection: 'row'}}>
+                              <Title
+                                styleName="bold"
+                                style={{
+                                  color: '#292929',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 18,
+                                  alignSelf: 'flex-start',
+                                  fontWeight: '700',
+                                  marginBottom: sizeHeight(1),
+                                }}>
+                                {this.state.businessName}
+                              </Title>
+                            </View>
+                          ) : null}
+                          {this.state.idorder !== null &&
+                          this.state.idorder !== undefined ? (
+                            <Subtitle
                               style={{
                                 color: '#292929',
                                 fontFamily: 'Rubik',
-                                fontSize: 18,
                                 alignSelf: 'flex-start',
-                                fontWeight: '700',
-                                marginBottom: sizeHeight(1),
+                                fontWeight: '600',
+                                fontSize: 16,
+                                marginEnd: sizeWidth(1),
                               }}>
-                              {this.state.businessName}
-                            </Title>
+                              {`${i18n.t(k._106)} ${this.last3digitorder()}`}
+                            </Subtitle>
+                          ) : null}
+                        </View>
+
+                        {this.state.status === 1 ? (
+                          <View style={{flex: 1, flexDirection: 'row-reverse'}}>
+                            <Button
+                              style={{
+                                color: i18n.t(k.WHITE),
+                                marginBottom: sizeHeight(1),
+                                marginTop: sizeHeight(1),
+                                flex: 0.18,
+                                marginEnd: 3,
+                                //borderColor:'#292929',
+                                //borderWidth:1,
+                                elevation: 0,
+                                height: 42,
+                                backgroundColor: i18n.t(k.DACCF),
+                              }}
+                              mode="contained"
+                              dark={true}
+                              uppercase={true}
+                              color={'white'}
+                              onPress={this.cancelOrderClick}
+                              loading={false}>
+                              <Subtitle
+                                styleName="v-center h-center"
+                                style={{
+                                  color: 'white',
+                                  fontSize: 13,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                  marginBottom: -32,
+                                  height: '100%',
+                                  width: '100%',
+                                }}>
+                                {i18n.t(k.cancelButton)}
+                              </Subtitle>
+                            </Button>
+                            <View style={{flex: 0.82}} />
                           </View>
                         ) : null}
-                        {this.state.idorder !== null &&
-                        this.state.idorder !== undefined ? (
-                          <Subtitle
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'flex-start',
-                              fontWeight: '600',
-                              fontSize: 16,
-                              marginEnd: sizeWidth(1),
-                            }}>
-                            {`${i18n.t(k._106)} ${this.last3digitorder()}`}
-                          </Subtitle>
+
+                        {this.state.datas !== null &&
+                        this.state.datas.length > 0 ? (
+                          <FlatList
+                            extraData={this.state}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={false}
+                            data={this.state.datas}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({item: item, index}) =>
+                              this.renderRow(item)
+                            }
+                          />
                         ) : null}
-                      </View>
 
-                      {this.state.status === 1 ? (
-                        <View style={{flex: 1, flexDirection: 'row-reverse'}}>
-                          <Button
-                            style={{
-                              color: i18n.t(k.WHITE),
-                              marginBottom: sizeHeight(1),
-                              marginTop: sizeHeight(1),
-                              flex: 0.18,
-                              marginEnd: 3,
-                              //borderColor:'#292929',
-                              //borderWidth:1,
-                              elevation: 0,
-                              height: 42,
-                              backgroundColor: i18n.t(k.DACCF),
-                            }}
-                            mode="contained"
-                            dark={true}
-                            uppercase={true}
-                            color={'white'}
-                            onPress={this.cancelOrderClick}
-                            loading={false}>
-                            <Subtitle
-                              styleName="v-center h-center"
-                              style={{
-                                color: 'white',
-                                fontSize: 13,
-                                alignSelf: 'center',
-                                justifyContent: 'center',
-                                marginBottom: -32,
-                                height: '100%',
-                                width: '100%',
-                              }}>
-                              {i18n.t(k.cancelButton)}
-                            </Subtitle>
-                          </Button>
-                          <View style={{flex: 0.82}} />
-                        </View>
-                      ) : null}
-
-                      {this.state.datas !== null &&
-                      this.state.datas.length > 0 ? (
-                        <FlatList
-                          extraData={this.state}
-                          showsHorizontalScrollIndicator={false}
-                          showsVerticalScrollIndicator={false}
-                          data={this.state.datas}
-                          keyExtractor={(item, index) => index.toString()}
-                          renderItem={({item: item, index}) =>
-                            this.renderRow(item, index)
-                          }
-                        />
-                      ) : null}
-
-                      {/*<Subtitle style={{
+                        {/*<Subtitle style={{
                       color: '#292929',
                       fontFamily: 'Rubik',
                       alignSelf: 'flex-start',
                       fontSize: 14,
                      }}>{`${this.state.item.orderdate} : Order Date`}</Subtitle> */}
-                      {this.state.orderdate !== undefined &&
-                      this.state.orderdate !== '' &&
-                      this.state.orderdate !== null ? (
-                        <Subtitle
-                          style={{
-                            marginTop: sizeHeight(1),
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontWeight: '600',
-                            fontSize: 15,
-                          }}>
-                          {`${i18n.t(k._107)} ${Moment(
-                            this.state.orderdate,
-                          ).format(i18n.t(k.YYYY_DD_MM_HH_MM))}`}
-                        </Subtitle>
-                      ) : null}
-                      {this.state.deliveryPrices !== '' &&
-                      this.state.deliveryPrices !== null &&
-                      this.state.deliveryPrices !== undefined &&
-                      this.state.deliveryPrices > 0 ? (
-                        <Title
-                          style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontSize: 15,
-                            fontWeight: '400',
-                          }}>
-                          {`${i18n.t(k._17)}`}{' '}
+                        {this.state.orderdate !== undefined &&
+                        this.state.orderdate !== '' &&
+                        this.state.orderdate !== null ? (
+                          <Subtitle
+                            style={{
+                              marginTop: sizeHeight(1),
+                              color: '#292929',
+                              fontFamily: 'Rubik',
+                              alignSelf: 'flex-start',
+                              fontWeight: '600',
+                              fontSize: 15,
+                            }}>
+                            {`${i18n.t(k._107)} ${Moment(
+                              this.state.orderdate,
+                            ).format(i18n.t(k.YYYY_DD_MM_HH_MM))}`}
+                          </Subtitle>
+                        ) : null}
+                        {this.state.deliveryPrices !== '' &&
+                        this.state.deliveryPrices !== null &&
+                        this.state.deliveryPrices !== undefined &&
+                        this.state.deliveryPrices > 0 ? (
                           <Title
                             style={{
                               color: '#292929',
@@ -723,443 +751,431 @@ export default class TrackOrderPage extends React.Component {
                               fontSize: 15,
                               fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._6)}${this.state.deliveryPrices}`}
+                            {`${i18n.t(k._17)}`}{' '}
+                            <Title
+                              style={{
+                                color: '#292929',
+                                fontFamily: 'Rubik',
+                                alignSelf: 'flex-start',
+                                fontSize: 15,
+                                fontWeight: '400',
+                              }}>
+                              {`${i18n.t(k._6)}${this.state.deliveryPrices}`}
+                            </Title>
                           </Title>
-                        </Title>
-                      ) : null}
-                      {this.state.totalPrice !== '' &&
-                      this.state.totalPrice !== null &&
-                      this.state.totalPrice !== undefined ? (
-                        <Title
-                          style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontSize: 15,
-                            fontWeight: '400',
-                          }}>
-                          {`${i18n.t(k._108)}`}{' '}
+                        ) : null}
+                        {this.state.totalPrice !== '' &&
+                        this.state.totalPrice !== null &&
+                        this.state.totalPrice !== undefined ? (
                           <Title
                             style={{
                               color: '#292929',
                               fontFamily: 'Rubik',
                               alignSelf: 'flex-start',
                               fontSize: 15,
-                              fontWeight: '700',
+                              fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._6)}${this.state.totalPrice}`}
+                            {`${i18n.t(k._108)}`}{' '}
+                            <Title
+                              style={{
+                                color: '#292929',
+                                fontFamily: 'Rubik',
+                                alignSelf: 'flex-start',
+                                fontSize: 15,
+                                fontWeight: '700',
+                              }}>
+                              {`${i18n.t(k._6)}${this.state.totalPrice}`}
+                            </Title>
                           </Title>
-                        </Title>
-                      ) : null}
-                      {this.state.paid !== undefined ? (
-                        <Subtitle
-                          style={{
-                            color: '#6DC124',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontSize: 15,
-                          }}>
-                          {this.state.paid == 0 ? i18n.t(k._76) : i18n.t(k._75)}
-                        </Subtitle>
-                      ) : null}
-                      <View
-                        style={{
-                          height: 1,
-                          marginEnd: 6,
-                          backgroundColor: '#dedede',
-                          marginVertical: sizeHeight(1),
-                        }}
-                      />
-
-                      {this.state.businessMessage !== '' &&
-                      this.state.businessMessage !== null &&
-                      this.state.businessMessage !== undefined ? (
-                        <Title
-                          style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontSize: 15,
-                            marginTop: sizeHeight(2),
-                            marginBottom: sizeHeight(2),
-                            marginStart: sizeWidth(2),
-                            fontWeight: '400',
-                          }}>
-                          {`${i18n.t(k._109)} ${this.state.businessMessage}`}
-                        </Title>
-                      ) : null}
-
-                      {this.state.status === -1 ||
-                      this.state.status === -2 ? null : (
+                        ) : null}
+                        {this.state.paid !== undefined ? (
+                          <Subtitle
+                            style={{
+                              color: '#6DC124',
+                              fontFamily: 'Rubik',
+                              alignSelf: 'flex-start',
+                              fontSize: 15,
+                            }}>
+                            {this.state.paid == 0
+                              ? i18n.t(k._76)
+                              : i18n.t(k._75)}
+                          </Subtitle>
+                        ) : null}
                         <View
                           style={{
-                            justifyContent: 'space-evenly',
-                            marginBottom: sizeHeight(1),
-                          }}>
+                            height: 1,
+                            marginEnd: 6,
+                            backgroundColor: '#dedede',
+                            marginVertical: sizeHeight(1),
+                          }}
+                        />
+
+                        {this.state.businessMessage !== '' &&
+                        this.state.businessMessage !== null &&
+                        this.state.businessMessage !== undefined ? (
+                          <Title
+                            style={{
+                              color: '#292929',
+                              fontFamily: 'Rubik',
+                              alignSelf: 'flex-start',
+                              fontSize: 15,
+                              marginTop: sizeHeight(2),
+                              marginBottom: sizeHeight(2),
+                              marginStart: sizeWidth(2),
+                              fontWeight: '400',
+                            }}>
+                            {`${i18n.t(k._109)} ${this.state.businessMessage}`}
+                          </Title>
+                        ) : null}
+
+                        {this.state.status === -1 ||
+                        this.state.status === -2 ? null : (
                           <View
                             style={{
-                              flexDirection: 'row',
-                              marginTop: sizeHeight(1),
+                              justifyContent: 'space-evenly',
+                              marginBottom: sizeHeight(1),
                             }}>
                             <View
                               style={{
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
+                                flexDirection: 'row',
+                                marginTop: sizeHeight(1),
                               }}>
-                              <Image
-                                source={require(`./../res/images/package.png`)}
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  alignSelf: 'center',
-                                  marginTop: 8,
-                                  marginBottom: 8,
-                                }}
-                                tintColor={
-                                  this.state.status <= 1 ? i18n.t(k.EBBD) : ''
-                                }
-                              />
-
                               <View
                                 style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                            </View>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                marginHorizontal: sizeWidth(3),
-                              }}>
-                              <Title
-                                styleName="bold"
-                                style={{
-                                  color:
-                                    this.state.status <= 1
-                                      ? '#5EBBD7'
-                                      : '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 14,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                 }}>
-                                {i18n.t(k._110)}
-                              </Title>
-                              <Subtitle
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  alignSelf: 'flex-start',
-                                  fontSize: 14,
-                                }}>
-                                {i18n.t(k._77)}
-                              </Subtitle>
-                            </View>
-                          </View>
-                          <View style={{flexDirection: 'row'}}>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}>
-                              <Image
-                                source={require(`./../res/images/clock.png`)}
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  alignSelf: 'center',
-                                  marginTop: 8,
-                                  marginBottom: 8,
-                                }}
-                                tintColor={
-                                  this.state.status === 2
-                                    ? i18n.t(k.EBBD)
-                                    : i18n.t(k._57)
-                                }
-                              />
+                                <Image
+                                  source={require(`./../res/images/package.png`)}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    alignSelf: 'center',
+                                    marginTop: 8,
+                                    marginBottom: 8,
+                                  }}
+                                  tintColor={
+                                    this.state.status <= 1 ? i18n.t(k.EBBD) : ''
+                                  }
+                                />
 
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                              </View>
                               <View
                                 style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
+                                  flexDirection: 'column',
+                                  marginHorizontal: sizeWidth(3),
+                                }}>
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color:
+                                      this.state.status <= 1
+                                        ? '#5EBBD7'
+                                        : '#292929',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 14,
+                                    alignSelf: 'flex-start',
+                                    fontWeight: '700',
+                                  }}>
+                                  {i18n.t(k._110)}
+                                </Title>
+                                <Subtitle
+                                  style={{
+                                    color: '#292929',
+                                    fontFamily: 'Rubik',
+                                    alignSelf: 'flex-start',
+                                    fontSize: 14,
+                                  }}>
+                                  {i18n.t(k._77)}
+                                </Subtitle>
+                              </View>
                             </View>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                marginHorizontal: sizeWidth(3),
-                              }}>
-                              <Title
-                                styleName="bold"
+                            <View style={{flexDirection: 'row'}}>
+                              <View
                                 style={{
-                                  color:
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                <Image
+                                  source={require(`./../res/images/clock.png`)}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    alignSelf: 'center',
+                                    marginTop: 8,
+                                    marginBottom: 8,
+                                  }}
+                                  tintColor={
                                     this.state.status === 2
-                                      ? '#5EBBD7'
-                                      : '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 14,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
-                                }}>
-                                {i18n.t(k._111)}
-                              </Title>
-                              <Subtitle
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  alignSelf: 'flex-start',
-                                  fontSize: 14,
-                                }}>
-                                {i18n.t(k._78)}
-                              </Subtitle>
-                            </View>
-                          </View>
-                          <View style={{flexDirection: 'row'}}>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}>
-                              <Image
-                                source={require(`./../res/images/Tracking.png`)}
-                                style={{
-                                  width: 29,
-                                  height: 24,
-                                  alignSelf: 'center',
-                                  marginTop: 8,
-                                  marginBottom: 8,
-                                }}
-                                tintColor={
-                                  this.state.status === 3
-                                    ? i18n.t(k.EBBD)
-                                    : i18n.t(k._57)
-                                }
-                              />
+                                      ? i18n.t(k.EBBD)
+                                      : i18n.t(k._57)
+                                  }
+                                />
 
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                              </View>
                               <View
                                 style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
-                              <View
-                                style={{
-                                  height: 8,
-                                  width: 2,
-                                  backgroundColor: '#292929',
-                                  marginTop: 2,
-                                  marginBottom: 2,
-                                }}
-                              />
+                                  flexDirection: 'column',
+                                  marginHorizontal: sizeWidth(3),
+                                }}>
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color:
+                                      this.state.status === 2
+                                        ? '#5EBBD7'
+                                        : '#292929',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 14,
+                                    alignSelf: 'flex-start',
+                                    fontWeight: '700',
+                                  }}>
+                                  {i18n.t(k._111)}
+                                </Title>
+                                <Subtitle
+                                  style={{
+                                    color: '#292929',
+                                    fontFamily: 'Rubik',
+                                    alignSelf: 'flex-start',
+                                    fontSize: 14,
+                                  }}>
+                                  {i18n.t(k._78)}
+                                </Subtitle>
+                              </View>
                             </View>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                marginHorizontal: sizeWidth(3),
-                              }}>
-                              <Title
-                                styleName="bold"
+                            <View style={{flexDirection: 'row'}}>
+                              <View
                                 style={{
-                                  color:
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                <Image
+                                  source={require(`./../res/images/Tracking.png`)}
+                                  style={{
+                                    width: 29,
+                                    height: 24,
+                                    alignSelf: 'center',
+                                    marginTop: 8,
+                                    marginBottom: 8,
+                                  }}
+                                  tintColor={
                                     this.state.status === 3
-                                      ? '#5EBBD7'
-                                      : '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 14,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
+                                      ? i18n.t(k.EBBD)
+                                      : i18n.t(k._57)
+                                  }
+                                />
+
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                                <View
+                                  style={{
+                                    height: 8,
+                                    width: 2,
+                                    backgroundColor: '#292929',
+                                    marginTop: 2,
+                                    marginBottom: 2,
+                                  }}
+                                />
+                              </View>
+                              <View
+                                style={{
+                                  flexDirection: 'column',
+                                  marginHorizontal: sizeWidth(3),
                                 }}>
-                                {this.state.deliveryss == 0
-                                  ? `${i18n.t(k._112)}`
-                                  : `${i18n.t(k._113)}`}
-                              </Title>
-                              <Subtitle
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color:
+                                      this.state.status === 3
+                                        ? '#5EBBD7'
+                                        : '#292929',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 14,
+                                    alignSelf: 'flex-start',
+                                    fontWeight: '700',
+                                  }}>
+                                  {this.state.deliveryss == 0
+                                    ? `${i18n.t(k._112)}`
+                                    : `${i18n.t(k._113)}`}
+                                </Title>
+                                <Subtitle
+                                  style={{
+                                    color: '#292929',
+                                    fontFamily: 'Rubik',
+                                    alignSelf: 'flex-start',
+                                    fontSize: 14,
+                                  }}>
+                                  {this.state.deliveryss == 0
+                                    ? `${i18n.t(k._114)}`
+                                    : `${i18n.t(k._115)}`}
+                                </Subtitle>
+                              </View>
+                            </View>
+                            <View style={{flexDirection: 'row'}}>
+                              <View
                                 style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  alignSelf: 'flex-start',
-                                  fontSize: 14,
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                 }}>
-                                {this.state.deliveryss == 0
-                                  ? `${i18n.t(k._114)}`
-                                  : `${i18n.t(k._115)}`}
-                              </Subtitle>
-                            </View>
-                          </View>
-                          <View style={{flexDirection: 'row'}}>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}>
-                              <Image
-                                source={require(`./../res/images/surface1.png`)}
-                                style={{
-                                  width: 24,
-                                  height: 29,
-                                  alignSelf: 'center',
-                                }}
-                                tintColor={
-                                  this.state.status >= 4
-                                    ? i18n.t(k.EBBD)
-                                    : i18n.t(k._57)
-                                }
-                              />
-                            </View>
-                            <View
-                              style={{
-                                flexDirection: 'column',
-                                marginHorizontal: sizeWidth(3),
-                              }}>
-                              <Title
-                                styleName="bold"
-                                style={{
-                                  color:
+                                <Image
+                                  source={require(`./../res/images/surface1.png`)}
+                                  style={{
+                                    width: 24,
+                                    height: 29,
+                                    alignSelf: 'center',
+                                  }}
+                                  tintColor={
                                     this.state.status >= 4
-                                      ? '#5EBBD7'
-                                      : '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 14,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
-                                }}>
-                                {this.state.deliveryss == 0
-                                  ? `${i18n.t(k._116)}`
-                                  : `${i18n.t(k._117)}`}
-                              </Title>
-                              <Subtitle
+                                      ? i18n.t(k.EBBD)
+                                      : i18n.t(k._57)
+                                  }
+                                />
+                              </View>
+                              <View
                                 style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  alignSelf: 'flex-start',
-                                  fontSize: 14,
+                                  flexDirection: 'column',
+                                  marginHorizontal: sizeWidth(3),
                                 }}>
-                                {i18n.t(k._118)}
-                              </Subtitle>
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color:
+                                      this.state.status >= 4
+                                        ? '#5EBBD7'
+                                        : '#292929',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 14,
+                                    alignSelf: 'flex-start',
+                                    fontWeight: '700',
+                                  }}>
+                                  {this.state.deliveryss == 0
+                                    ? `${i18n.t(k._116)}`
+                                    : `${i18n.t(k._117)}`}
+                                </Title>
+                                <Subtitle
+                                  style={{
+                                    color: '#292929',
+                                    fontFamily: 'Rubik',
+                                    alignSelf: 'flex-start',
+                                    fontSize: 14,
+                                  }}>
+                                  {i18n.t(k._118)}
+                                </Subtitle>
+                              </View>
                             </View>
                           </View>
-                        </View>
-                      )}
-                    </View>
-                  </>
-                ) : null}
-              </View>
-            </ScrollView>
-          }
-        />
-        <Loader isShow={this.state.smp} />
-      </Screen>
+                        )}
+                      </View>
+                    </>
+                  ) : null}
+                </View>
+              </ScrollView>
+            }
+          />
+          <Loader isShow={this.state.smp} />
+        </Screen>
       </SafeAreaView>
     );
   }
 }
-
-/**
- * StyleSheet
- */
-const styles = StyleSheet.create({
-  circleView: {
-    width: 42,
-    height: 42,
-    alignItems: i18n.t(k.CENTER),
-    justifyContent: i18n.t(k.CENTER),
-    borderWidth: 1,
-    borderColor: Colors.grey300,
-    borderRadius: 24,
-  },
-  loginButtonStyle: {
-    color: i18n.t(k.WHITE),
-    paddingVertical: sizeWidth(1.5),
-    marginHorizontal: sizeWidth(4),
-    marginBottom: sizeHeight(2),
-    marginTop: sizeHeight(2),
-    backgroundColor: i18n.t(k.DACCF),
-  },
-});

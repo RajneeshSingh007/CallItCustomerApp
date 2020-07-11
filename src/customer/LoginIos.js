@@ -5,16 +5,15 @@ import {
   StatusBar,
   StyleSheet,
   TouchableWithoutFeedback,
-  KeyboardAvoidingView,
   BackHandler,
   ScrollView,
   View,
+  NativeModules,
 } from 'react-native';
-import {Image, Screen, Subtitle, Title, Heading} from '@shoutem/ui';
+import {Image, Screen, Subtitle, Heading} from '@shoutem/ui';
 import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
-import {Button, Card, Colors, Snackbar, TextInput} from 'react-native-paper';
-import DeviceInfo from 'react-native-device-info';
+import {Button, Snackbar, TextInput} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {AlertDialog} from './../util/AlertDialog';
@@ -22,8 +21,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Loader} from './Loader';
 import {sizeHeight} from '../util/Size';
 import {SafeAreaView} from 'react-navigation';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import {requestNotifications} from 'react-native-permissions';
 
-export default class Login extends React.Component {
+export default class LoginIos extends React.Component {
   constructor(props) {
     super(props);
     this.bindingBack = this.bindingBack.bind(this);
@@ -44,6 +45,7 @@ export default class Login extends React.Component {
       firstTime: false,
       timerEnabled: 0,
       timercounter: 30,
+      fcmToken: '',
     };
   }
 
@@ -54,19 +56,30 @@ export default class Login extends React.Component {
       console.log(e);
     }
     BackHandler.addEventListener('hardwareBackPress', this.bindingBack);
+    requestNotifications(['alert', 'badge', 'sound']).then(
+      () => {
+        //alert('granted');
+      },
+    );
+    //request token
+    PushNotificationIOS.requestPermissions().then(() => {
+      messaging()
+        .getToken()
+        .then(token => {
+          this.setState({fcmToken: token});
+        });
+    });
+    this.registerForPushNotificationsAsync();
+
     this.sigout = auth()
       .signOut()
-      .then(vale => {
-        console.log(vale);
+      .then(() => {
+        //console.log(vale);
       });
     this.unsubscribe = auth().onAuthStateChanged(user => {
       if (user) {
         const userx = user.toJSON();
         this.setState({user: user.toJSON(), progressView: true});
-        const mob = userx.phoneNumber
-          .trim()
-          .replace('+91', '')
-          .replace('+972', '');
         //console.log('mob', mob);
         const jsonData = JSON.stringify({
           value: this.state.mobile,
@@ -81,41 +94,45 @@ export default class Login extends React.Component {
             //////console.log(result);
             if (Helper.checkJson(result)) {
               const ty = result.idcustomer;
-              messaging()
-                .getToken()
-                .then(fcmToken => {
-                  if (fcmToken) {
-                    const tt = JSON.stringify({
-                      value: fcmToken,
-                    });
-
-                    //////console.log('deviceid', tt);
-                    Helper.networkHelperTokenPost(
-                      Pref.UpdateTokenUrl + ty,
-                      tt,
-                      Pref.methodPost,
-                      Pref.LASTTOKEN,
-                      result => {
-                        const token = result['token'];
-                        if (token !== '') {
-                          Pref.setVal(Pref.bearerToken, token);
-                          Pref.setVal(Pref.loggedStatus, true);
-                          Helper.itemClick(this.props, 'Home');
-                        }
-                      },
-                      error => {
-                        //////console.log('er', error);
-                        this.setState({progressView: false});
-                      },
-                    );
-                  } else {
-                    this.setState({
-                      alertContent: i18n.t(k._105),
-                      showAlert: true,
-                    });
-                    // user doesn't have a device token yet
-                  }
+              let tokenx = this.state.fcmToken;
+              if (tokenx == '' || tokenx == null) {
+                tokenx = NativeModules.Workaround.getToken();
+              }
+              //   messaging()
+              //     .getToken()
+              //     .then(fcmToken => {
+              if (tokenx !== '') {
+                const tt = JSON.stringify({
+                  value: tokenx,
                 });
+
+                //////console.log('deviceid', tt);
+                Helper.networkHelperTokenPost(
+                  Pref.UpdateTokenUrl + ty,
+                  tt,
+                  Pref.methodPost,
+                  Pref.LASTTOKEN,
+                  result => {
+                    const token = result['token'];
+                    if (token !== '') {
+                      Pref.setVal(Pref.bearerToken, token);
+                      Pref.setVal(Pref.loggedStatus, true);
+                      Helper.itemClick(this.props, 'Home');
+                    }
+                  },
+                  () => {
+                    //////console.log('er', error);
+                    this.setState({progressView: false});
+                  },
+                );
+              } else {
+                this.setState({
+                  alertContent: i18n.t(k._105),
+                  showAlert: true,
+                });
+                // user doesn't have a device token yet
+              }
+              //});
             } else {
               this.setState({exist: true, progressView: false});
               if (this.state.firstTime) {
@@ -125,7 +142,7 @@ export default class Login extends React.Component {
               }
             }
           },
-          error => {
+          () => {
             //////console.log('er', error);
             this.setState({progressView: false});
           },
@@ -137,8 +154,20 @@ export default class Login extends React.Component {
     // if (this.timerlisterner !== undefined) {
     //   clearInterval(this.timerlisterner);
     // }
-    // this.timerlisterner = setInterval(this.runtimer, 1000);
+    //this.timerlisterner = setInterval(this.runtimer, 1000);
   }
+
+  registerForPushNotificationsAsync = async () => {
+    try {
+      await messaging().requestPermission();
+      const fcmToken = await messaging().getToken();
+      // Save
+      this.setState({fcmToken: fcmToken});
+    } catch (error) {
+      // Handle error
+      //alert(error);
+    }
+  };
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.bindingBack);
@@ -202,7 +231,7 @@ export default class Login extends React.Component {
         if (this.state.confirmResult) {
           this.state.confirmResult
             .confirm(tt)
-            .then(user => {
+            .then(() => {
               //////console.log('user', user);
               const jsonData = JSON.stringify({
                 value: this.state.mobile,
@@ -217,65 +246,65 @@ export default class Login extends React.Component {
                   console.log('checkuserExists', result);
                   if (Helper.checkJson(result)) {
                     const ty = result.idcustomer;
-                    messaging()
-                      .getToken()
-                      .then(fcmToken => {
-                        if (fcmToken) {
-                          const tt = JSON.stringify({
-                            value: fcmToken,
-                          });
+                    let tokenx = this.state.fcmToken;
+                    if (tokenx == '' || tokenx == null) {
+                      tokenx = NativeModules.Workaround.getToken();
+                    }
+                    // messaging()
+                    //   .getToken()
+                    //   .then(fcmToken => {
+                    if (tokenx !== '') {
+                      const tt = JSON.stringify({
+                        value: tokenx,
+                      });
 
-                          console.log('datasendDevicetoken', tt, ty);
-                          Helper.networkHelperTokenPost(
-                            Pref.UpdateTokenUrl + ty,
-                            tt,
-                            Pref.methodPost,
-                            Pref.LASTTOKEN,
-                            result => {
-                              console.log(
-                                'updateCustomerDeviceApi Success',
-                                result,
-                              );
-                              const token = result['token'];
-                              if (token !== '') {
-                                Pref.setVal(Pref.bearerToken, token);
-                                Pref.setVal(Pref.loggedStatus, true);
-                                Helper.itemClick(this.props, 'Home');
-                              }
-                            },
-                            error => {
-                              console.log('updateCustomerDevice Error', error);
-                              this.setState({
-                                progressView: false,
-                                smp: false,
-                              });
-                            },
+                      console.log('datasendDevicetoken', tt, ty);
+                      Helper.networkHelperTokenPost(
+                        Pref.UpdateTokenUrl + ty,
+                        tt,
+                        Pref.methodPost,
+                        Pref.LASTTOKEN,
+                        result => {
+                          console.log(
+                            'updateCustomerDeviceApi Success',
+                            result,
                           );
-                        } else {
+                          const token = result['token'];
+                          if (token !== '') {
+                            Pref.setVal(Pref.bearerToken, token);
+                            Pref.setVal(Pref.loggedStatus, true);
+                            Helper.itemClick(this.props, 'Home');
+                          }
+                        },
+                        error => {
+                          console.log('updateCustomerDevice Error', error);
                           this.setState({
-                            alertContent: i18n.t(k._105),
-                            showAlert: true,
+                            progressView: false,
                             smp: false,
                           });
-                          // user doesn't have a device token yet
-                        }
+                        },
+                      );
+                    } else {
+                      this.setState({
+                        alertContent: i18n.t(k._105),
+                        showAlert: true,
+                        smp: false,
                       });
+                      // user doesn't have a device token yet
+                    }
+                    //});
                   } else {
                     this.setState({
                       exist: true,
                       progressView: false,
                       smp: false,
                     });
-                    Helper.passParamItemClick(
-                      this.props,
-                      'SignupPage',
-                      {
-                        mobile: this.state.mobile,
-                      },
-                    );
+                    Helper.passParamItemClick(this.props, 'SignupPage', {
+                      mobile: this.state.mobile,
+                    });
                   }
                 },
-                error => {
+                () => {
                   //////console.log('er', error);
                   this.setState({progressView: false, smp: false});
                 },
@@ -283,7 +312,7 @@ export default class Login extends React.Component {
               //this.setState({ progressView: false });
               //Helper.passParamItemClick(this.props, "Login", { mobile: this.state.mobile, });
             })
-            .catch(error => {
+            .catch(() => {
               this.setState({
                 progressView: false,
                 message: i18n.t(k._102),
@@ -314,7 +343,7 @@ export default class Login extends React.Component {
           timercounter: 30,
         });
       })
-      .catch(error => {
+      .catch(() => {
         //////console.log('error', error);
         this.setState({
           message: i18n.t(k._103),

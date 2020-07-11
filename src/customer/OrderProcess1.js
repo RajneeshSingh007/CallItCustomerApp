@@ -4,42 +4,32 @@ import React from 'react';
 import {
   SectionList,
   FlatList,
-  SafeAreaView,
-  StatusBar,
   StyleSheet,
   Platform,
   TouchableWithoutFeedback,
   BackHandler,
-  Keyboard,
-  KeyboardAvoidingView,
   UIManager,
   Alert,
   Animated,
-  ActivityIndicator,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
   Button,
   Card,
-  Chip,
   Colors,
-  Surface,
-  List,
   TextInput,
-  Checkbox,
   Modal,
   Portal,
-  Provider,
 } from 'react-native-paper';
 import {
   View,
-  Caption,
   Divider,
   Heading,
   Image,
   NavigationBar,
   Row,
-  Screen,
   Subtitle,
   Title,
   TouchableOpacity,
@@ -48,17 +38,13 @@ import {
 } from '@shoutem/ui';
 import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
-import {Loader} from './Loader';
 import * as Lodash from 'lodash';
 import NavigationActions from '../util/NavigationActions';
 import Moment from 'moment';
-import {sizeHeight, sizeWidth, sizeFont} from '../util/Size';
-import PropType from 'prop-types';
+import {sizeHeight, sizeWidth} from '../util/Size';
 import DummyLoader from '../util/DummyLoader';
 import {AlertDialog} from './../util/AlertDialog';
-import {PropTypes} from 'mobx-react';
 import AccordationItem from './AccordationItem';
-import AccordItem from './AccordItem';
 
 const circleWidth = 224;
 const circleHeight = circleWidth;
@@ -74,18 +60,18 @@ let finishedList = [];
 let currentCat = '';
 
 export default class OrderProcess1 extends React.Component {
-  static propTypes = {
-    branchid: PropType.any,
-    tabNames: PropType.array,
-    eachTabData: PropType.array,
-    orderInc: PropType.func,
-    deliveryPrice: PropType.string,
-    customerdt: PropType.string,
-    namexx: PropType.number,
-    currentNames: PropType.number,
-    hasDelivery: PropTypes.number,
-    checkerDate: PropTypes.Object,
-  };
+  // static propTypes = {
+  //   branchid: PropType.any,
+  //   tabNames: PropType.array,
+  //   eachTabData: PropType.array,
+  //   orderInc: PropType.func,
+  //   deliveryPrice: PropType.string,
+  //   customerdt: PropType.string,
+  //   namexx: PropType.number,
+  //   currentNames: PropType.number,
+  //   hasDelivery: PropTypes.number,
+  //   checkerDate: PropTypes.Object,
+  // };
 
   constructor(props) {
     super(props);
@@ -192,11 +178,6 @@ export default class OrderProcess1 extends React.Component {
         const {lol} = this.props;
         let ooo = 0;
         if (lol !== undefined && lol !== null) {
-          const tu = Lodash.map(lol.extras, element => {
-            if (element !== null && element !== undefined) {
-              ooo += element.price;
-            }
-          });
           const valuex = Helper.removeQuotes(value) === '1' ? true : false;
           //console.log('lol', lol);
           selectedCirclePos = lol.selectedCirclePos;
@@ -365,7 +346,6 @@ export default class OrderProcess1 extends React.Component {
         const itemTotal = this.state.totalAmount;
         console.log('amt', itemTotal);
         const totalx = itemTotal + this.state.cartTotalAmount;
-        const counterInc = this.state.cartItemCounter + 1;
 
         const repeats = this.state.mainBaseCount;
 
@@ -520,7 +500,7 @@ export default class OrderProcess1 extends React.Component {
                       //servicemode: 2,
                     });
                   },
-                  error => {},
+                  () => {},
                 );
               }
             },
@@ -571,7 +551,7 @@ export default class OrderProcess1 extends React.Component {
         const parseService = result['service'];
         const parseExtra = result['extras'];
         const untouchedEx = JSON.parse(JSON.stringify(parseExtra));
-        let issextrass = Lodash.map(parseExtra, (el, index) => {
+        let issextrass = Lodash.map(parseExtra, el => {
           el.isselectedex = false;
           el.priceChanged = false;
           if (mode) {
@@ -635,7 +615,7 @@ export default class OrderProcess1 extends React.Component {
         });
         //alert(JSON.stringify(this.state.serviceExtra));
       },
-      error => {
+      () => {
         this.setState({progressView: false});
       },
     );
@@ -646,7 +626,7 @@ export default class OrderProcess1 extends React.Component {
    * if multipliable === 1, then select any number of extra
    *  if multipliable > 1, then select extra exactly from cat
    */
-  chipClick = (serviceExtrax, index, sectiontitle, secindex) => {
+  chipClick = (serviceExtrax, index) => {
     const cloneExtrass = JSON.parse(JSON.stringify(serviceExtrax));
     const freeListItem = JSON.parse(JSON.stringify(serviceExtrax));
     const pushObject = JSON.parse(
@@ -1105,7 +1085,7 @@ export default class OrderProcess1 extends React.Component {
     );
   }
 
-  renderCircleSelectedData(item, index) {
+  renderCircleSelectedData(item) {
     return (
       <View
         style={{
@@ -1159,7 +1139,6 @@ export default class OrderProcess1 extends React.Component {
     const check1 = currentTab === 3 && prevCircleTab === 0;
     const check2 = currentTab === 3 && prevCircleTab === 1;
     const check3 = currentTab === 2 && prevCircleTab === 0;
-    const check4 = currentTab === 2 && prevCircleTab === 2;
 
     if (check1 || check2 || check3) {
       let filterFull = this.returnCircleBasedData();
@@ -3276,165 +3255,169 @@ export default class OrderProcess1 extends React.Component {
             style={{
               flex: 1,
             }}>
-            {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-            <View
-              style={{
-                flex: 1,
-                marginTop: sizeHeight(4),
-                marginBottom: sizeHeight(8),
-                marginHorizontal: sizeWidth(4),
-                backgroundColor: 'white',
-                flexDirection: 'column',
-                position: 'relative',
-              }}>
-              <View
-                style={{
-                  flex: 0.1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  backgroundColor: 'white',
-                  marginTop: 6,
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  Keyboard.dismiss();
                 }}>
                 <View
-                  styleName="horizontal space-between"
                   style={{
-                    marginStart: sizeWidth(3),
-                    justifyContent: 'space-between',
                     flex: 1,
-                    flexDirection: 'row',
+                    marginTop: sizeHeight(4),
+                    marginBottom: sizeHeight(8),
+                    marginHorizontal: sizeWidth(4),
+                    backgroundColor: 'white',
+                    flexDirection: 'column',
+                    position: 'relative',
                   }}>
                   <View
-                    styleName="horizontal space-between"
                     style={{
-                      marginBottom: 2,
-                      marginTop: 4,
+                      flex: 0.1,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      backgroundColor: 'white',
+                      marginTop: 6,
                     }}>
-                    <TouchableOpacity onPress={() => this.backk()}>
-                      <Icon
-                        name="arrow-forward"
-                        size={36}
-                        color="#292929"
-                        style={{
-                          alignSelf: 'flex-start',
-                          backgroundColor: 'transparent',
-                        }}
-                      />
-                    </TouchableOpacity>
-
-                    <Title
-                      styleName="bold"
-                      style={{
-                        color: '#292929',
-                        fontFamily: 'Rubik',
-                        fontSize: 18,
-                        marginStart: 8,
-                        alignSelf: 'center',
-                        fontWeight: '700',
-                      }}>
-                      {Lodash.capitalize(this.state.serviceDetail.name)}
-                    </Title>
-                  </View>
-                  {!this.state.mode ? (
                     <View
+                      styleName="horizontal space-between"
                       style={{
+                        marginStart: sizeWidth(3),
+                        justifyContent: 'space-between',
+                        flex: 1,
                         flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        alignSelf: 'flex-end',
-                        marginTop: 8,
-                        marginEnd: 8,
                       }}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          const moreItem = this.state.mainBaseCount + 1;
-                          this.setState({
-                            mainBaseCount: moreItem,
-                          });
-                        }}>
-                        <View
-                          style={{
-                            borderRadius: 24,
-                            width: 48,
-                            height: 48,
-                            borderColor: '#3daccf',
-                            borderWidth: 1,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            alignContent: 'center',
-                          }}>
-                          <Icon
-                            name="add"
-                            size={24}
-                            color="#75D75E"
-                            style={{
-                              alignContent: 'center',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              alignSelf: 'center',
-                              backgroundColor: 'transparent',
-                            }}
-                          />
-                        </View>
-                      </TouchableOpacity>
-
-                      <Title
-                        styleName="bold"
+                      <View
+                        styleName="horizontal space-between"
                         style={{
-                          color: '#5EBBD7',
-                          fontFamily: 'Rubik',
-                          fontSize: 22,
-                          alignSelf: 'center',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          alignContent: 'center',
-                          fontWeight: '700',
-                          marginStart: 16,
-                          marginEnd: 16,
+                          marginBottom: 2,
+                          marginTop: 4,
                         }}>
-                        {this.state.mainBaseCount}
-                      </Title>
-
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (this.state.mainBaseCount > 1) {
-                            const lessItem = this.state.mainBaseCount - 1;
-                            this.setState({
-                              mainBaseCount: lessItem,
-                            });
-                          }
-                        }}>
-                        <View
-                          style={{
-                            borderRadius: 24,
-                            width: 48,
-                            height: 48,
-                            borderColor: '#3daccf',
-                            borderWidth: 1,
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            alignContent: 'center',
-                          }}>
+                        <TouchableOpacity onPress={() => this.backk()}>
                           <Icon
-                            name="remove"
-                            size={24}
-                            color="#D75E5E"
+                            name="arrow-forward"
+                            size={36}
+                            color="#292929"
                             style={{
-                              alignContent: 'center',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              alignSelf: 'center',
+                              alignSelf: 'flex-start',
                               backgroundColor: 'transparent',
                             }}
                           />
+                        </TouchableOpacity>
+
+                        <Title
+                          styleName="bold"
+                          style={{
+                            color: '#292929',
+                            fontFamily: 'Rubik',
+                            fontSize: 18,
+                            marginStart: 8,
+                            alignSelf: 'center',
+                            fontWeight: '700',
+                          }}>
+                          {Lodash.capitalize(this.state.serviceDetail.name)}
+                        </Title>
+                      </View>
+                      {!this.state.mode ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            alignContent: 'center',
+                            alignSelf: 'flex-end',
+                            marginTop: 8,
+                            marginEnd: 8,
+                          }}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              const moreItem = this.state.mainBaseCount + 1;
+                              this.setState({
+                                mainBaseCount: moreItem,
+                              });
+                            }}>
+                            <View
+                              style={{
+                                borderRadius: 24,
+                                width: 48,
+                                height: 48,
+                                borderColor: '#3daccf',
+                                borderWidth: 1,
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                              }}>
+                              <Icon
+                                name="add"
+                                size={24}
+                                color="#75D75E"
+                                style={{
+                                  alignContent: 'center',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  alignSelf: 'center',
+                                  backgroundColor: 'transparent',
+                                }}
+                              />
+                            </View>
+                          </TouchableOpacity>
+
+                          <Title
+                            styleName="bold"
+                            style={{
+                              color: '#5EBBD7',
+                              fontFamily: 'Rubik',
+                              fontSize: 22,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              alignContent: 'center',
+                              fontWeight: '700',
+                              marginStart: 16,
+                              marginEnd: 16,
+                            }}>
+                            {this.state.mainBaseCount}
+                          </Title>
+
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (this.state.mainBaseCount > 1) {
+                                const lessItem = this.state.mainBaseCount - 1;
+                                this.setState({
+                                  mainBaseCount: lessItem,
+                                });
+                              }
+                            }}>
+                            <View
+                              style={{
+                                borderRadius: 24,
+                                width: 48,
+                                height: 48,
+                                borderColor: '#3daccf',
+                                borderWidth: 1,
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                              }}>
+                              <Icon
+                                name="remove"
+                                size={24}
+                                color="#D75E5E"
+                                style={{
+                                  alignContent: 'center',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  alignSelf: 'center',
+                                  backgroundColor: 'transparent',
+                                }}
+                              />
+                            </View>
+                          </TouchableOpacity>
                         </View>
-                      </TouchableOpacity>
+                      ) : null}
                     </View>
-                  ) : null}
-                </View>
-                {/* <Image
+                    {/* <Image
 									source={{
 										uri: `${Pref.BASEURL}${this.state.clickitem.imageUrl}`,
 									}}
@@ -3454,138 +3437,142 @@ export default class OrderProcess1 extends React.Component {
 										borderBottomLeftRadius: 8,
 									}}
 								/> */}
-              </View>
-              <View
-                style={{
-                  flex: 0.59,
-                  backgroundColor: 'white',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  marginTop: 4,
-                }}>
-                <ScrollView
-                  contentContainerStyle={{
-                    flexGrow: 1,
-                  }}>
-                  <View styleName="vertical" style={{}}>
-                    {this.renderdesignCircle()}
-                    {this.state.showCircleExtraData.length > 0 ? (
-                      <FlatList
-                        extraData={this.state}
-                        nestedScrollEnabled={true}
-                        style={{
-                          marginVertical: 8,
-                          marginHorizontal: 12,
-                          flex: 1,
-                        }}
-                        showsHorizontalScrollIndicator={false}
-                        showsVerticalScrollIndicator={false}
-                        data={this.state.showCircleExtraData}
-                        keyExtractor={(item, index) => `${index}${item.name}`}
-                        renderItem={({item, index}) =>
-                          this.renderCircleSelectedData(item, index)
-                        }
-                      />
-                    ) : null}
                   </View>
-                </ScrollView>
-              </View>
-              <View
-                style={{
-                  flex: 0.31,
-                  backgroundColor: 'white',
-                  flexDirection: 'column',
-                  marginTop: 4,
-                }}>
-                <View
-                  style={{
-                    position: 'absolute',
-                    width: '100%',
-                    bottom: 0,
-                    backgroundColor: 'white',
-                  }}>
-                  <Title
-                    styleName="bold v-center h-center"
+                  <View
                     style={{
-                      color: '#292929',
-                      fontFamily: 'Rubik',
-                      alignSelf: 'flex-start',
-                      fontSize: 16,
-                      marginStart: sizeWidth(4.5),
-                      fontWeight: '700',
+                      flex: 0.59,
                       backgroundColor: 'white',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      marginTop: 4,
                     }}>
-                    {`${i18n.t(k._67)}`}
-                  </Title>
-                  <TextInput
-                    mode="flat"
-                    label={i18n.t(k._68)}
-                    underlineColor="transparent"
-                    underlineColorAndroid="transparent"
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginStart: sizeWidth(4.5),
-                      },
-                    ]}
-                    placeholderTextColor={i18n.t(k.DEDEDE)}
-                    placeholder={i18n.t(k._68)}
-                    onChangeText={value =>
-                      this.setState({
-                        message: value,
-                      })
-                    }
-                    value={this.state.message}
-                  />
-
-                  {!this.state.mode ? (
+                    <ScrollView
+                      contentContainerStyle={{
+                        flexGrow: 1,
+                      }}>
+                      <View styleName="vertical" style={{}}>
+                        {this.renderdesignCircle()}
+                        {this.state.showCircleExtraData.length > 0 ? (
+                          <FlatList
+                            extraData={this.state}
+                            nestedScrollEnabled={true}
+                            style={{
+                              marginVertical: 8,
+                              marginHorizontal: 12,
+                              flex: 1,
+                            }}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={false}
+                            data={this.state.showCircleExtraData}
+                            keyExtractor={(item, index) =>
+                              `${index}${item.name}`
+                            }
+                            renderItem={({item, index}) =>
+                              this.renderCircleSelectedData(item)
+                            }
+                          />
+                        ) : null}
+                      </View>
+                    </ScrollView>
+                  </View>
+                  <View
+                    style={{
+                      flex: 0.31,
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      marginTop: 4,
+                    }}>
                     <View
                       style={{
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        marginBottom: sizeHeight(1),
+                        position: 'absolute',
+                        width: '100%',
+                        bottom: 0,
+                        backgroundColor: 'white',
                       }}>
-                      <TouchableWithoutFeedback
-                        onPress={() => this.finalorders(true)}>
-                        <Subtitle
-                          styleName="bold v-center h-center"
-                          style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'center',
-                            justifyContent: 'center',
-                            fontSize: 14,
-                            fontWeight: '700',
-                          }}>
-                          {`${i18n.t(k._69)}`}
-                        </Subtitle>
-                      </TouchableWithoutFeedback>
-                    </View>
-                  ) : null}
-                  <TouchableOpacity
-                    styleName="flexible"
-                    onPress={() => this.finalorders(false)}>
-                    <View
-                      style={styles.buttonStyle}
-                      // mode="contained"
-                      // dark={true}
-                      // onPress={() => this.finalorders(false)}
-                      loading={false}>
-                      <Subtitle
+                      <Title
+                        styleName="bold v-center h-center"
                         style={{
-                          color: 'white',
+                          color: '#292929',
                           fontFamily: 'Rubik',
-                          fontSize: 18,
-                          alignSelf: 'center',
-                          justifyContent: 'center',
+                          alignSelf: 'flex-start',
+                          fontSize: 16,
+                          marginStart: sizeWidth(4.5),
+                          fontWeight: '700',
+                          backgroundColor: 'white',
                         }}>
-                        {this.state.mode ? i18n.t(k._70) : i18n.t(k._71)}
-                      </Subtitle>
+                        {`${i18n.t(k._67)}`}
+                      </Title>
+                      <TextInput
+                        mode="flat"
+                        label={i18n.t(k._68)}
+                        underlineColor="transparent"
+                        underlineColorAndroid="transparent"
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginStart: sizeWidth(4.5),
+                          },
+                        ]}
+                        placeholderTextColor={i18n.t(k.DEDEDE)}
+                        placeholder={i18n.t(k._68)}
+                        onChangeText={value =>
+                          this.setState({
+                            message: value,
+                          })
+                        }
+                        value={this.state.message}
+                      />
+
+                      {!this.state.mode ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            marginBottom: sizeHeight(1),
+                          }}>
+                          <TouchableWithoutFeedback
+                            onPress={() => this.finalorders(true)}>
+                            <Subtitle
+                              styleName="bold v-center h-center"
+                              style={{
+                                color: '#292929',
+                                fontFamily: 'Rubik',
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                                fontSize: 14,
+                                fontWeight: '700',
+                              }}>
+                              {`${i18n.t(k._69)}`}
+                            </Subtitle>
+                          </TouchableWithoutFeedback>
+                        </View>
+                      ) : null}
+                      <TouchableOpacity
+                        styleName="flexible"
+                        onPress={() => this.finalorders(false)}>
+                        <View
+                          style={styles.buttonStyle}
+                          // mode="contained"
+                          // dark={true}
+                          // onPress={() => this.finalorders(false)}
+                          loading={false}>
+                          <Subtitle
+                            style={{
+                              color: 'white',
+                              fontFamily: 'Rubik',
+                              fontSize: 18,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            {this.state.mode ? i18n.t(k._70) : i18n.t(k._71)}
+                          </Subtitle>
+                        </View>
+                      </TouchableOpacity>
                     </View>
-                  </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </View>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
           </View>
         </Modal>
       </Portal>
@@ -3784,7 +3771,6 @@ export default class OrderProcess1 extends React.Component {
       const imagelist = JSON.parse(JSON.stringify(pizzaImageList));
       console.log(`imagelist`, imagelist);
       backTrackCounter = 0;
-      let imageNumList = [];
       let extraImageItemList = [];
       let extraImageItemList1 = [];
       let extraImageItemList2 = [];
@@ -4004,10 +3990,6 @@ export default class OrderProcess1 extends React.Component {
 
     let filterFull2 = Lodash.filter(cartttt, io => io.finished !== undefined);
     if (finishedList.length > 0) {
-      const ooojjj = Lodash.map(finishedList, ui => {
-        filterFull2.push(ui);
-        return ui;
-      });
     }
     //console.log('filterFull2', filterFull2)
 
@@ -4015,7 +3997,6 @@ export default class OrderProcess1 extends React.Component {
     const catcat = Lodash.map(st, ok => {
       //let minSelect = 0;
       const data = Lodash.map(ok.data, fool => {
-        const find = Lodash.find(unooo, iiooo => iiooo.id === fool.id);
         if (fool.finished === undefined) {
           fool.isselectedex = false;
           //fool.price = find.price;
@@ -4036,7 +4017,6 @@ export default class OrderProcess1 extends React.Component {
         unooo,
         iiooo => iiooo.category_name === ok.title,
       );
-      const oldselect = ok.minselect;
       const findSelect = find.minimumSelect;
       //console.log(`lengthz`, filterxx.length)
       if (filterxx.length === 0) {
@@ -4246,159 +4226,166 @@ export default class OrderProcess1 extends React.Component {
               contentContainerStyle={{
                 height: i18n.t(k._5),
               }}>
-              <View
-                style={{
-                  flex: 1,
-                }}>
-                {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-                <View style={{flex: 0.15}} />
-                <View
-                  style={{
-                    flex: 0.7,
-                    marginTop: sizeHeight(4),
-                    marginBottom: sizeHeight(8),
-                    marginHorizontal: sizeWidth(4),
-                    backgroundColor: 'white',
-                    flexDirection: 'column',
-                    position: 'relative',
+              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    Keyboard.dismiss();
                   }}>
                   <View
                     style={{
-                      flex: 0.1,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      backgroundColor: 'white',
-                      marginTop: 6,
+                      flex: 1,
                     }}>
+                    {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
+                    <View style={{flex: 0.15}} />
                     <View
-                      styleName="vertical"
                       style={{
-                        marginStart: sizeWidth(3),
+                        flex: 0.7,
+                        marginTop: sizeHeight(4),
+                        marginBottom: sizeHeight(8),
+                        marginHorizontal: sizeWidth(4),
+                        backgroundColor: 'white',
+                        flexDirection: 'column',
+                        position: 'relative',
                       }}>
-                      <TouchableOpacity onPress={() => this.backk()}>
-                        <Icon
-                          name="arrow-forward"
-                          size={36}
-                          color="#292929"
+                      <View
+                        style={{
+                          flex: 0.1,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'white',
+                          marginTop: 6,
+                        }}>
+                        <View
+                          styleName="vertical"
                           style={{
-                            alignSelf: 'flex-start',
-                            backgroundColor: 'transparent',
-                          }}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      flex: 0.8,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      marginTop: 4,
-                    }}>
-                    <DummyLoader
-                      visibilty={this.state.progressView}
-                      style={{
-                        width: '100%',
-                        flexBasis: 1,
-                      }}
-                      center={
-                        <SectionList
-                          extraData={this.state}
-                          //style={{ flex: 0.5 }}
-                          showsVerticalScrollIndicator={true}
-                          showsHorizontalScrollIndicator={false}
-                          sections={this.state.serviceCat}
-                          keyExtractor={(item, index) => item.name}
-                          renderSectionHeader={({section}) => (
-                            <View
-                              styleName="vertical space-between"
+                            marginStart: sizeWidth(3),
+                          }}>
+                          <TouchableOpacity onPress={() => this.backk()}>
+                            <Icon
+                              name="arrow-forward"
+                              size={36}
+                              color="#292929"
                               style={{
-                                backgroundColor: 'white',
-                                marginStart: sizeWidth(3),
-                                marginVertical: sizeHeight(1),
-                              }}>
-                              <Title
-                                styleName="bold"
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 16,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
-                                }}>
-                                {Lodash.capitalize(section.title)}
-                              </Title>
-                            </View>
-                          )}
-                          renderItem={({item, index: secindex, section}) =>
-                            secindex == 0 ? (
-                              <FlatList
-                                numColumns={2}
-                                extraData={this.state}
-                                nestedScrollEnabled={true}
-                                style={{
-                                  marginStart: sizeWidth(3),
-                                  backgroundColor: 'white',
-                                }}
-                                showsHorizontalScrollIndicator={false}
-                                showsVerticalScrollIndicator={false}
-                                data={section.data}
-                                keyExtractor={(item, index) => item.name}
-                                renderItem={({item: extraItem, index}) =>
-                                  this.renderExcatItemRow(
-                                    extraItem,
-                                    index,
-                                    section.title,
-                                    secindex,
-                                  )
-                                }
-                              />
-                            ) : null
+                                alignSelf: 'flex-start',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      <View
+                        style={{
+                          flex: 0.8,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
+                        <DummyLoader
+                          visibilty={this.state.progressView}
+                          style={{
+                            width: '100%',
+                            flexBasis: 1,
+                          }}
+                          center={
+                            <SectionList
+                              extraData={this.state}
+                              //style={{ flex: 0.5 }}
+                              showsVerticalScrollIndicator={true}
+                              showsHorizontalScrollIndicator={false}
+                              sections={this.state.serviceCat}
+                              keyExtractor={item => item.name}
+                              renderSectionHeader={({section}) => (
+                                <View
+                                  styleName="vertical space-between"
+                                  style={{
+                                    backgroundColor: 'white',
+                                    marginStart: sizeWidth(3),
+                                    marginVertical: sizeHeight(1),
+                                  }}>
+                                  <Title
+                                    styleName="bold"
+                                    style={{
+                                      color: '#292929',
+                                      fontFamily: 'Rubik',
+                                      fontSize: 16,
+                                      alignSelf: 'flex-start',
+                                      fontWeight: '700',
+                                    }}>
+                                    {Lodash.capitalize(section.title)}
+                                  </Title>
+                                </View>
+                              )}
+                              renderItem={({index: secindex, section}) =>
+                                secindex == 0 ? (
+                                  <FlatList
+                                    numColumns={2}
+                                    extraData={this.state}
+                                    nestedScrollEnabled={true}
+                                    style={{
+                                      marginStart: sizeWidth(3),
+                                      backgroundColor: 'white',
+                                    }}
+                                    showsHorizontalScrollIndicator={false}
+                                    showsVerticalScrollIndicator={false}
+                                    data={section.data}
+                                    keyExtractor={item => item.name}
+                                    renderItem={({item: extraItem, index}) =>
+                                      this.renderExcatItemRow(
+                                        extraItem,
+                                        index,
+                                        section.title,
+                                        secindex,
+                                      )
+                                    }
+                                  />
+                                ) : null
+                              }
+                            />
                           }
                         />
-                      }
-                    />
-                  </View>
-                  <View
-                    style={{
-                      flex: 0.1,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      marginTop: 4,
-                    }}>
-                    <View
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                      }}>
-                      <TouchableOpacity
-                        styleName="flexible"
-                        onPress={() => this.finishDough()}>
+                      </View>
+                      <View
+                        style={{
+                          flex: 0.1,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
                         <View
-                          style={styles.buttonStyle}
-                          // mode="contained"
-                          // dark={true}
-                          // onPress={() => this.finalorders(false)}
-                          loading={false}>
-                          <Subtitle
-                            style={{
-                              color: 'white',
-                              fontFamily: 'Rubik',
-                              fontSize: 18,
-                              alignSelf: 'center',
-                              justifyContent: 'center',
-                            }}>
-                            {`${i18n.t(k.cirfinish)}`}
-                          </Subtitle>
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            bottom: 0,
+                            backgroundColor: 'white',
+                          }}>
+                          <TouchableOpacity
+                            styleName="flexible"
+                            onPress={() => this.finishDough()}>
+                            <View
+                              style={styles.buttonStyle}
+                              // mode="contained"
+                              // dark={true}
+                              // onPress={() => this.finalorders(false)}
+                              loading={false}>
+                              <Subtitle
+                                style={{
+                                  color: 'white',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 18,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                {`${i18n.t(k.cirfinish)}`}
+                              </Subtitle>
+                            </View>
+                          </TouchableOpacity>
                         </View>
-                      </TouchableOpacity>
+                      </View>
                     </View>
+                    <View style={{flex: 0.15}} />
                   </View>
-                </View>
-                <View style={{flex: 0.15}} />
-              </View>
+                </TouchableWithoutFeedback>
+              </KeyboardAvoidingView>
             </Modal>
           </Portal>
         ) : this.state.visibility === 1 ? (
@@ -4421,7 +4408,6 @@ export default class OrderProcess1 extends React.Component {
                     style={{
                       flex: 1,
                     }}>
-                    {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
                     <View
                       style={{
                         flex: 1,
@@ -4500,7 +4486,7 @@ export default class OrderProcess1 extends React.Component {
                               showsVerticalScrollIndicator={true}
                               showsHorizontalScrollIndicator={false}
                               sections={this.state.circleExtras}
-                              keyExtractor={(item, index) => item.name}
+                              keyExtractor={item => item.name}
                               renderSectionHeader={({section}) => (
                                 <View
                                   styleName="vertical space-between"
@@ -4522,7 +4508,7 @@ export default class OrderProcess1 extends React.Component {
                                   </Title>
                                 </View>
                               )}
-                              renderItem={({item, index: secindex, section}) =>
+                              renderItem={({index: secindex, section}) =>
                                 secindex == 0 ? (
                                   <FlatList
                                     numColumns={2}
@@ -4535,7 +4521,7 @@ export default class OrderProcess1 extends React.Component {
                                     showsHorizontalScrollIndicator={false}
                                     showsVerticalScrollIndicator={false}
                                     data={section.data}
-                                    keyExtractor={(item, index) => item.name}
+                                    keyExtractor={item => item.name}
                                     renderItem={({item: extraItem, index}) =>
                                       this.renderExcatItemRow(
                                         extraItem,
@@ -4656,463 +4642,368 @@ export default class OrderProcess1 extends React.Component {
                   style={{
                     flex: 1,
                   }}>
-                  {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-                  <View
-                    style={{
-                      flex: 1,
-                      marginTop: sizeHeight(4),
-                      marginBottom: sizeHeight(8),
-                      marginHorizontal: sizeWidth(4),
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      position: 'relative',
-                    }}>
-                    <View
-                      style={{
-                        flex: 0.23,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        backgroundColor: 'white',
-                        marginTop: 6,
-                      }}>
-                      <View
-                        styleName="vertical space-between"
-                        style={{
-                          marginStart: sizeWidth(3),
-                        }}>
-                        <TouchableOpacity onPress={() => this.backk()}>
-                          <Icon
-                            name="arrow-forward"
-                            size={36}
-                            color="#292929"
-                            style={{
-                              alignSelf: 'flex-start',
-                              backgroundColor: 'transparent',
-                            }}
-                          />
-                        </TouchableOpacity>
-                        <View
-                          styleName="horizontal space-between"
-                          style={{
-                            marginBottom: 2,
-                            marginTop: 4,
-                          }}>
-                          <Title
-                            styleName="bold"
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              fontSize: 18,
-                              alignSelf: 'flex-start',
-                              fontWeight: '700',
-                            }}>
-                            {Lodash.capitalize(this.state.serviceDetail.name)}
-                          </Title>
-                        </View>
-                        {!this.state.mode ? (
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              alignContent: 'center',
-                              marginTop: 8,
-                            }}>
-                            <TouchableOpacity
-                              onPress={() => {
-                                const moreItem = this.state.mainBaseCount + 1;
-                                this.setState({
-                                  mainBaseCount: moreItem,
-                                });
-                              }}>
-                              <View
-                                style={{
-                                  borderRadius: 24,
-                                  width: 48,
-                                  height: 48,
-                                  borderColor: '#3daccf',
-                                  borderWidth: 1,
-                                  alignSelf: 'center',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  alignContent: 'center',
-                                }}>
-                                <Icon
-                                  name="add"
-                                  size={24}
-                                  color="#75D75E"
-                                  style={{
-                                    alignContent: 'center',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    alignSelf: 'center',
-                                    backgroundColor: 'transparent',
-                                  }}
-                                />
-                              </View>
-                            </TouchableOpacity>
-
-                            <Title
-                              styleName="bold"
-                              style={{
-                                color: '#5EBBD7',
-                                fontFamily: 'Rubik',
-                                fontSize: 22,
-                                alignSelf: 'center',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                alignContent: 'center',
-                                fontWeight: '700',
-                                marginStart: 16,
-                                marginEnd: 16,
-                              }}>
-                              {this.state.mainBaseCount}
-                            </Title>
-
-                            <TouchableOpacity
-                              onPress={() => {
-                                if (this.state.mainBaseCount > 1) {
-                                  const lessItem = this.state.mainBaseCount - 1;
-                                  this.setState({
-                                    mainBaseCount: lessItem,
-                                  });
-                                }
-                              }}>
-                              <View
-                                style={{
-                                  borderRadius: 24,
-                                  width: 48,
-                                  height: 48,
-                                  borderColor: '#3daccf',
-                                  borderWidth: 1,
-                                  alignSelf: 'center',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  alignContent: 'center',
-                                }}>
-                                <Icon
-                                  name="remove"
-                                  size={24}
-                                  color="#D75E5E"
-                                  style={{
-                                    alignContent: 'center',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    alignSelf: 'center',
-                                    backgroundColor: 'transparent',
-                                  }}
-                                />
-                              </View>
-                            </TouchableOpacity>
-                          </View>
-                        ) : null}
-                      </View>
-                      <Image
-                        source={{
-                          uri: `${Pref.BASEURL}${
-                            this.state.clickitem.imageUrl
-                          }`,
-                        }}
-                        style={{
-                          width: 96,
-                          height: 96,
-                          marginTop: 4,
-                          marginStart: 8,
-                          marginEnd: 8,
-                          borderTopEndRadius: 8,
-                          borderTopLeftRadius: 8,
-                          borderTopRightRadius: 8,
-                          borderTopStartRadius: 8,
-                          borderBottomRightRadius: 8,
-                          borderBottomStartRadius: 8,
-                          borderBottomEndRadius: 8,
-                          borderBottomLeftRadius: 8,
-                        }}
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: 0.46,
-                        backgroundColor: 'white',
-                        flexDirection: 'column',
-                        marginTop: 4,
-                      }}>
-                      <Divider
-                        styleName="line"
-                        style={{
-                          marginTop: 4,
-                          marginBottom: 4,
-                        }}
-                      />
-                      <DummyLoader
-                        visibilty={this.state.progressView}
-                        center={
-                          <SectionList
-                            extraData={this.state}
-                            //style={{ flex: 0.5 }}
-                            showsVerticalScrollIndicator={true}
-                            showsHorizontalScrollIndicator={false}
-                            sections={this.state.serviceCat}
-                            keyExtractor={(item, index) => item.name}
-                            renderSectionHeader={({section}) => (
-                              <View
-                                styleName="vertical space-between"
-                                style={{
-                                  backgroundColor: 'white',
-                                  marginStart: sizeWidth(3),
-                                  marginVertical: sizeHeight(1),
-                                }}>
-                                <Title
-                                  styleName="bold"
-                                  style={{
-                                    color: '#292929',
-                                    fontFamily: 'Rubik',
-                                    fontSize: 16,
-                                    alignSelf: 'flex-start',
-                                    fontWeight: '700',
-                                  }}>
-                                  {Lodash.capitalize(section.title)}
-                                </Title>
-                              </View>
-                            )}
-                            renderItem={({item, index: secindex, section}) =>
-                              secindex == 0 ? (
-                                <FlatList
-                                  numColumns={2}
-                                  extraData={this.state}
-                                  nestedScrollEnabled={true}
-                                  style={{
-                                    marginStart: sizeWidth(3),
-                                    backgroundColor: 'white',
-                                  }}
-                                  showsHorizontalScrollIndicator={false}
-                                  showsVerticalScrollIndicator={false}
-                                  data={section.data}
-                                  keyExtractor={(item, index) => item.name}
-                                  renderItem={({item: extraItem, index}) =>
-                                    this.renderExcatItemRow(
-                                      extraItem,
-                                      index,
-                                      section.title,
-                                      secindex,
-                                    )
-                                  }
-                                />
-                              ) : null
-                            }
-                          />
-                        }
-                      />
-                    </View>
-                    <View
-                      style={{
-                        flex: 0.31,
-                        backgroundColor: 'white',
-                        flexDirection: 'column',
-                        marginTop: 4,
+                  <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+                    <TouchableWithoutFeedback
+                      onPress={() => {
+                        Keyboard.dismiss();
                       }}>
                       <View
                         style={{
-                          position: 'absolute',
-                          width: '100%',
-                          bottom: 0,
+                          flex: 1,
+                          marginTop: sizeHeight(4),
+                          marginBottom: sizeHeight(8),
+                          marginHorizontal: sizeWidth(4),
                           backgroundColor: 'white',
+                          flexDirection: 'column',
+                          position: 'relative',
                         }}>
-                        <Title
-                          styleName="bold v-center h-center"
+                        <View
                           style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'flex-start',
-                            fontSize: 16,
-                            marginStart: sizeWidth(4.5),
-                            fontWeight: '700',
+                            flex: 0.23,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
                             backgroundColor: 'white',
+                            marginTop: 6,
                           }}>
-                          {`${i18n.t(k._67)}`}
-                        </Title>
-                        <TextInput
-                          mode="flat"
-                          label={i18n.t(k._68)}
-                          underlineColor="transparent"
-                          underlineColorAndroid="transparent"
-                          style={[
-                            styles.inputStyle,
-                            {
-                              marginStart: sizeWidth(4.5),
-                            },
-                          ]}
-                          placeholderTextColor={i18n.t(k.DEDEDE)}
-                          placeholder={i18n.t(k._68)}
-                          onChangeText={value =>
-                            this.setState({
-                              message: value,
-                            })
-                          }
-                          value={this.state.message}
-                        />
-
-                        {!this.state.mode ? (
                           <View
+                            styleName="vertical space-between"
                             style={{
-                              flexDirection: 'row',
-                              justifyContent: 'center',
-                              marginBottom: sizeHeight(1),
+                              marginStart: sizeWidth(3),
                             }}>
-                            <TouchableWithoutFeedback
-                              onPress={() => this.finalorders(true)}>
-                              <Subtitle
-                                styleName="bold v-center h-center"
+                            <TouchableOpacity onPress={() => this.backk()}>
+                              <Icon
+                                name="arrow-forward"
+                                size={36}
+                                color="#292929"
+                                style={{
+                                  alignSelf: 'flex-start',
+                                  backgroundColor: 'transparent',
+                                }}
+                              />
+                            </TouchableOpacity>
+                            <View
+                              styleName="horizontal space-between"
+                              style={{
+                                marginBottom: 2,
+                                marginTop: 4,
+                              }}>
+                              <Title
+                                styleName="bold"
                                 style={{
                                   color: '#292929',
                                   fontFamily: 'Rubik',
-                                  alignSelf: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: 14,
+                                  fontSize: 18,
+                                  alignSelf: 'flex-start',
                                   fontWeight: '700',
                                 }}>
-                                {`${i18n.t(k._69)}`}
-                              </Subtitle>
-                            </TouchableWithoutFeedback>
+                                {Lodash.capitalize(
+                                  this.state.serviceDetail.name,
+                                )}
+                              </Title>
+                            </View>
+                            {!this.state.mode ? (
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  alignContent: 'center',
+                                  marginTop: 8,
+                                }}>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    const moreItem =
+                                      this.state.mainBaseCount + 1;
+                                    this.setState({
+                                      mainBaseCount: moreItem,
+                                    });
+                                  }}>
+                                  <View
+                                    style={{
+                                      borderRadius: 24,
+                                      width: 48,
+                                      height: 48,
+                                      borderColor: '#3daccf',
+                                      borderWidth: 1,
+                                      alignSelf: 'center',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      alignContent: 'center',
+                                    }}>
+                                    <Icon
+                                      name="add"
+                                      size={24}
+                                      color="#75D75E"
+                                      style={{
+                                        alignContent: 'center',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        alignSelf: 'center',
+                                        backgroundColor: 'transparent',
+                                      }}
+                                    />
+                                  </View>
+                                </TouchableOpacity>
+
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color: '#5EBBD7',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 22,
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    alignContent: 'center',
+                                    fontWeight: '700',
+                                    marginStart: 16,
+                                    marginEnd: 16,
+                                  }}>
+                                  {this.state.mainBaseCount}
+                                </Title>
+
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (this.state.mainBaseCount > 1) {
+                                      const lessItem =
+                                        this.state.mainBaseCount - 1;
+                                      this.setState({
+                                        mainBaseCount: lessItem,
+                                      });
+                                    }
+                                  }}>
+                                  <View
+                                    style={{
+                                      borderRadius: 24,
+                                      width: 48,
+                                      height: 48,
+                                      borderColor: '#3daccf',
+                                      borderWidth: 1,
+                                      alignSelf: 'center',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      alignContent: 'center',
+                                    }}>
+                                    <Icon
+                                      name="remove"
+                                      size={24}
+                                      color="#D75E5E"
+                                      style={{
+                                        alignContent: 'center',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        alignSelf: 'center',
+                                        backgroundColor: 'transparent',
+                                      }}
+                                    />
+                                  </View>
+                                </TouchableOpacity>
+                              </View>
+                            ) : null}
                           </View>
-                        ) : null}
-                        <TouchableOpacity
-                          styleName="flexible"
-                          onPress={() => this.finalorders(false)}>
+                          <Image
+                            source={{
+                              uri: `${Pref.BASEURL}${
+                                this.state.clickitem.imageUrl
+                              }`,
+                            }}
+                            style={{
+                              width: 96,
+                              height: 96,
+                              marginTop: 4,
+                              marginStart: 8,
+                              marginEnd: 8,
+                              borderTopEndRadius: 8,
+                              borderTopLeftRadius: 8,
+                              borderTopRightRadius: 8,
+                              borderTopStartRadius: 8,
+                              borderBottomRightRadius: 8,
+                              borderBottomStartRadius: 8,
+                              borderBottomEndRadius: 8,
+                              borderBottomLeftRadius: 8,
+                            }}
+                          />
+                        </View>
+
+                        <View
+                          style={{
+                            flex: 0.46,
+                            backgroundColor: 'white',
+                            flexDirection: 'column',
+                            marginTop: 4,
+                          }}>
+                          <Divider
+                            styleName="line"
+                            style={{
+                              marginTop: 4,
+                              marginBottom: 4,
+                            }}
+                          />
+                          <DummyLoader
+                            visibilty={this.state.progressView}
+                            center={
+                              <SectionList
+                                extraData={this.state}
+                                //style={{ flex: 0.5 }}
+                                showsVerticalScrollIndicator={true}
+                                showsHorizontalScrollIndicator={false}
+                                sections={this.state.serviceCat}
+                                keyExtractor={item => item.name}
+                                renderSectionHeader={({section}) => (
+                                  <View
+                                    styleName="vertical space-between"
+                                    style={{
+                                      backgroundColor: 'white',
+                                      marginStart: sizeWidth(3),
+                                      marginVertical: sizeHeight(1),
+                                    }}>
+                                    <Title
+                                      styleName="bold"
+                                      style={{
+                                        color: '#292929',
+                                        fontFamily: 'Rubik',
+                                        fontSize: 16,
+                                        alignSelf: 'flex-start',
+                                        fontWeight: '700',
+                                      }}>
+                                      {Lodash.capitalize(section.title)}
+                                    </Title>
+                                  </View>
+                                )}
+                                renderItem={({index: secindex, section}) =>
+                                  secindex == 0 ? (
+                                    <FlatList
+                                      numColumns={2}
+                                      extraData={this.state}
+                                      nestedScrollEnabled={true}
+                                      style={{
+                                        marginStart: sizeWidth(3),
+                                        backgroundColor: 'white',
+                                      }}
+                                      showsHorizontalScrollIndicator={false}
+                                      showsVerticalScrollIndicator={false}
+                                      data={section.data}
+                                      keyExtractor={item => item.name}
+                                      renderItem={({item: extraItem, index}) =>
+                                        this.renderExcatItemRow(
+                                          extraItem,
+                                          index,
+                                          section.title,
+                                          secindex,
+                                        )
+                                      }
+                                    />
+                                  ) : null
+                                }
+                              />
+                            }
+                          />
+                        </View>
+                        <View
+                          style={{
+                            flex: 0.31,
+                            backgroundColor: 'white',
+                            flexDirection: 'column',
+                            marginTop: 4,
+                          }}>
                           <View
-                            style={styles.buttonStyle}
-                            // mode="contained"
-                            // dark={true}
-                            // onPress={() => this.finalorders(false)}
-                            loading={false}>
-                            <Subtitle
+                            style={{
+                              position: 'absolute',
+                              width: '100%',
+                              bottom: 0,
+                              backgroundColor: 'white',
+                            }}>
+                            <Title
+                              styleName="bold v-center h-center"
                               style={{
-                                color: 'white',
+                                color: '#292929',
                                 fontFamily: 'Rubik',
-                                fontSize: 18,
-                                alignSelf: 'center',
-                                justifyContent: 'center',
+                                alignSelf: 'flex-start',
+                                fontSize: 16,
+                                marginStart: sizeWidth(4.5),
+                                fontWeight: '700',
+                                backgroundColor: 'white',
                               }}>
-                              {this.state.mode ? i18n.t(k._70) : i18n.t(k._71)}
-                            </Subtitle>
+                              {`${i18n.t(k._67)}`}
+                            </Title>
+                            <TextInput
+                              mode="flat"
+                              label={i18n.t(k._68)}
+                              underlineColor="transparent"
+                              underlineColorAndroid="transparent"
+                              style={[
+                                styles.inputStyle,
+                                {
+                                  marginStart: sizeWidth(4.5),
+                                },
+                              ]}
+                              placeholderTextColor={i18n.t(k.DEDEDE)}
+                              placeholder={i18n.t(k._68)}
+                              onChangeText={value =>
+                                this.setState({
+                                  message: value,
+                                })
+                              }
+                              value={this.state.message}
+                            />
+
+                            {!this.state.mode ? (
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  justifyContent: 'center',
+                                  marginBottom: sizeHeight(1),
+                                }}>
+                                <TouchableWithoutFeedback
+                                  onPress={() => this.finalorders(true)}>
+                                  <Subtitle
+                                    styleName="bold v-center h-center"
+                                    style={{
+                                      color: '#292929',
+                                      fontFamily: 'Rubik',
+                                      alignSelf: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: 14,
+                                      fontWeight: '700',
+                                    }}>
+                                    {`${i18n.t(k._69)}`}
+                                  </Subtitle>
+                                </TouchableWithoutFeedback>
+                              </View>
+                            ) : null}
+                            <TouchableOpacity
+                              styleName="flexible"
+                              onPress={() => this.finalorders(false)}>
+                              <View
+                                style={styles.buttonStyle}
+                                // mode="contained"
+                                // dark={true}
+                                // onPress={() => this.finalorders(false)}
+                                loading={false}>
+                                <Subtitle
+                                  style={{
+                                    color: 'white',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 18,
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                  }}>
+                                  {this.state.mode
+                                    ? i18n.t(k._70)
+                                    : i18n.t(k._71)}
+                                </Subtitle>
+                              </View>
+                            </TouchableOpacity>
                           </View>
-                        </TouchableOpacity>
+                        </View>
                       </View>
-                    </View>
-                  </View>
+                    </TouchableWithoutFeedback>
+                  </KeyboardAvoidingView>
                 </View>
               </Modal>
             </Portal>
           )
-        ) : this.state.visibility === 2 ? (
-          <View styleName="fill-parent">
-            <NavigationBar
-              styleName="inline no-border"
-              leftComponent={
-                <TouchableOpacity
-                  onPress={() =>
-                    this.setState({
-                      visibility: 0,
-                      totalAmount: 0,
-                      mainBaseAmount: 0,
-                      mainBaseCount: 1,
-                    })
-                  }>
-                  <Icon
-                    name="arrow-forward"
-                    size={24}
-                    color="black"
-                    style={{
-                      padding: 4,
-                      backgroundColor: 'transparent',
-                    }}
-                  />
-                </TouchableOpacity>
-              }
-              centerComponent={
-                <Heading style={{fontSize: 21}}>
-                  {' '}
-                  {i18n.t(k.YOUR_CART)}{' '}
-                </Heading>
-              }
-            />
-
-            <View>
-              <Row
-                styleName="vertical sm-gutter"
-                style={{
-                  padding: 8,
-                }}>
-                <View styleName="vertical space-between">
-                  <View styleName="horizontal space-between">
-                    <Title
-                      styleName="bold"
-                      style={{
-                        color: Colors.orange500,
-                      }}>
-                      {`${this.state.cartItemCounter} ${i18n.t(k.ITEMS)}`}
-                    </Title>
-                    <Title
-                      styleName="bold"
-                      style={{
-                        alignSelf: 'center',
-                        padding: 2,
-                      }}>
-                      {this.state.cartTotalAmount}
-                      {i18n.t(k.TOTAL)}
-                    </Title>
-                  </View>
-                </View>
-              </Row>
-            </View>
-            <Divider styleName="line" />
-            <View styleName="horizontal space-between sm-gutter">
-              <Subtitle>{i18n.t(k.YOU_MAY_ALSO_LIKE)}</Subtitle>
-            </View>
-            <View
-              styleName="vertical wrap space-between"
-              style={{
-                flex: 1,
-                marginTop: 4,
-                marginBottom: 4,
-                marginStart: 4,
-                marginEnd: 4,
-              }}>
-              <View styleName="horizontal wrap space-between">
-                <FlatList
-                  showsHorizontalScrollIndicator={this.state.scrollHide}
-                  horizontal
-                  extraData={this.state}
-                  data={this.state.multiArr}
-                  renderItem={({item: dExtra, index}) =>
-                    this.renderExcatDItemRow(dExtra, index)
-                  }
-                  keyExtractor={(item, index) => index}
-                />
-              </View>
-
-              <Button
-                style={styles.buttonStyle}
-                mode="contained"
-                dark={true}
-                onPress={() => {
-                  NavigationActions.navigate(i18n.t(k.FINALORDER), {
-                    orderData: this.state.cartDetails,
-                    id: this.state.branchid,
-                  });
-                }}
-                loading={false}>
-                <Subtitle
-                  style={{
-                    color: 'white',
-                  }}>
-                  {i18n.t(k.DELIVER_NOW)}
-                </Subtitle>
-              </Button>
-            </View>
-          </View>
-        ) : (
+        ) : this.state.visibility === 2 ? null : (
           <View styleName="fill-parent" style={styles.menuList}>
             {this.props.tabNames.length > 0 ? (
               <View

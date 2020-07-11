@@ -41,8 +41,7 @@ function Main() {
     return (
       <Provider {...stores}>
         <PaperProvider theme={theme}>
-          {/* {Platform.OS == 'ios' ? <AppIos /> : <App />} */}
-          <App />
+          {Platform.OS == 'ios' ? <AppIos /> : <App />}
         </PaperProvider>
       </Provider>
     );

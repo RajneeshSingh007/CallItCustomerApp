@@ -12,6 +12,7 @@ import {createMaterialBottomTabNavigator} from 'react-navigation-material-bottom
 import {Colors} from 'react-native-paper';
 import HomePage from './../customer/HomePage';
 import Login from './../customer/Login';
+//import LoginIos from './../customer/LoginIos';
 import AuthPage from './../customer/AuthPage';
 import Order from './../customer/OrdersPage';
 import Fav from './../customer/FavPage';
@@ -20,6 +21,7 @@ import NewBusinessPage from './../customer/NewBusinessPage';
 import ReviewsPage from './../customer/ReviewsPage';
 import TrackOrderPage from './../customer/TrackOrderPage';
 import SignupPage from './../customer/SignupPage';
+//import SignupPageIos from './../customer/SignupPageIos';
 import FinalOrder from './../customer/FinalOrder';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Image} from '@shoutem/ui';
@@ -227,13 +229,15 @@ const customerBottomtab = createMaterialBottomTabNavigator(
  */
 const loginNav = createStackNavigator(
   {
-    SignupPage: {screen: SignupPage},
-    Login: {screen: Login},
+    SignupPage: {screen: Platform.OS === 'ios' ? SignupPageIos : SignupPage},
+    //SignupPage: {screen: SignupPage},
+    Login: {screen: Platform.OS === 'ios' ? LoginIos : Login},
+    //Login: {screen: Login},
   },
 
   {
     headerMode: 'none',
-    initialRouteName: 'SignupPage',
+    initialRouteName: 'Login',
     cardStyle: {backgroundColor: 'white'},
     headerStyle: {
       backgroundColor: 'white',

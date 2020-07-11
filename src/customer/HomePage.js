@@ -22,6 +22,8 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import GetLocation from 'react-native-get-location';
@@ -34,6 +36,8 @@ import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import {sizeHeight, sizeWidth} from './../util/Size';
 import {SafeAreaView} from 'react-navigation';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS} from 'react-native-permissions';
 
 var now = new Date().getDay();
 
@@ -51,6 +55,12 @@ class HomePage extends React.Component {
     this.fetchbizsuggestions = this.fetchbizsuggestions.bind(this);
     this.fetchcatsuggestions = this.fetchcatsuggestions.bind(this);
     this.state = this.initialState();
+    if (Platform.OS === 'ios') {
+      // Geolocation.setRNConfiguration({
+      //   authorizationLevel: 'whenInUse',
+      //   skipPermissionRequests: false,
+      // });
+    }
   }
 
   initialState = () => {
@@ -106,6 +116,9 @@ class HomePage extends React.Component {
       Helper.requestPermissions();
     } catch (e) {
       //console.log(e);
+    }
+    if (Platform.OS === 'ios') {
+      //Geolocation.requestAuthorization();
     }
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(
@@ -167,22 +180,38 @@ class HomePage extends React.Component {
       const rem = Helper.removeQuotes(result);
 
       this.setState({token: rem}, () => {
-        RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-          interval: 10000,
-          fastInterval: 5000,
-        })
-          .then(data => {
-            this.geodatass();
+        if (Platform.OS === 'ios') {
+          // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
+          //   if (res == 'granted') {
+          //     this.geodatass();
+          //   } else {
+          //     this.setState({
+          //       progressView: true,
+          //       locaDialog: true,
+          //       backSearchshow: false,
+          //     });
+          //     this.fetchallbusinessss();
+          //     Pref.setVal(Pref.AskedLocationDailog, '0');
+          //   }
+          // });
+        } else {
+          RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+            interval: 10000,
+            fastInterval: 5000,
           })
-          .catch(err => {
-            this.setState({
-              progressView: true,
-              locaDialog: true,
-              backSearchshow: false,
+            .then(data => {
+              this.geodatass();
+            })
+            .catch(err => {
+              this.setState({
+                progressView: true,
+                locaDialog: true,
+                backSearchshow: false,
+              });
+              this.fetchallbusinessss();
+              Pref.setVal(Pref.AskedLocationDailog, '0');
             });
-            this.fetchallbusinessss();
-            Pref.setVal(Pref.AskedLocationDailog, '0');
-          });
+        }
         Helper.networkHelperToken(
           Pref.GetBusinessCats,
           Pref.methodGet,
@@ -2252,485 +2281,506 @@ class HomePage extends React.Component {
             </View>
           ) : null}
           {this.state.isCatgegoryClicked == 2 && this.state.filterView ? (
-            <ScrollView
-              showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps={'handled'}>
-              <View style={{flexDirection: 'column', height: sizeHeight(86)}}>
-                <TextInput
-                  mode="flat"
-                  label={i18n.t(k._35)}
-                  underlineColor="transparent"
-                  underlineColorAndroid="transparent"
-                  style={[styles.inputStyle, {marginTop: sizeHeight(2)}]}
-                  placeholderTextColor={i18n.t(k.DEDEDE)}
-                  onChangeText={value => this.fetchbizsuggestions(value)}
-                  value={this.state.filterBusiness}
-                />
-
-                {this.state.businessSuggestions.length > 0 ? (
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : ''}
+              style={{flex: 1}}>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  Keyboard.dismiss();
+                }}>
+                <ScrollView
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps={'handled'}>
                   <View
-                    style={{
-                      flexGrow: 1,
-                      //flexWrap: 'wrap',
-                      //marginVertical: sizeHeight(2),
-                      marginHorizontal: sizeWidth(6),
-                      marginTop: -2,
-                    }}>
-                    <Card elevation={2}>
-                      <FlatList
-                        //extraData={this.state}
-                        showsVerticalScrollIndicator={true}
-                        showsHorizontalScrollIndicator={false}
-                        data={this.state.businessSuggestions}
-                        nestedScrollEnabled={true}
-                        keyboardShouldPersistTaps={'handled'}
-                        ItemSeparatorComponent={() => (
-                          <View style={styles.listservicedivider} />
-                        )}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item: item, index}) =>
-                          this.renderRowBizSug(item, index, 1)
-                        }
-                      />
-                    </Card>
-                  </View>
-                ) : null}
+                    style={{flexDirection: 'column', height: sizeHeight(86)}}>
+                    <TextInput
+                      mode="flat"
+                      label={i18n.t(k._35)}
+                      underlineColor="transparent"
+                      underlineColorAndroid="transparent"
+                      style={[styles.inputStyle, {marginTop: sizeHeight(2)}]}
+                      placeholderTextColor={i18n.t(k.DEDEDE)}
+                      onChangeText={value => this.fetchbizsuggestions(value)}
+                      value={this.state.filterBusiness}
+                    />
 
-                <TouchableWithoutFeedback
-                  onPress={() => this.fetchcatsuggestions()}>
-                  <View
-                    style={[
-                      styles.inputStyle,
-                      {
-                        marginTop: 16,
-                        justifyContent: 'space-between',
-                        flexDirection: 'row-reverse',
-                      },
-                    ]}>
+                    {this.state.businessSuggestions.length > 0 ? (
+                      <View
+                        style={{
+                          flexGrow: 1,
+                          //flexWrap: 'wrap',
+                          //marginVertical: sizeHeight(2),
+                          marginHorizontal: sizeWidth(6),
+                          marginTop: -2,
+                        }}>
+                        <Card elevation={2}>
+                          <FlatList
+                            //extraData={this.state}
+                            showsVerticalScrollIndicator={true}
+                            showsHorizontalScrollIndicator={false}
+                            data={this.state.businessSuggestions}
+                            nestedScrollEnabled={true}
+                            keyboardShouldPersistTaps={'handled'}
+                            ItemSeparatorComponent={() => (
+                              <View style={styles.listservicedivider} />
+                            )}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({item: item, index}) =>
+                              this.renderRowBizSug(item, index, 1)
+                            }
+                          />
+                        </Card>
+                      </View>
+                    ) : null}
+
+                    <TouchableWithoutFeedback
+                      onPress={() => this.fetchcatsuggestions()}>
+                      <View
+                        style={[
+                          styles.inputStyle,
+                          {
+                            marginTop: 16,
+                            justifyContent: 'space-between',
+                            flexDirection: 'row-reverse',
+                          },
+                        ]}>
+                        <View
+                          style={{
+                            flex: 0.2,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Icon
+                            name={i18n.t(k.KEYBOARD_ARROW_DOWN)}
+                            size={24}
+                            color={'#777777'}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              alignSelf: 'center',
+                              marginHorizontal: sizeWidth(2),
+                            }}
+                          />
+                        </View>
+                        <Subtitle
+                          style={{
+                            color:
+                              this.state.filterCat === ''
+                                ? '#777777'
+                                : '#292929',
+                            fontSize: 16,
+                            alignSelf: 'center',
+                            marginHorizontal: sizeWidth(2),
+                          }}>
+                          {this.state.filterCat === ''
+                            ? i18n.t(k._36)
+                            : this.state.filterCat}
+                        </Subtitle>
+                      </View>
+                    </TouchableWithoutFeedback>
+                    {this.state.businessCatSuggestions.length > 0 &&
+                    this.state.catmodsss === 0 ? (
+                      <View
+                        style={{
+                          flexGrow: 1,
+                          //flexWrap: 'wrap',
+                          //marginVertical: sizeHeight(2),
+                          marginHorizontal: sizeWidth(6),
+                          marginTop: -2,
+                        }}>
+                        <Card elevation={2}>
+                          <FlatList
+                            //extraData={this.state}
+                            showsVerticalScrollIndicator={true}
+                            showsHorizontalScrollIndicator={false}
+                            data={this.state.businessCatSuggestions}
+                            nestedScrollEnabled={true}
+                            keyExtractor={(item, index) => index.toString()}
+                            ItemSeparatorComponent={() => (
+                              <View style={styles.listservicedivider} />
+                            )}
+                            renderItem={({item: item, index}) =>
+                              this.renderRowBizSug(item, index, 2)
+                            }
+                          />
+                        </Card>
+                      </View>
+                    ) : null}
+
+                    <Subtitle
+                      style={{
+                        color: '#777777',
+                        fontSize: 16,
+                        marginTop: sizeHeight(1.5),
+                        alignSelf: 'flex-start',
+                        marginStart: sizeWidth(6),
+                      }}>
+                      {i18n.t(k._37)}
+                    </Subtitle>
                     <View
                       style={{
-                        flex: 0.2,
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        flexDirection: 'row-reverse',
+                        borderRadius: 2,
+                        borderColor: '#dedede',
+                        borderStyle: 'solid',
+                        borderWidth: 1,
+                        backgroundColor: '#ffffff',
+                        marginHorizontal: sizeWidth(6),
+                        height: sizeHeight(6),
+                        flexWrap: 'wrap',
                       }}>
-                      <Icon
-                        name={i18n.t(k.KEYBOARD_ARROW_DOWN)}
-                        size={24}
-                        color={'#777777'}
+                      <TouchableWithoutFeedback
+                        onPress={() => this.setState({filterRating: 1})}>
+                        <View
+                          style={{
+                            flex: 0.5,
+                            flexDirection: 'row',
+                            height: '100%',
+                            backgroundColor:
+                              this.state.filterRating === 1
+                                ? '#3DACCF'
+                                : 'white',
+                            alignSelf: 'center',
+                            alignItems: 'center',
+                            alignContent: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Title
+                            styleName="bold"
+                            style={{
+                              color:
+                                this.state.filterRating === 1
+                                  ? 'white'
+                                  : '#777777',
+                              fontFamily: 'Rubik',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                              fontWeight: '400',
+                              justifyContent: 'center',
+                            }}>
+                            {i18n.t(k._38)}
+                          </Title>
+                        </View>
+                      </TouchableWithoutFeedback>
+                      <View
                         style={{
-                          width: 24,
-                          height: 24,
+                          width: 1,
+                          borderColor: '#dedede',
+                          borderStyle: 'solid',
+                          borderWidth: 1,
                           alignSelf: 'center',
-                          marginHorizontal: sizeWidth(2),
+                          height: '100%',
+                        }}
+                      />
+
+                      <TouchableWithoutFeedback
+                        onPress={() => this.setState({filterRating: 2})}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            flex: 0.5,
+                            height: '100%',
+                            alignSelf: 'center',
+                            alignItems: 'center',
+                            alignContent: 'center',
+                            justifyContent: 'center',
+                            backgroundColor:
+                              this.state.filterRating === 2
+                                ? '#3DACCF'
+                                : 'white',
+                          }}>
+                          <Title
+                            styleName="bold h-center v-center center"
+                            style={{
+                              color:
+                                this.state.filterRating === 2
+                                  ? 'white'
+                                  : '#777777',
+                              fontFamily: 'Rubik',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '400',
+                            }}>
+                            {i18n.t(k._39)}
+                          </Title>
+                        </View>
+                      </TouchableWithoutFeedback>
+                    </View>
+                    <Subtitle
+                      style={{
+                        color: '#777777',
+                        fontSize: 16,
+                        marginTop: sizeHeight(1.5),
+                        alignSelf: 'flex-start',
+                        marginStart: sizeWidth(6),
+                      }}>
+                      {`${i18n.t(k._40)}`}{' '}
+                    </Subtitle>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        marginHorizontal: sizeWidth(6),
+                        paddingVertical: sizeHeight(0.5),
+                      }}>
+                      <Subtitle
+                        style={{
+                          flex: 0.2,
+                          color: '#777777',
+                          fontSize: 16,
+                          alignSelf: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        {`${this.state.filterKM.toFixed(0)} ${i18n.t(k._)}`}{' '}
+                      </Subtitle>
+                      <Slider
+                        style={{flex: 0.8, alignSelf: 'center'}}
+                        minimumValue={1}
+                        maximumValue={20}
+                        value={this.state.filterKM}
+                        minimumTrackTintColor={i18n.t(k.EBBD)}
+                        maximumTrackTintColor="#777777"
+                        thumbTintColor={i18n.t(k.EBBD)}
+                        onValueChange={this.onValueChange.bind(this)}
+                        onSlidingComplete={e => {
+                          this.setState(() => {
+                            return {filterKM: e, filterDistance: true};
+                          });
                         }}
                       />
                     </View>
-                    <Subtitle
-                      style={{
-                        color:
-                          this.state.filterCat === '' ? '#777777' : '#292929',
-                        fontSize: 16,
-                        alignSelf: 'center',
-                        marginHorizontal: sizeWidth(2),
-                      }}>
-                      {this.state.filterCat === ''
-                        ? i18n.t(k._36)
-                        : this.state.filterCat}
-                    </Subtitle>
-                  </View>
-                </TouchableWithoutFeedback>
-                {this.state.businessCatSuggestions.length > 0 &&
-                this.state.catmodsss === 0 ? (
-                  <View
-                    style={{
-                      flexGrow: 1,
-                      //flexWrap: 'wrap',
-                      //marginVertical: sizeHeight(2),
-                      marginHorizontal: sizeWidth(6),
-                      marginTop: -2,
-                    }}>
-                    <Card elevation={2}>
-                      <FlatList
-                        //extraData={this.state}
-                        showsVerticalScrollIndicator={true}
-                        showsHorizontalScrollIndicator={false}
-                        data={this.state.businessCatSuggestions}
-                        nestedScrollEnabled={true}
-                        keyExtractor={(item, index) => index.toString()}
-                        ItemSeparatorComponent={() => (
-                          <View style={styles.listservicedivider} />
-                        )}
-                        renderItem={({item: item, index}) =>
-                          this.renderRowBizSug(item, index, 2)
-                        }
-                      />
-                    </Card>
-                  </View>
-                ) : null}
-
-                <Subtitle
-                  style={{
-                    color: '#777777',
-                    fontSize: 16,
-                    marginTop: sizeHeight(1.5),
-                    alignSelf: 'flex-start',
-                    marginStart: sizeWidth(6),
-                  }}>
-                  {i18n.t(k._37)}
-                </Subtitle>
-                <View
-                  style={{
-                    flexDirection: 'row-reverse',
-                    borderRadius: 2,
-                    borderColor: '#dedede',
-                    borderStyle: 'solid',
-                    borderWidth: 1,
-                    backgroundColor: '#ffffff',
-                    marginHorizontal: sizeWidth(6),
-                    height: sizeHeight(6),
-                    flexWrap: 'wrap',
-                  }}>
-                  <TouchableWithoutFeedback
-                    onPress={() => this.setState({filterRating: 1})}>
                     <View
                       style={{
-                        flex: 0.5,
+                        width: '100%',
+                        backgroundColor: '#d9d9d9',
+                        marginTop: sizeHeight(2),
+                        height: 1,
+                      }}
+                    />
+
+                    <View
+                      style={{
+                        marginHorizontal: sizeWidth(6),
                         flexDirection: 'row',
-                        height: '100%',
-                        backgroundColor:
-                          this.state.filterRating === 1 ? '#3DACCF' : 'white',
-                        alignSelf: 'center',
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        justifyContent: 'center',
+                        justifyContent: 'space-between',
+                        top: sizeHeight(2),
                       }}>
-                      <Title
-                        styleName="bold"
-                        style={{
-                          color:
-                            this.state.filterRating === 1 ? 'white' : '#777777',
-                          fontFamily: 'Rubik',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                          fontWeight: '400',
-                          justifyContent: 'center',
-                        }}>
-                        {i18n.t(k._38)}
-                      </Title>
-                    </View>
-                  </TouchableWithoutFeedback>
-                  <View
-                    style={{
-                      width: 1,
-                      borderColor: '#dedede',
-                      borderStyle: 'solid',
-                      borderWidth: 1,
-                      alignSelf: 'center',
-                      height: '100%',
-                    }}
-                  />
+                      <View style={{flexDirection: 'column'}}>
+                        <Subtitle
+                          style={{
+                            color: '#777777',
+                            fontSize: 16,
+                            alignSelf: 'flex-start',
+                          }}>{`${i18n.t(k._41)}`}</Subtitle>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterOpenNoww === 2
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterOpenNoww: 2,
+                                filterOpenNow: true,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
 
-                  <TouchableWithoutFeedback
-                    onPress={() => this.setState({filterRating: 2})}>
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 14,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._42)}
+                          </Subtitle>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterOpenNoww === 1
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterOpenNoww: 1,
+                                filterOpenNow: false,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
+
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._43)}
+                          </Subtitle>
+                        </View>
+                      </View>
+                      <View style={{flexDirection: 'column'}}>
+                        <Subtitle
+                          style={{
+                            color: '#777777',
+                            fontSize: 16,
+                            alignSelf: 'flex-start',
+                          }}>{`${i18n.t(k._44)}`}</Subtitle>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterDeliveryy === 2
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterDeliveryy: 2,
+                                filterDelivery: true,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
+
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._42)}
+                          </Subtitle>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterDeliveryy === 1
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterDeliveryy: 1,
+                                filterDelivery: false,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
+
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._43)}
+                          </Subtitle>
+                        </View>
+                      </View>
+                    </View>
                     <View
                       style={{
-                        flexDirection: 'row',
-                        flex: 0.5,
-                        height: '100%',
-                        alignSelf: 'center',
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        justifyContent: 'center',
-                        backgroundColor:
-                          this.state.filterRating === 2 ? '#3DACCF' : 'white',
-                      }}>
-                      <Title
-                        styleName="bold h-center v-center center"
-                        style={{
-                          color:
-                            this.state.filterRating === 2 ? 'white' : '#777777',
-                          fontFamily: 'Rubik',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                          justifyContent: 'center',
-                          fontWeight: '400',
-                        }}>
-                        {i18n.t(k._39)}
-                      </Title>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </View>
-                <Subtitle
-                  style={{
-                    color: '#777777',
-                    fontSize: 16,
-                    marginTop: sizeHeight(1.5),
-                    alignSelf: 'flex-start',
-                    marginStart: sizeWidth(6),
-                  }}>
-                  {`${i18n.t(k._40)}`}{' '}
-                </Subtitle>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    marginHorizontal: sizeWidth(6),
-                    paddingVertical: sizeHeight(0.5),
-                  }}>
-                  <Subtitle
-                    style={{
-                      flex: 0.2,
-                      color: '#777777',
-                      fontSize: 16,
-                      alignSelf: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    {`${this.state.filterKM.toFixed(0)} ${i18n.t(k._)}`}{' '}
-                  </Subtitle>
-                  <Slider
-                    style={{flex: 0.8, alignSelf: 'center'}}
-                    minimumValue={1}
-                    maximumValue={20}
-                    value={this.state.filterKM}
-                    minimumTrackTintColor={i18n.t(k.EBBD)}
-                    maximumTrackTintColor="#777777"
-                    thumbTintColor={i18n.t(k.EBBD)}
-                    onValueChange={this.onValueChange.bind(this)}
-                    onSlidingComplete={e => {
-                      this.setState(() => {
-                        return {filterKM: e, filterDistance: true};
-                      });
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#d9d9d9',
-                    marginTop: sizeHeight(2),
-                    height: 1,
-                  }}
-                />
-
-                <View
-                  style={{
-                    marginHorizontal: sizeWidth(6),
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    top: sizeHeight(2),
-                  }}>
-                  <View style={{flexDirection: 'column'}}>
-                    <Subtitle
-                      style={{
-                        color: '#777777',
-                        fontSize: 16,
-                        alignSelf: 'flex-start',
-                      }}>{`${i18n.t(k._41)}`}</Subtitle>
-                    <View
-                      style={{
+                        marginHorizontal: sizeWidth(6),
                         flexDirection: 'row',
                         justifyContent: 'space-between',
                       }}>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterOpenNoww === 2
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterOpenNoww: 2,
-                            filterOpenNow: true,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
+                      <View
+                        style={{flexDirection: 'column', top: sizeHeight(3.5)}}>
+                        <Subtitle
+                          style={{
+                            color: '#777777',
+                            fontSize: 16,
+                            alignSelf: 'flex-start',
+                          }}>{`${i18n.t(k._45)}`}</Subtitle>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterKusherr === 2
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterKusherr: 2,
+                                filterKusher: true,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
 
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 14,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._42)}
-                      </Subtitle>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterOpenNoww === 1
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterOpenNoww: 1,
-                            filterOpenNow: false,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._42)}
+                          </Subtitle>
+                          <Checkbox.Android
+                            status={
+                              this.state.filterKusherr === 1
+                                ? i18n.t(k.CHECKED)
+                                : i18n.t(k.UNCHECKED)
+                            }
+                            onPress={() =>
+                              this.setState({
+                                filterKusherr: 1,
+                                filterKusher: false,
+                              })
+                            }
+                            color={'#3DACCF'}
+                            uncheckedColor={i18n.t(k.DEDEDE1)}
+                          />
 
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._43)}
-                      </Subtitle>
+                          <Subtitle
+                            style={{
+                              color: '#777777',
+                              fontSize: 16,
+                              alignSelf: 'center',
+                            }}>
+                            {i18n.t(k._43)}
+                          </Subtitle>
+                        </View>
+                      </View>
                     </View>
+
+                    <Button
+                      styleName=" muted border"
+                      mode={i18n.t(k.CONTAINED)}
+                      uppercase={true}
+                      dark={true}
+                      loading={false}
+                      style={[styles.buttonStyle, {marginTop: sizeHeight(7.5)}]}
+                      onPress={this.onFilterClick}>
+                      <Subtitle
+                        style={{
+                          color: 'white',
+                        }}>
+                        {i18n.t(k._46)}
+                      </Subtitle>
+                    </Button>
                   </View>
-                  <View style={{flexDirection: 'column'}}>
-                    <Subtitle
-                      style={{
-                        color: '#777777',
-                        fontSize: 16,
-                        alignSelf: 'flex-start',
-                      }}>{`${i18n.t(k._44)}`}</Subtitle>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterDeliveryy === 2
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterDeliveryy: 2,
-                            filterDelivery: true,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
-
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._42)}
-                      </Subtitle>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterDeliveryy === 1
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterDeliveryy: 1,
-                            filterDelivery: false,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
-
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._43)}
-                      </Subtitle>
-                    </View>
-                  </View>
-                </View>
-                <View
-                  style={{
-                    marginHorizontal: sizeWidth(6),
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'column', top: sizeHeight(3.5)}}>
-                    <Subtitle
-                      style={{
-                        color: '#777777',
-                        fontSize: 16,
-                        alignSelf: 'flex-start',
-                      }}>{`${i18n.t(k._45)}`}</Subtitle>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterKusherr === 2
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterKusherr: 2,
-                            filterKusher: true,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
-
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._42)}
-                      </Subtitle>
-                      <Checkbox.Android
-                        status={
-                          this.state.filterKusherr === 1
-                            ? i18n.t(k.CHECKED)
-                            : i18n.t(k.UNCHECKED)
-                        }
-                        onPress={() =>
-                          this.setState({
-                            filterKusherr: 1,
-                            filterKusher: false,
-                          })
-                        }
-                        color={'#3DACCF'}
-                        uncheckedColor={i18n.t(k.DEDEDE1)}
-                      />
-
-                      <Subtitle
-                        style={{
-                          color: '#777777',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                        }}>
-                        {i18n.t(k._43)}
-                      </Subtitle>
-                    </View>
-                  </View>
-                </View>
-
-                <Button
-                  styleName=" muted border"
-                  mode={i18n.t(k.CONTAINED)}
-                  uppercase={true}
-                  dark={true}
-                  loading={false}
-                  style={[styles.buttonStyle, {marginTop: sizeHeight(7.5)}]}
-                  onPress={this.onFilterClick}>
-                  <Subtitle
-                    style={{
-                      color: 'white',
-                    }}>
-                    {i18n.t(k._46)}
-                  </Subtitle>
-                </Button>
-              </View>
-            </ScrollView>
+                </ScrollView>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
           ) : null}
 
           {this.state.showOrderNo && !this.state.filterView ? (

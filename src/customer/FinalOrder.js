@@ -12,6 +12,8 @@ import {
   BackHandler,
   Animated,
   Alert,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {
@@ -53,6 +55,8 @@ import {AlertDialog} from './../util/AlertDialog';
 import TextInputMask from 'react-native-text-input-mask';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS} from 'react-native-permissions';
 
 let branchData = null;
 var now = new Date().getDay();
@@ -148,10 +152,18 @@ export default class FinalOrder extends React.Component {
       creditCardImage: `${Pref.VisaCardImage}card.png`,
       paymentDoneAlready: false,
     };
-    console.log(this.state.creditCardImage);
+    if (Platform.OS === 'ios') {
+      // Geolocation.setRNConfiguration({
+      //   authorizationLevel: 'whenInUse',
+      //   skipPermissionRequests: false,
+      // });
+    }
   }
 
   componentDidMount() {
+    if (Platform.OS === 'ios') {
+      //Geolocation.requestAuthorization();
+    }
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(
       'willFocus',
@@ -183,17 +195,27 @@ export default class FinalOrder extends React.Component {
 
   work() {
     this.getAllData();
-    RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-      interval: 1000,
-      fastInterval: 500,
-    })
-      .then(data => {
-        this.getLoc();
+    if (Platform.OS === 'ios') {
+      // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
+      //   if (res == 'granted') {
+      //     this.getLoc();
+      //   } else {
+      //    this.setState({noLocationEnabled: true});
+      //   }
+      // });
+    } else {
+      RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 1000,
+        fastInterval: 500,
       })
-      .catch(err => {
-        //error
-        this.setState({noLocationEnabled: true});
-      });
+        .then(data => {
+          this.getLoc();
+        })
+        .catch(err => {
+          //error
+          this.setState({noLocationEnabled: true});
+        });
+    }
     //Pref.setVal(Pref.cardList, []);
     Pref.getVal(Pref.cardList, value => {
       const val = JSON.parse(value);
@@ -3026,388 +3048,400 @@ export default class FinalOrder extends React.Component {
               contentContainerStyle={{
                 height: i18n.t(k._5),
               }}>
-              <View
-                style={{
-                  flex: 1,
-                }}>
-                {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-                <View style={{flex: 0.15}} />
-                <View
-                  style={{
-                    flex: 0.7,
-                    marginTop: sizeHeight(4),
-                    marginBottom: sizeHeight(8),
-                    marginHorizontal: sizeWidth(4),
-                    backgroundColor: 'white',
-                    flexDirection: 'column',
-                    position: 'relative',
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : ''}
+                style={{flex: 1}}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    Keyboard.dismiss();
                   }}>
                   <View
                     style={{
-                      flex: 0.15,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      backgroundColor: 'white',
-                      marginTop: 6,
+                      flex: 1,
                     }}>
+                    <View style={{flex: 0.15}} />
                     <View
-                      styleName="horizontal"
                       style={{
-                        marginStart: sizeWidth(3),
-                        alignItems: 'center',
+                        flex: 0.7,
+                        marginTop: sizeHeight(4),
+                        marginBottom: sizeHeight(8),
+                        marginHorizontal: sizeWidth(4),
+                        backgroundColor: 'white',
+                        flexDirection: 'column',
+                        position: 'relative',
                       }}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          this.setState({
-                            showcardAdd: false,
-                          })
-                        }>
-                        <Icon
-                          name="arrow-forward"
-                          size={36}
-                          color="#292929"
-                          style={{
-                            alignSelf: 'flex-start',
-                            backgroundColor: 'transparent',
-                          }}
-                        />
-                      </TouchableOpacity>
-                      <Subtitle
+                      <View
                         style={{
-                          color: 'black',
-                          fontFamily: 'Rubik',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                          fontWeight: '700',
-                          justifyContent: 'center',
-                          marginStart: 16,
+                          flex: 0.15,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'white',
+                          marginTop: 6,
                         }}>
-                        {`${i18n.t(k.cardaddtext)}`}
-                      </Subtitle>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{
-                      flex: 0.7,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      alignContent: 'center',
-                    }}>
-                    <ScrollView
-                      keyboardShouldPersistTaps={'handled'}
-                      style={{flex: 0.7}}
-                      showsVerticalScrollIndicator={false}
-                      showsHorizontalScrollIndicator={false}>
-                      <View>
-                        <View style={{flex: 0.05}} />
                         <View
+                          styleName="horizontal"
                           style={{
-                            borderColor: 'black',
-                            borderWidth: 0.5,
-                            marginHorizontal: sizeWidth(4),
-                            borderRadius: 4,
-                            paddingHorizontal: 16,
-                            justifyContent: 'center',
-                            flex: 0.6,
-                            paddingVertical: 4,
-                          }}>
-                          <Subtitle
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              fontSize: 15,
-                              alignSelf: 'flex-start',
-                              marginTop: sizeHeight(1),
-                              fontWeight: '400',
-                            }}>
-                            {`${i18n.t(k.cardnumber)}:`}
-                          </Subtitle>
-                          <View
-                            style={{
-                              flexDirection: 'row-reverse',
-                              //height: 24,
-                              width: '100%',
-                              borderRadius: 2,
-                              borderColor: i18n.t(k.DEDEDE1),
-                              borderStyle: i18n.t(k.SOLID),
-                              borderWidth: 1,
-                              backgroundColor: i18n.t(k.FFFFFF),
-                              //paddingEnd: 8,
-                              //flex:1,
-                            }}>
-                            <TextInputMask
-                              ref={this.cardnumberRef}
-                              onChangeText={(formatted, extracted) => {
-                                let formyear = formatted.split(' ');
-                                const cardnumber = formyear.join('');
-                                this.setState({
-                                  cardnumber: cardnumber,
-                                  creditCardImage: this.returnCardImage(
-                                    cardnumber,
-                                  ),
-                                });
-                              }}
-                              mask={'[0000] [0000] [0000] [0000]'}
-                              style={{
-                                height: 36,
-                                width: '100%',
-                                flex: 0.95,
-                                //borderRadius: 2,
-                                //borderColor: i18n.t(k.DEDEDE1),
-                                //borderStyle: i18n.t(k.SOLID),
-                                //borderWidth: 1,
-                                backgroundColor: i18n.t(k.FFFFFF),
-                                color: `black`,
-                                fontFamily: i18n.t(k.RUBIK),
-                                fontSize: 15,
-                                fontWeight: i18n.t(k._31),
-                                letterSpacing: 4.5,
-                                paddingEnd: 12,
-                              }}
-                              placeholder={`xxxx-xxxx-xxxx-xxxx`}
-                              underlineColor="transparent"
-                              underlineColorAndroid="transparent"
-                              keyboardType={'numeric'}
-                              value={this.state.cardnumber}
-                              onSubmitEditing={e => {
-                                if (this.cardcvvRef !== undefined) {
-                                  this.cardcvvRef.current.input.focus();
-                                }
-                              }}
-                            />
-
-                            <Image
-                              source={{uri: `${this.state.creditCardImage}`}}
-                              style={{
-                                marginEnd: 4,
-                                marginStart: 4,
-                                width: 24,
-                                height: 24,
-                                //tintColor: '#777777',
-                                alignSelf: 'center',
-                                justifyContent: 'center',
-                              }}
-                            />
-                          </View>
-                          <View
-                            style={{
-                              marginTop: sizeHeight(2.5),
-                              flexDirection: 'row-reverse',
-                              width: '100%',
-                              flex: 1,
-                              //backgroundColor:'yellow'
-                            }}>
-                            <View
-                              style={{
-                                flex: 0.5,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                alignContent: 'center',
-                              }}>
-                              <Subtitle
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 15,
-                                  alignSelf: 'center',
-                                  fontWeight: '400',
-                                  marginEnd: 8,
-                                  justifyContent: 'center',
-                                }}>
-                                {`${i18n.t(k.cardcvv)}:`}
-                              </Subtitle>
-                              <TextInputMask
-                                onKeyPress={keyPress => console.log(keyPress)}
-                                ref={this.cardcvvRef}
-                                onChangeText={(formatted, extracted) => {
-                                  this.setState({
-                                    cardcvv: formatted,
-                                  });
-                                }}
-                                mask={'[000]'}
-                                style={{
-                                  width: '46%',
-                                  height: 32,
-                                  borderRadius: 2,
-                                  borderColor: i18n.t(k.DEDEDE1),
-                                  borderStyle: i18n.t(k.SOLID),
-                                  borderWidth: 1,
-                                  backgroundColor: i18n.t(k.FFFFFF),
-                                  color: `black`,
-                                  fontFamily: i18n.t(k.RUBIK),
-                                  fontSize: 15,
-                                  fontWeight: i18n.t(k._31),
-                                  letterSpacing: 4.5,
-                                  paddingEnd: 8,
-                                  //backgroundColor:'red'
-                                }}
-                                placeholder={`xxx`}
-                                underlineColor="transparent"
-                                underlineColorAndroid="transparent"
-                                keyboardType={'numeric'}
-                                value={this.state.cardcvv}
-                                onSubmitEditing={e => {
-                                  if (this.cardyearRef !== undefined) {
-                                    this.cardyearRef.current.input.focus();
-                                  }
-                                }}
-                              />
-                            </View>
-                            <View
-                              style={{
-                                flex: 0.5,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                alignContent: 'center',
-                              }}>
-                              <Subtitle
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 15,
-                                  alignSelf: 'center',
-                                  fontWeight: '400',
-                                  marginEnd: 8,
-                                }}>
-                                {`${i18n.t(k.carddate)}:`}
-                              </Subtitle>
-                              <TextInputMask
-                                ref={this.cardyearRef}
-                                onChangeText={(formatted, extracted) => {
-                                  let formyear = formatted.replace('/', '');
-                                  this.setState({
-                                    cardyear: formyear,
-                                  });
-                                }}
-                                mask={'[00]{/}[00]'}
-                                style={{
-                                  width: 82,
-                                  height: 32,
-                                  borderRadius: 2,
-                                  borderColor: i18n.t(k.DEDEDE1),
-                                  borderStyle: i18n.t(k.SOLID),
-                                  borderWidth: 1,
-                                  backgroundColor: i18n.t(k.FFFFFF),
-                                  color: `black`,
-                                  fontFamily: i18n.t(k.RUBIK),
-                                  fontSize: 15,
-                                  fontWeight: i18n.t(k._31),
-                                  letterSpacing: 4.5,
-                                  paddingEnd: 8,
-                                  paddingStart: 8,
-                                  //backgroundColor:'blue'
-                                }}
-                                placeholder={`00/00`}
-                                underlineColor="transparent"
-                                underlineColorAndroid="transparent"
-                                keyboardType={'numeric'}
-                                value={this.state.cardyear}
-                              />
-                            </View>
-                          </View>
-
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignSelf: 'flex-start',
-                              marginTop: sizeHeight(2),
-                            }}>
-                            <Checkbox.Android
-                              status={
-                                this.state.cardSave
-                                  ? i18n.t(k.CHECKED)
-                                  : i18n.t(k.UNCHECKED)
-                              }
-                              onPress={() =>
-                                this.setState({
-                                  cardSave: !this.state.cardSave,
-                                })
-                              }
-                              color={'#3DACCF'}
-                              uncheckedColor={i18n.t(k.DEDEDE1)}
-                            />
-                            <Subtitle
-                              style={{
-                                color: '#292929',
-                                fontSize: 15,
-                                alignSelf: 'center',
-                              }}>
-                              {i18n.t(k.savecardcheckbox)}
-                            </Subtitle>
-                          </View>
-                        </View>
-                        <View
-                          style={{
-                            flex: 0.25,
+                            marginStart: sizeWidth(3),
                             alignItems: 'center',
-                            alignContent: 'center',
                           }}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              this.setState({
+                                showcardAdd: false,
+                              })
+                            }>
+                            <Icon
+                              name="arrow-forward"
+                              size={36}
+                              color="#292929"
+                              style={{
+                                alignSelf: 'flex-start',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </TouchableOpacity>
                           <Subtitle
                             style={{
-                              color: '#646464',
-                              fontSize: 12,
+                              color: 'black',
+                              fontFamily: 'Rubik',
+                              fontSize: 16,
                               alignSelf: 'center',
-                              marginTop: sizeHeight(1.5),
+                              fontWeight: '700',
                               justifyContent: 'center',
+                              marginStart: 16,
                             }}>
-                            {`${i18n.t(k.cardsecurity)}`}
+                            {`${i18n.t(k.cardaddtext)}`}
                           </Subtitle>
-                          <Image
-                            source={require('./../res/images/card.png')}
-                            style={{
-                              width: 24,
-                              height: 24,
-                              marginTop: 8,
-                              tintColor: '#777777',
-                              alignSelf: 'center',
-                              justifyContent: 'center',
-                            }}
-                          />
                         </View>
                       </View>
-                    </ScrollView>
-                  </View>
-                  <View
-                    style={{
-                      flex: 0.15,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      marginTop: 4,
-                    }}>
-                    <View
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                      }}>
-                      <TouchableOpacity
-                        styleName="flexible"
-                        onPress={this.saveCardsData}>
+
+                      <View
+                        style={{
+                          flex: 0.7,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          alignContent: 'center',
+                        }}>
+                        <ScrollView
+                          keyboardShouldPersistTaps={'handled'}
+                          style={{flex: 0.7}}
+                          showsVerticalScrollIndicator={false}
+                          showsHorizontalScrollIndicator={false}>
+                          <View>
+                            <View style={{flex: 0.05}} />
+                            <View
+                              style={{
+                                borderColor: 'black',
+                                borderWidth: 0.5,
+                                marginHorizontal: sizeWidth(4),
+                                borderRadius: 4,
+                                paddingHorizontal: 16,
+                                justifyContent: 'center',
+                                flex: 0.6,
+                                paddingVertical: 4,
+                              }}>
+                              <Subtitle
+                                style={{
+                                  color: '#292929',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 15,
+                                  alignSelf: 'flex-start',
+                                  marginTop: sizeHeight(1),
+                                  fontWeight: '400',
+                                }}>
+                                {`${i18n.t(k.cardnumber)}:`}
+                              </Subtitle>
+                              <View
+                                style={{
+                                  flexDirection: 'row-reverse',
+                                  //height: 24,
+                                  width: '100%',
+                                  borderRadius: 2,
+                                  borderColor: i18n.t(k.DEDEDE1),
+                                  borderStyle: i18n.t(k.SOLID),
+                                  borderWidth: 1,
+                                  backgroundColor: i18n.t(k.FFFFFF),
+                                  //paddingEnd: 8,
+                                  //flex:1,
+                                }}>
+                                <TextInputMask
+                                  ref={this.cardnumberRef}
+                                  onChangeText={(formatted, extracted) => {
+                                    let formyear = formatted.split(' ');
+                                    const cardnumber = formyear.join('');
+                                    this.setState({
+                                      cardnumber: cardnumber,
+                                      creditCardImage: this.returnCardImage(
+                                        cardnumber,
+                                      ),
+                                    });
+                                  }}
+                                  mask={'[0000] [0000] [0000] [0000]'}
+                                  style={{
+                                    height: 36,
+                                    width: '100%',
+                                    flex: 0.95,
+                                    //borderRadius: 2,
+                                    //borderColor: i18n.t(k.DEDEDE1),
+                                    //borderStyle: i18n.t(k.SOLID),
+                                    //borderWidth: 1,
+                                    backgroundColor: i18n.t(k.FFFFFF),
+                                    color: `black`,
+                                    fontFamily: i18n.t(k.RUBIK),
+                                    fontSize: 15,
+                                    fontWeight: i18n.t(k._31),
+                                    letterSpacing: 4.5,
+                                    paddingEnd: 12,
+                                  }}
+                                  placeholder={`xxxx-xxxx-xxxx-xxxx`}
+                                  underlineColor="transparent"
+                                  underlineColorAndroid="transparent"
+                                  keyboardType={'numeric'}
+                                  value={this.state.cardnumber}
+                                  onSubmitEditing={e => {
+                                    if (this.cardcvvRef !== undefined) {
+                                      this.cardcvvRef.current.input.focus();
+                                    }
+                                  }}
+                                />
+
+                                <Image
+                                  source={{
+                                    uri: `${this.state.creditCardImage}`,
+                                  }}
+                                  style={{
+                                    marginEnd: 4,
+                                    marginStart: 4,
+                                    width: 24,
+                                    height: 24,
+                                    //tintColor: '#777777',
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                />
+                              </View>
+                              <View
+                                style={{
+                                  marginTop: sizeHeight(2.5),
+                                  flexDirection: 'row-reverse',
+                                  width: '100%',
+                                  flex: 1,
+                                  //backgroundColor:'yellow'
+                                }}>
+                                <View
+                                  style={{
+                                    flex: 0.5,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    alignContent: 'center',
+                                  }}>
+                                  <Subtitle
+                                    style={{
+                                      color: '#292929',
+                                      fontFamily: 'Rubik',
+                                      fontSize: 15,
+                                      alignSelf: 'center',
+                                      fontWeight: '400',
+                                      marginEnd: 8,
+                                      justifyContent: 'center',
+                                    }}>
+                                    {`${i18n.t(k.cardcvv)}:`}
+                                  </Subtitle>
+                                  <TextInputMask
+                                    onKeyPress={keyPress =>
+                                      console.log(keyPress)
+                                    }
+                                    ref={this.cardcvvRef}
+                                    onChangeText={(formatted, extracted) => {
+                                      this.setState({
+                                        cardcvv: formatted,
+                                      });
+                                    }}
+                                    mask={'[000]'}
+                                    style={{
+                                      width: '46%',
+                                      height: 32,
+                                      borderRadius: 2,
+                                      borderColor: i18n.t(k.DEDEDE1),
+                                      borderStyle: i18n.t(k.SOLID),
+                                      borderWidth: 1,
+                                      backgroundColor: i18n.t(k.FFFFFF),
+                                      color: `black`,
+                                      fontFamily: i18n.t(k.RUBIK),
+                                      fontSize: 15,
+                                      fontWeight: i18n.t(k._31),
+                                      letterSpacing: 4.5,
+                                      paddingEnd: 8,
+                                      //backgroundColor:'red'
+                                    }}
+                                    placeholder={`xxx`}
+                                    underlineColor="transparent"
+                                    underlineColorAndroid="transparent"
+                                    keyboardType={'numeric'}
+                                    value={this.state.cardcvv}
+                                    onSubmitEditing={e => {
+                                      if (this.cardyearRef !== undefined) {
+                                        this.cardyearRef.current.input.focus();
+                                      }
+                                    }}
+                                  />
+                                </View>
+                                <View
+                                  style={{
+                                    flex: 0.5,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    alignContent: 'center',
+                                  }}>
+                                  <Subtitle
+                                    style={{
+                                      color: '#292929',
+                                      fontFamily: 'Rubik',
+                                      fontSize: 15,
+                                      alignSelf: 'center',
+                                      fontWeight: '400',
+                                      marginEnd: 8,
+                                    }}>
+                                    {`${i18n.t(k.carddate)}:`}
+                                  </Subtitle>
+                                  <TextInputMask
+                                    ref={this.cardyearRef}
+                                    onChangeText={(formatted, extracted) => {
+                                      let formyear = formatted.replace('/', '');
+                                      this.setState({
+                                        cardyear: formyear,
+                                      });
+                                    }}
+                                    mask={'[00]{/}[00]'}
+                                    style={{
+                                      width: 82,
+                                      height: 32,
+                                      borderRadius: 2,
+                                      borderColor: i18n.t(k.DEDEDE1),
+                                      borderStyle: i18n.t(k.SOLID),
+                                      borderWidth: 1,
+                                      backgroundColor: i18n.t(k.FFFFFF),
+                                      color: `black`,
+                                      fontFamily: i18n.t(k.RUBIK),
+                                      fontSize: 15,
+                                      fontWeight: i18n.t(k._31),
+                                      letterSpacing: 4.5,
+                                      paddingEnd: 8,
+                                      paddingStart: 8,
+                                      //backgroundColor:'blue'
+                                    }}
+                                    placeholder={`00/00`}
+                                    underlineColor="transparent"
+                                    underlineColorAndroid="transparent"
+                                    keyboardType={'numeric'}
+                                    value={this.state.cardyear}
+                                  />
+                                </View>
+                              </View>
+
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignSelf: 'flex-start',
+                                  marginTop: sizeHeight(2),
+                                }}>
+                                <Checkbox.Android
+                                  status={
+                                    this.state.cardSave
+                                      ? i18n.t(k.CHECKED)
+                                      : i18n.t(k.UNCHECKED)
+                                  }
+                                  onPress={() =>
+                                    this.setState({
+                                      cardSave: !this.state.cardSave,
+                                    })
+                                  }
+                                  color={'#3DACCF'}
+                                  uncheckedColor={i18n.t(k.DEDEDE1)}
+                                />
+                                <Subtitle
+                                  style={{
+                                    color: '#292929',
+                                    fontSize: 15,
+                                    alignSelf: 'center',
+                                  }}>
+                                  {i18n.t(k.savecardcheckbox)}
+                                </Subtitle>
+                              </View>
+                            </View>
+                            <View
+                              style={{
+                                flex: 0.25,
+                                alignItems: 'center',
+                                alignContent: 'center',
+                              }}>
+                              <Subtitle
+                                style={{
+                                  color: '#646464',
+                                  fontSize: 12,
+                                  alignSelf: 'center',
+                                  marginTop: sizeHeight(1.5),
+                                  justifyContent: 'center',
+                                }}>
+                                {`${i18n.t(k.cardsecurity)}`}
+                              </Subtitle>
+                              <Image
+                                source={require('./../res/images/card.png')}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  marginTop: 8,
+                                  tintColor: '#777777',
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              />
+                            </View>
+                          </View>
+                        </ScrollView>
+                      </View>
+                      <View
+                        style={{
+                          flex: 0.15,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
                         <View
-                          style={styles.buttonStyle}
-                          // mode="contained"
-                          // dark={true}
-                          // onPress={() => this.finalorders(false)}
-                          loading={false}>
-                          <Subtitle
-                            style={{
-                              color: 'white',
-                              fontFamily: 'Rubik',
-                              fontSize: 18,
-                              alignSelf: 'center',
-                              justifyContent: 'center',
-                            }}>
-                            {`${i18n.t(k.cardconfirmfinal)}`}
-                          </Subtitle>
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            bottom: 0,
+                            backgroundColor: 'white',
+                          }}>
+                          <TouchableOpacity
+                            styleName="flexible"
+                            onPress={this.saveCardsData}>
+                            <View
+                              style={styles.buttonStyle}
+                              // mode="contained"
+                              // dark={true}
+                              // onPress={() => this.finalorders(false)}
+                              loading={false}>
+                              <Subtitle
+                                style={{
+                                  color: 'white',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 18,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                {`${i18n.t(k.cardconfirmfinal)}`}
+                              </Subtitle>
+                            </View>
+                          </TouchableOpacity>
                         </View>
-                      </TouchableOpacity>
+                      </View>
                     </View>
+                    <View style={{flex: 0.15}} />
                   </View>
-                </View>
-                <View style={{flex: 0.15}} />
-              </View>
+                </TouchableWithoutFeedback>
+              </KeyboardAvoidingView>
             </Modal>
           </Portal>
 
@@ -3423,124 +3457,133 @@ export default class FinalOrder extends React.Component {
               contentContainerStyle={{
                 height: i18n.t(k._5),
               }}>
-              <View style={{flex: 1}}>
-                <View style={{flex: 0.05}} />
-                <View
-                  style={{
-                    flex: 0.8,
-                    marginTop: sizeHeight(4),
-                    marginBottom: sizeHeight(8),
-                    marginHorizontal: sizeWidth(4),
-                    backgroundColor: 'white',
-                    flexDirection: 'column',
-                    position: 'relative',
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : ''}
+                style={{flex: 1}}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    Keyboard.dismiss();
                   }}>
-                  <View
-                    style={{
-                      flex: 0.15,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      backgroundColor: 'white',
-                      marginTop: 6,
-                    }}>
+                  <View style={{flex: 1}}>
+                    <View style={{flex: 0.05}} />
                     <View
-                      styleName="horizontal"
                       style={{
-                        marginStart: sizeWidth(3),
-                        alignItems: 'center',
+                        flex: 0.8,
+                        marginTop: sizeHeight(4),
+                        marginBottom: sizeHeight(8),
+                        marginHorizontal: sizeWidth(4),
+                        backgroundColor: 'white',
+                        flexDirection: 'column',
+                        position: 'relative',
                       }}>
-                      <TouchableOpacity
-                        onPress={() =>
-                          this.setState({
-                            showFreeServiceModal: false,
-                          })
-                        }>
-                        <Icon
-                          name="arrow-forward"
-                          size={36}
-                          color="#292929"
-                          style={{
-                            alignSelf: 'flex-start',
-                            backgroundColor: 'transparent',
-                          }}
-                        />
-                      </TouchableOpacity>
-                      <Subtitle
-                        style={{
-                          color: 'black',
-                          fontFamily: 'Rubik',
-                          fontSize: 16,
-                          alignSelf: 'center',
-                          fontWeight: '700',
-                          justifyContent: 'center',
-                          marginStart: 16,
-                        }}>
-                        {`${i18n.t(k.freeServiceTextHeader1)} ${
-                          this.state.maxQuantity
-                        } ${i18n.t(k.freeServiceTextHeader)}!`}
-                      </Subtitle>
-                    </View>
-                  </View>
-                  <FlatList
-                    extraData={this.state}
-                    nestedScrollEnabled={true}
-                    style={{flex: 0.7}}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={true}
-                    data={this.state.freeServiceList}
-                    keyExtractor={(item, index) => `${index}`}
-                    renderItem={({item, index}) =>
-                      this.renderRowFreeServiceList(item, index)
-                    }
-                    ItemSeparatorComponent={() => (
                       <View
                         style={{
-                          height: 1,
-                          backgroundColor: '#dedede',
-                        }}
-                      />
-                    )}
-                  />
-                  <View
-                    style={{
-                      flex: 0.15,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      marginTop: 4,
-                    }}>
-                    <View
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                      }}>
-                      <TouchableOpacity
-                        styleName="flexible"
-                        onPress={this.saveFreeData}>
+                          flex: 0.15,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'white',
+                          marginTop: 6,
+                        }}>
                         <View
-                          style={styles.buttonStyle}
-                          // mode="contained"
-                          // dark={true}
-                          // onPress={() => this.finalorders(false)}
-                          loading={false}>
+                          styleName="horizontal"
+                          style={{
+                            marginStart: sizeWidth(3),
+                            alignItems: 'center',
+                          }}>
+                          <TouchableOpacity
+                            onPress={() =>
+                              this.setState({
+                                showFreeServiceModal: false,
+                              })
+                            }>
+                            <Icon
+                              name="arrow-forward"
+                              size={36}
+                              color="#292929"
+                              style={{
+                                alignSelf: 'flex-start',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </TouchableOpacity>
                           <Subtitle
                             style={{
-                              color: 'white',
+                              color: 'black',
                               fontFamily: 'Rubik',
-                              fontSize: 18,
+                              fontSize: 16,
                               alignSelf: 'center',
+                              fontWeight: '700',
                               justifyContent: 'center',
+                              marginStart: 16,
                             }}>
-                            {`${i18n.t(k.freeServiceButton)}`}
+                            {`${i18n.t(k.freeServiceTextHeader1)} ${
+                              this.state.maxQuantity
+                            } ${i18n.t(k.freeServiceTextHeader)}!`}
                           </Subtitle>
                         </View>
-                      </TouchableOpacity>
+                      </View>
+                      <FlatList
+                        extraData={this.state}
+                        nestedScrollEnabled={true}
+                        style={{flex: 0.7}}
+                        showsHorizontalScrollIndicator={false}
+                        showsVerticalScrollIndicator={true}
+                        data={this.state.freeServiceList}
+                        keyExtractor={(item, index) => `${index}`}
+                        renderItem={({item, index}) =>
+                          this.renderRowFreeServiceList(item, index)
+                        }
+                        ItemSeparatorComponent={() => (
+                          <View
+                            style={{
+                              height: 1,
+                              backgroundColor: '#dedede',
+                            }}
+                          />
+                        )}
+                      />
+                      <View
+                        style={{
+                          flex: 0.15,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
+                        <View
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            bottom: 0,
+                            backgroundColor: 'white',
+                          }}>
+                          <TouchableOpacity
+                            styleName="flexible"
+                            onPress={this.saveFreeData}>
+                            <View
+                              style={styles.buttonStyle}
+                              // mode="contained"
+                              // dark={true}
+                              // onPress={() => this.finalorders(false)}
+                              loading={false}>
+                              <Subtitle
+                                style={{
+                                  color: 'white',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 18,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                {`${i18n.t(k.freeServiceButton)}`}
+                              </Subtitle>
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
                     </View>
+                    <View style={{flex: 0.15}} />
                   </View>
-                </View>
-                <View style={{flex: 0.15}} />
-              </View>
+                </TouchableWithoutFeedback>
+              </KeyboardAvoidingView>
             </Modal>
           </Portal>
           {this.state.showAlert ? (

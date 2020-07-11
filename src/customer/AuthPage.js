@@ -21,13 +21,12 @@ export default class AuthPage extends React.Component {
       let mks = Helper.removeQuotes(value);
       //console.log(mks);
       if (mks == '') {
-        Helper.itemClick(this.props, 'SignupPage');
+        Helper.itemClick(this.props, 'Login');
       } else {
         if (mks === 'true') {
-          //Helper.itemClick(this.props, 'Login');
           Helper.itemClick(this.props, 'Home');
         } else {
-          Helper.itemClick(this.props, 'SignupPage');
+          Helper.itemClick(this.props, 'Login');
         }
       }
     });
