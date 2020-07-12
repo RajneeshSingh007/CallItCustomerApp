@@ -28,6 +28,7 @@ export const TempLocBranchData = "templocbranchdata";
 export const TempLocOzranchData = "templocozranchdata";
 export const AskedLocationDailog = "AskedLocationDailog";
 export const HomeReload = 'HomeReload';
+export const TOS = 'tos';
 
 /**
  * Business Pref Key
@@ -78,7 +79,8 @@ export const GetSessionCardUrl = `${BASEURL}api/getSessionIdForCG`;
 export const GetImageForHomepageUrl = `${BASEURL}api/GetImageForHomePage`;
 export const CancelOrderUrl = `${BASEURL}api/CancelOrderForCustomer`;
 export const BranchStatusUrl = `${BASEURL}api/branchOpenStatus/`;
-
+export const TOSURL = `${BASEURL}api/postToSAgreement`;
+export const TOSWEBURL = 'http://callit.co.il/tos/';
 
 /**
  * Business Server Url

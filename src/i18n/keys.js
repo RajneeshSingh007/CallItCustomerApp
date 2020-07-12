@@ -269,4 +269,12 @@ module.exports = {
   signuptimer1: `signuptimer1`,
   visaunavailable: 'visaunavailable',
   deliverynotavailable: 'deliverynotavailable',
+  tosText: 'tosText',
+  tosTextLink: 'tosTextLink',
+  tosText2: 'tosText2',
+  tosnotaccepted: 'tosnotaccepted',
+  tosinsidetitle: 'tosinsidetitle',
+  tosinsidesub: 'tosinsidesub',
+  toinsidesub1: 'toinsidesub1',
+  tosinsidesub2: 'tosinsidesub2',
 };

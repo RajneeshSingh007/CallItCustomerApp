@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   NativeModules,
 } from 'react-native';
-import {Button, Snackbar, TextInput, Card} from 'react-native-paper';
+import {Button, Snackbar, TextInput, Card, Checkbox} from 'react-native-paper';
 import {
   NavigationBar,
   Screen,
@@ -62,6 +62,7 @@ export default class SignupPageIos extends React.Component {
       citiesList: [],
       cloneOgCitiesList: [],
       fcmToken: '',
+      tosAccepted: false,
     };
   }
 
@@ -223,8 +224,17 @@ export default class SignupPageIos extends React.Component {
         return false;
       }
 
+      if (this.state.tosAccepted === false) {
+        this.setState({
+          errorMsg: i18n.t(k.tosnotaccepted),
+        });
+        return false;
+      }
+
       this.setState({progressView: true, smp: true});
       Pref.setVal(Pref.citySave, this.state.add3);
+      Pref.setVal(Pref.TOS, '1');
+
       // " " +
       //   this.state.add2 +
       const fullAddress =
@@ -372,7 +382,8 @@ export default class SignupPageIos extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity
+                  onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -657,6 +668,64 @@ export default class SignupPageIos extends React.Component {
                     underlineColor={'transparent'}
                     underlineColorAndroid={'transparent'}
                   />
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      marginVertical: 12,
+                      alignContent: 'center',
+                      alignItems: 'center',
+                      flex: 1,
+                    }}>
+                    <Checkbox.Android
+                      status={
+                        this.state.tosAccepted
+                          ? i18n.t(k.CHECKED)
+                          : i18n.t(k.UNCHECKED)
+                      }
+                      onPress={() =>
+                        this.setState({
+                          tosAccepted: !this.state.tosAccepted,
+                        })
+                      }
+                      color={'#3DACCF'}
+                      uncheckedColor={i18n.t(k.DEDEDE1)}
+                    />
+
+                    <Subtitle
+                      styleName="wrap"
+                      style={{
+                        alignSelf: 'center',
+                        color: '#292929',
+                        fontSize: 14,
+                        flex: 1,
+                      }}>
+                      {i18n.t(k.tosText2)}
+                      <TouchableWithoutFeedback
+                        onPress={() =>
+                          Linking.openURL(`${Pref.TOSWEBURL}`)
+                        }>
+                        <Subtitle
+                          styleName="wrap"
+                          style={{
+                            alignSelf: 'center',
+                            color: i18n.t(k.DACCF),
+                            fontSize: 14,
+                          }}>
+                          {` ${i18n.t(k.tosTextLink)}`}
+                        </Subtitle>
+                      </TouchableWithoutFeedback>
+                      <Subtitle
+                        styleName="wrap"
+                        style={{
+                          alignSelf: 'center',
+                          color: '#292929',
+                          fontSize: 14,
+                        }}>
+                        {` ${i18n.t(k.tosText)}`}
+                      </Subtitle>
+                    </Subtitle>
+                  </View>
                 </View>
               </ScrollView>
             </TouchableWithoutFeedback>
@@ -669,21 +738,17 @@ export default class SignupPageIos extends React.Component {
             loading={this.state.progressView}
             onPress={() => this.onSaveClick()}>
             <Subtitle style={{color: 'white'}}>
-              {this.state.progressView === true ? i18n.t(k._47) : i18n.t(k._54)}
+              {this.state.progressView === true
+                ? i18n.t(k._47)
+                : i18n.t(k._54)}
             </Subtitle>
           </Button>
           <Snackbar
-            visible={
-              this.state.errorFName ||
-              this.state.errorLName ||
-              this.state.errorAdd1 ||
-              this.state.errorAdd2 ||
-              this.state.errorAdd3 ||
-              this.state.errorAdd4
-            }
+            visible={this.state.errorMsg !== ''}
             duration={600}
             onDismiss={() =>
               this.setState({
+                errorMsg: '',
                 errorLName: false,
                 errorFName: false,
                 errorAdd1: false,

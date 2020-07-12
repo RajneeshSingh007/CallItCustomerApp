@@ -56,11 +56,9 @@ export default class LoginIos extends React.Component {
       console.log(e);
     }
     BackHandler.addEventListener('hardwareBackPress', this.bindingBack);
-    requestNotifications(['alert', 'badge', 'sound']).then(
-      () => {
-        //alert('granted');
-      },
-    );
+    requestNotifications(['alert', 'badge', 'sound']).then(() => {
+      //alert('granted');
+    });
     //request token
     PushNotificationIOS.requestPermissions().then(() => {
       messaging()
@@ -115,6 +113,7 @@ export default class LoginIos extends React.Component {
                   result => {
                     const token = result['token'];
                     if (token !== '') {
+                      Pref.setVal(Pref.TOS, '0');
                       Pref.setVal(Pref.bearerToken, token);
                       Pref.setVal(Pref.loggedStatus, true);
                       Helper.itemClick(this.props, 'Home');
@@ -271,6 +270,7 @@ export default class LoginIos extends React.Component {
                           );
                           const token = result['token'];
                           if (token !== '') {
+                            Pref.setVal(Pref.TOS, '0');
                             Pref.setVal(Pref.bearerToken, token);
                             Pref.setVal(Pref.loggedStatus, true);
                             Helper.itemClick(this.props, 'Home');

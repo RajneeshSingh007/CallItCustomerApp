@@ -103,11 +103,11 @@ export default class NewBusinessPage extends React.Component {
         this.setState({progressView: true});
       },
     );
-    //this.focusListener = this.props.navigation.addListener('didFocus', () => {
+    this.focusListener = this.props.navigation.addListener('didFocus', () => {
       Pref.setVal(Pref.HomeReload, null);
       this.setState({progressView: true});
       this.work();
-    //});
+    });
   }
 
   componentWillUnmount() {
@@ -458,6 +458,7 @@ export default class NewBusinessPage extends React.Component {
           this.scrollViewRef.current !== null &&
           this.scrollViewRef.current.scrollTo !== null
         ) {
+          //console.log(`scrollY`, scrollY);
           this.scrollViewRef.current.scrollTo({
             x: 0,
             y: scrollY,

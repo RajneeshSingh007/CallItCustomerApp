@@ -12,7 +12,7 @@ const AccordationItem = props => {
   const {
     index,
     item,
-    clickedItemPos,
+    clickedItemPos = 0,
     size,
     clickedItem = (tabData, item, index) => {},
     //accordClick = () => {},
@@ -20,7 +20,10 @@ const AccordationItem = props => {
   } = props;
 
   const [clickedCat, setclickedCat] = useState('');
-    const [itemSize, setitemSize] = useState(5);
+  const [itemSize, setitemSize] = useState(5);
+  //console.log(`size`, size, clickedItemPos);
+  const datapos = item.data.length || 0;
+  //console.log(`currentCategory`, currentCategory);
 
   useEffect(() => {
     if (currentCategory !== '') setclickedCat(currentCategory);
@@ -38,6 +41,7 @@ const AccordationItem = props => {
         title={Lodash.capitalize(item.cat)}
         titleStyle={styles.listService}
         style={styles.listserviceacc}
+        //expanded={true}
         expanded={clickedCat === item.cat}
         onPress={() => {
           LayoutAnimation.configureNext(
@@ -48,7 +52,11 @@ const AccordationItem = props => {
         }}>
         <View>
           <FlatList
-            initialScrollIndex={clickedItemPos}
+            initialScrollIndex={
+              clickedItemPos >= 0 && clickedItemPos < datapos
+                ? clickedItemPos
+                : 0
+            }
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             data={item.data}

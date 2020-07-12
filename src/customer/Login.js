@@ -98,6 +98,7 @@ export default class Login extends React.Component {
                       result => {
                         const token = result['token'];
                         if (token !== '') {
+                          Pref.setVal(Pref.TOS, '0');
                           Pref.setVal(Pref.bearerToken, token);
                           Pref.setVal(Pref.loggedStatus, true);
                           Helper.itemClick(this.props, 'Home');
@@ -238,6 +239,7 @@ export default class Login extends React.Component {
                               );
                               const token = result['token'];
                               if (token !== '') {
+                                Pref.setVal(Pref.TOS, '0');
                                 Pref.setVal(Pref.bearerToken, token);
                                 Pref.setVal(Pref.loggedStatus, true);
                                 Helper.itemClick(this.props, 'Home');
@@ -266,13 +268,9 @@ export default class Login extends React.Component {
                       progressView: false,
                       smp: false,
                     });
-                    Helper.passParamItemClick(
-                      this.props,
-                      'SignupPage',
-                      {
-                        mobile: this.state.mobile,
-                      },
-                    );
+                    Helper.passParamItemClick(this.props, 'SignupPage', {
+                      mobile: this.state.mobile,
+                    });
                   }
                 },
                 error => {

@@ -236,45 +236,16 @@ export default class OrderProcess1 extends React.Component {
   }
 
   menuServicesSetup = () => {
-    if (this.props.tabNames !== null && this.props.tabNames.length > 0) {
+    const serviceList = this.props.tabNames;
+    if (serviceList !== null && serviceList.length > 0) {
       const list = [];
-      Lodash.map(this.props.tabNames, (item, index) => {
-        // const {data} = item;
-        // const itemList = [];
-        // Lodash.map(data, (eachTabData,i) =>{
-        //   const Itemx = (
-        //     <View>
-        //       <AccordItem
-        //         eachTabData={eachTabData}
-        //         index={i}
-        //         clickedItem={(itemx, i) =>
-        //           this.menuItemClicked(item, itemx, i)
-        //         }
-        //         priceStyle={{
-        //           color:
-        //             eachTabData.available === 1 ? '#292929' : 'red',
-        //           fontFamily: 'Rubik',
-        //           fontSize: 16,
-        //           fontWeight: '700',
-        //           lineHeight: 20,
-        //         }}
-        //       />
-        //       <View style={styles.listserviceItemDivider} />
-        //     </View>
-        //   );
-        //   itemList.push(Itemx);
-        // })
-
-        //   const items = Lodash.map(itemList, ix => {
-        //     return ix;
-        //   });
-
+      Lodash.map(serviceList, (item, index) => {
         const dataparse = (
           <AccordationItem
             index={index}
             item={item}
             //itemList={items}
-            size={this.props.tabNames.length}
+            size={serviceList.length}
             clickedItem={this.menuItemClicked}
             clickedItemPos={this.state.clickedItemPos}
             currentCategory={currentCat === item.cat ? currentCat : ''}
@@ -464,7 +435,7 @@ export default class OrderProcess1 extends React.Component {
   onItemClicks(mode, val) {
     //this.props.isVis(true);
     const {currentNames, namexx, businessclosedornot, hasDelivery} = this.props;
-    //console.log("product", val);
+    //console.log('businessclosedornot', businessclosedornot);
     if (businessclosedornot === true) {
       if (Number(currentNames) === Number(namexx) || Number(namexx) === 0) {
         if (hasDelivery === 0) {
@@ -5005,7 +4976,7 @@ export default class OrderProcess1 extends React.Component {
           )
         ) : this.state.visibility === 2 ? null : (
           <View styleName="fill-parent" style={styles.menuList}>
-            {this.props.tabNames.length > 0 ? (
+            {this.state.selectionData.length > 0 ? (
               <View
                 styleName="vertical"
                 style={{
@@ -5016,26 +4987,27 @@ export default class OrderProcess1 extends React.Component {
                   center={
                     // <FlatList
                     //   extraData={this.state}
-                    //   data={this.props.tabNames}
-                    //   initialScrollIndex={this.state.clickedPos}
+                    //   data={this.state.selectionData}
+                    //   //initialScrollIndex={this.state.clickedPos}
                     //   keyExtractor={(item, index) => index.toString()}
                     //   nestedScrollEnabled={true}
                     //   showsHorizontalScrollIndicator={false}
                     //   showsVerticalScrollIndicator={false}
-                    //   ItemSeparatorComponent={() => {
-                    //     return <View style={styles.listserviceItemDivider} />;
-                    //   }}
-                    //   renderItem={({item, index}) => (
-                    //     <AccordationItem
-                    //       index={index}
-                    //       item={item}
-                    //       size={this.props.tabNames.length}
-                    //       clickedItem={this.menuItemClicked}
-                    //       clickedCat={this.state.currentCat}
-                    //       accordClick={() => this.accordClick(item.cat)}
-                    //       clickedItemPos={this.state.clickedItemPos}
-                    //     />
-                    //   )}
+                    //   // ItemSeparatorComponent={() => {
+                    //   //   return <View style={styles.listserviceItemDivider} />;
+                    //   // }}
+                    //   renderItem={({item, index}) => 
+                    //     {return item}
+                    //     // <AccordationItem
+                    //     //   index={index}
+                    //     //   item={item}
+                    //     //   size={this.props.tabNames.length}
+                    //     //   clickedItem={this.menuItemClicked}
+                    //     //   clickedCat={this.state.currentCat}
+                    //     //   accordClick={() => this.accordClick(item.cat)}
+                    //     //   clickedItemPos={this.state.clickedItemPos}
+                    //     // />
+                    //   }
                     // />
                     <View>
                       {this.state.selectionData.length > 0

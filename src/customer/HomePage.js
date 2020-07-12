@@ -24,10 +24,19 @@ import {
   View,
   Keyboard,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import GetLocation from 'react-native-get-location';
-import {Button, Card, Checkbox, Colors, TextInput} from 'react-native-paper';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Colors,
+  TextInput,
+  Portal,
+  Modal,
+} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DummyLoader from '../util/DummyLoader';
 import NavigationActions from '../util/NavigationActions';
@@ -54,6 +63,7 @@ class HomePage extends React.Component {
     this.renderRowBizSug = this.renderRowBizSug.bind(this);
     this.fetchbizsuggestions = this.fetchbizsuggestions.bind(this);
     this.fetchcatsuggestions = this.fetchcatsuggestions.bind(this);
+    this.tosagreement = this.tosagreement.bind(this);
     this.state = this.initialState();
     if (Platform.OS === 'ios') {
       // Geolocation.setRNConfiguration({
@@ -65,6 +75,7 @@ class HomePage extends React.Component {
 
   initialState = () => {
     return {
+      showtos: false,
       locaDialog: false,
       progressView: true,
       searchVisibility: false,
@@ -178,59 +189,93 @@ class HomePage extends React.Component {
   homesetup() {
     Pref.getVal(Pref.bearerToken, result => {
       const rem = Helper.removeQuotes(result);
-
       this.setState({token: rem}, () => {
-        if (Platform.OS === 'ios') {
-          // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-          //   if (res == 'granted') {
-          //     this.geodatass();
-          //   } else {
-          //     this.setState({
-          //       progressView: true,
-          //       locaDialog: true,
-          //       backSearchshow: false,
-          //     });
-          //     this.fetchallbusinessss();
-          //     Pref.setVal(Pref.AskedLocationDailog, '0');
-          //   }
-          // });
-        } else {
-          RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-            interval: 10000,
-            fastInterval: 5000,
-          })
-            .then(data => {
-              this.geodatass();
-            })
-            .catch(err => {
-              this.setState({
-                progressView: true,
-                locaDialog: true,
-                backSearchshow: false,
-              });
-              this.fetchallbusinessss();
-              Pref.setVal(Pref.AskedLocationDailog, '0');
-            });
-        }
-        Helper.networkHelperToken(
-          Pref.GetBusinessCats,
-          Pref.methodGet,
-          this.state.token,
-          result => {
-            const filss = [];
-            for (let index = 0; index < result.length; index++) {
-              const element = result[index];
-              filss.push({name: element});
-            }
-            this.setState({catsList: filss});
-          },
-          error => {
-            //
-          },
-        );
+        Pref.getVal(Pref.TOS, ts => {
+          const q = Helper.removeQuotes(ts);
+          //console.log(`q`, q);
+          if (q === undefined || q === null || q.length === 0 || q === '0') {
+            this.setState({showtos: true});
+          } else if (q === '1') {
+            this.tosagreement();
+          } else {
+            this.callapi();
+          }
+        });
       });
     });
   }
+
+  callapi = () => {
+    if (Platform.OS === 'ios') {
+      // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
+      //   if (res == 'granted') {
+      //     this.geodatass();
+      //   } else {
+      //     this.setState({
+      //       progressView: true,
+      //       locaDialog: true,
+      //       backSearchshow: false,
+      //     });
+      //     this.fetchallbusinessss();
+      //     Pref.setVal(Pref.AskedLocationDailog, '0');
+      //   }
+      // });
+    } else {
+      RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 10000,
+        fastInterval: 5000,
+      })
+        .then(data => {
+          this.geodatass();
+        })
+        .catch(err => {
+          this.setState({
+            progressView: true,
+            locaDialog: true,
+            backSearchshow: false,
+          });
+          this.fetchallbusinessss();
+          Pref.setVal(Pref.AskedLocationDailog, '0');
+        });
+    }
+    Helper.networkHelperToken(
+      Pref.GetBusinessCats,
+      Pref.methodGet,
+      this.state.token,
+      result => {
+        const filss = [];
+        for (let index = 0; index < result.length; index++) {
+          const element = result[index];
+          filss.push({name: element});
+        }
+        this.setState({catsList: filss});
+      },
+      error => {
+        //
+      },
+    );
+  };
+
+  tosagreement = () => {
+    const {token} = this.state;
+    const body = JSON.stringify({
+      version: 'ver1',
+    });
+    Helper.networkHelperTokenPost(
+      Pref.TOSURL,
+      body,
+      Pref.methodPost,
+      token,
+      res => {
+        if (res === 'added acceptance') {
+          this.setState({showtos: false});
+          Pref.setVal(Pref.TOS, '2');
+          this.callapi();
+        }
+      },
+      e => {},
+    );
+  };
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.backClick);
@@ -2250,7 +2295,10 @@ class HomePage extends React.Component {
                   ) : (
                     <Subtitle
                       styleName="md-gutter v-center h-center"
-                      style={{alignSelf: 'center', justifyContent: 'center'}}>
+                      style={{
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                      }}>
                       {`${i18n.t(k._33)}`}
                       <TouchableWithoutFeedback
                         onPress={() => {
@@ -2293,7 +2341,10 @@ class HomePage extends React.Component {
                   showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps={'handled'}>
                   <View
-                    style={{flexDirection: 'column', height: sizeHeight(86)}}>
+                    style={{
+                      flexDirection: 'column',
+                      height: sizeHeight(86),
+                    }}>
                     <TextInput
                       mode="flat"
                       label={i18n.t(k._35)}
@@ -2698,7 +2749,10 @@ class HomePage extends React.Component {
                         justifyContent: 'space-between',
                       }}>
                       <View
-                        style={{flexDirection: 'column', top: sizeHeight(3.5)}}>
+                        style={{
+                          flexDirection: 'column',
+                          top: sizeHeight(3.5),
+                        }}>
                         <Subtitle
                           style={{
                             color: '#777777',
@@ -2843,6 +2897,112 @@ class HomePage extends React.Component {
               </View>
             </View>
           ) : null}
+
+          <Portal>
+            <Modal
+              visible={this.state.showtos}
+              dismissable={false}
+              onDismiss={() => this.setState({showtos: false})}
+              contentContainerStyle={{
+                height: i18n.t(k._5),
+              }}>
+              <View style={{flex: 1}}>
+                <View
+                  style={{
+                    flex: 1,
+                  }}>
+                  <View style={{flex: 0.3}} />
+                  <View
+                    style={{
+                      flex: 0.4,
+                      marginTop: sizeHeight(4),
+                      marginBottom: sizeHeight(8),
+                      marginHorizontal: sizeWidth(4),
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      position: 'relative',
+                      borderRadius: 4,
+                    }}>
+                    <Subtitle
+                      style={{
+                        color: 'black',
+                        fontSize: 16,
+                        fontWeight: '700',
+                        alignSelf: 'center',
+                        paddingVertical: 12,
+                        marginStart: 4,
+                      }}>
+                      {` ${i18n.t(k.tosinsidetitle)}`}
+                    </Subtitle>
+                    <View
+                      style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                      }}>
+                      <Subtitle
+                        styleName="wrap"
+                        style={{
+                          alignSelf: 'center',
+                          color: '#292929',
+                          fontSize: 14,
+                          marginStart: 8,
+                        }}>
+                        {i18n.t(k.tosinsidesub)}
+                        <TouchableWithoutFeedback
+                          onPress={() => Linking.openURL(`${Pref.TOSWEBURL}`)}>
+                          <Subtitle
+                            styleName="wrap"
+                            style={{
+                              alignSelf: 'center',
+                              color: i18n.t(k.DACCF),
+                              fontSize: 14,
+                            }}>
+                            {` ${i18n.t(k.tosTextLink)}`}
+                          </Subtitle>
+                        </TouchableWithoutFeedback>
+                        <Subtitle
+                          styleName="wrap"
+                          style={{
+                            alignSelf: 'center',
+                            color: '#292929',
+                            fontSize: 14,
+                          }}>
+                          {` ${i18n.t(k.tosinsidesub2)}\n${i18n.t(
+                            k.toinsidesub1,
+                          )}`}
+                        </Subtitle>
+                      </Subtitle>
+                    </View>
+                    <Button
+                      styleName=" muted border"
+                      mode={i18n.t(k.CONTAINED)}
+                      uppercase={true}
+                      dark={true}
+                      loading={false}
+                      style={[
+                        styles.buttonStyle,
+                        {
+                          marginTop: sizeHeight(7.5),
+                          borderRadius: 0,
+                          borderBottomEndRadius: 4,
+                          borderBottomStartRadius: 4,
+                        },
+                      ]}
+                      onPress={this.tosagreement}>
+                      <Subtitle
+                        style={{
+                          color: 'white',
+                        }}>
+                        {i18n.t(k.cardconfirmfinal)}
+                      </Subtitle>
+                    </Button>
+                  </View>
+                  <View style={{flex: 0.3}} />
+                </View>
+              </View>
+            </Modal>
+          </Portal>
         </Screen>
       </SafeAreaView>
     );
