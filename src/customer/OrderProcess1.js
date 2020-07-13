@@ -58,6 +58,7 @@ let prevCircleTab = 0;
 let freeList = [];
 let finishedList = [];
 let currentCat = '';
+let expanded = false;
 
 export default class OrderProcess1 extends React.Component {
   // static propTypes = {
@@ -94,7 +95,7 @@ export default class OrderProcess1 extends React.Component {
     this.finishCirclePos = this.finishCirclePos.bind(this);
     this.eachCirclePartClick = this.eachCirclePartClick.bind(this);
     this.menuItemClicked = this.menuItemClicked.bind(this);
-    //this.accordClick = this.accordClick.bind(this);
+    this.accordClick = this.accordClick.bind(this);
     const day = Moment(Date.now()).format('YYYY/MM/DD HH:mm');
     this.state = {
       branchid: 0,
@@ -239,7 +240,13 @@ export default class OrderProcess1 extends React.Component {
     const serviceList = this.props.tabNames;
     if (serviceList !== null && serviceList.length > 0) {
       const list = [];
+      //console.log(`expandedexpanded`, expanded, currentCat);
       Lodash.map(serviceList, (item, index) => {
+        if (item.cat === currentCat) {
+          item.expanded = expanded;
+        } else {
+          item.expanded = false;
+        }
         const dataparse = (
           <AccordationItem
             index={index}
@@ -248,6 +255,7 @@ export default class OrderProcess1 extends React.Component {
             size={serviceList.length}
             clickedItem={this.menuItemClicked}
             clickedItemPos={this.state.clickedItemPos}
+            accordClick={this.accordClick}
             currentCategory={currentCat === item.cat ? currentCat : ''}
           />
         );
@@ -315,7 +323,7 @@ export default class OrderProcess1 extends React.Component {
         //ignored
       } else {
         const itemTotal = this.state.totalAmount;
-        console.log('amt', itemTotal);
+        //console.log('amt', itemTotal);
         const totalx = itemTotal + this.state.cartTotalAmount;
 
         const repeats = this.state.mainBaseCount;
@@ -3226,7 +3234,9 @@ export default class OrderProcess1 extends React.Component {
             style={{
               flex: 1,
             }}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : ''}
+              style={{flex: 1}}>
               <TouchableWithoutFeedback
                 onPress={() => {
                   Keyboard.dismiss();
@@ -3581,7 +3591,7 @@ export default class OrderProcess1 extends React.Component {
           }
         }
       }
-      console.log(`freeList`, freeList);
+      //console.log(`freeList`, freeList);
       const mmm = JSON.parse(JSON.stringify(freeList));
       const filterExtras = Lodash.filter(gotDatas, item => {
         if (item !== undefined) {
@@ -4167,17 +4177,11 @@ export default class OrderProcess1 extends React.Component {
     }
   };
 
-  // accordClick = cat => {
-  //   let {currentCat} = this.state;
-  //   if (currentCat === cat) {
-  //     currentCat = '';
-  //   } else {
-  //     currentCat = cat;
-  //   }
-  //   this.setState({
-  //     currentCat: currentCat,
-  //   });
-  // };
+  accordClick = (exanded, cat) => {
+    expanded = exanded;
+    currentCat = cat;
+    this.menuServicesSetup();
+  };
 
   render() {
     return (
@@ -4197,7 +4201,9 @@ export default class OrderProcess1 extends React.Component {
               contentContainerStyle={{
                 height: i18n.t(k._5),
               }}>
-              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : ''}
+                style={{flex: 1}}>
                 <TouchableWithoutFeedback
                   onPress={() => {
                     Keyboard.dismiss();
@@ -4613,7 +4619,9 @@ export default class OrderProcess1 extends React.Component {
                   style={{
                     flex: 1,
                   }}>
-                  <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding" : ''} style={{flex: 1}}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : ''}
+                    style={{flex: 1}}>
                     <TouchableWithoutFeedback
                       onPress={() => {
                         Keyboard.dismiss();
@@ -4996,7 +5004,7 @@ export default class OrderProcess1 extends React.Component {
                     //   // ItemSeparatorComponent={() => {
                     //   //   return <View style={styles.listserviceItemDivider} />;
                     //   // }}
-                    //   renderItem={({item, index}) => 
+                    //   renderItem={({item, index}) =>
                     //     {return item}
                     //     // <AccordationItem
                     //     //   index={index}

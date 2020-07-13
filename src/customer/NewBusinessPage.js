@@ -488,6 +488,7 @@ export default class NewBusinessPage extends React.Component {
                 showsHorizontalScrollIndicator={false}
                 onScroll={this.handleScroll}
                 ref={this.scrollViewRef}
+                nestedScrollEnabled
                 scrollEventThrottle={16}>
                 {this.state.item !== null &&
                 this.state.item !== undefined ? (

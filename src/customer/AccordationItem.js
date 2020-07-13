@@ -15,22 +15,36 @@ const AccordationItem = props => {
     clickedItemPos = 0,
     size,
     clickedItem = (tabData, item, index) => {},
-    //accordClick = () => {},
+    accordClick,
     currentCategory = '',
   } = props;
-
-  const [clickedCat, setclickedCat] = useState('');
-  const [itemSize, setitemSize] = useState(5);
-  //console.log(`size`, size, clickedItemPos);
-  const datapos = item.data.length || 0;
-  //console.log(`currentCategory`, currentCategory);
+  //const datapos = item.data.length || 0;
+  const clone = JSON.parse(JSON.stringify(item.data));
+  if (clone.length > 10) {
+    clone.length = 3;
+  }
+  const [itemList, setItemList] = useState(clone);
+  const {expanded} = item;
 
   useEffect(() => {
-    if (currentCategory !== '') setclickedCat(currentCategory);
-    return () => {
-      setclickedCat('')
-    };
-  }, [currentCategory]);
+    if (expanded) {
+      if (itemList.length === 3) {
+        const timer = setTimeout(() => {
+          const clone = JSON.parse(JSON.stringify(item.data));
+          setItemList(clone);
+          //console.log(clone.length);
+          clearTimeout(timer);
+        }, 250);
+      }
+    } else {
+      const clone = JSON.parse(JSON.stringify(item.data));
+      if (clone.length > 10) {
+        clone.length = 3;
+        setItemList(clone);
+      }
+    }
+    return () => {};
+  }, [expanded]);
 
   return (
     <View>
@@ -41,34 +55,56 @@ const AccordationItem = props => {
         title={Lodash.capitalize(item.cat)}
         titleStyle={styles.listService}
         style={styles.listserviceacc}
-        //expanded={true}
-        expanded={clickedCat === item.cat}
+        expanded={item.expanded}
         onPress={() => {
-          LayoutAnimation.configureNext(
-            LayoutAnimation.Presets.easeInEaseOut,
-          );
-          setclickedCat(clickedCat !== '' ? '' : item.cat);
-          //setitemSize(item.data.length);
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          accordClick(!expanded, item.cat);
         }}>
         <View>
-          <FlatList
+          {Lodash.map(itemList, (eachTabData, pos) => {
+            return (
+              <View>
+                {pos !== 0 ? (
+                  <View style={styles.listserviceItemDivider} />
+                ) : null}
+                <AccordItem
+                  eachTabData={eachTabData}
+                  index={pos}
+                  clickedItem={(itemx, i) => clickedItem(item, itemx, i)}
+                  priceStyle={{
+                    color: eachTabData.available === 1 ? '#292929' : 'red',
+                    fontFamily: 'Rubik',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    lineHeight: 20,
+                  }}
+                />
+              </View>
+            );
+          })}
+          {/* <FlatList
             initialScrollIndex={
               clickedItemPos >= 0 && clickedItemPos < datapos
                 ? clickedItemPos
                 : 0
             }
             showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             data={item.data}
+            removeClippedSubviews={true}
+            //style={{flexGrow:1,flex:1}}
             //initialNumToRender={item.data.length}
             initialNumToRender={itemSize}
             nestedScrollEnabled={true}
             ItemSeparatorComponent={() => {
               return <View style={styles.listserviceItemDivider} />;
             }}
-            // windowSize={100} //ali kazmi
-            // maxToRenderPerBatch={5} //ali kazmi
-            // updateCellsBatchingPeriod={25} //ali kazmi
+            maxToRenderPerBatch={15}
+            bounces={false}
+            //windowSize={100} //ali kazmi
+            //maxToRenderPerBatch={itemSize} //ali kazmi
+            //updateCellsBatchingPeriod={25} //ali kazmi
+            onEndReachedThreshold={0.1}
             keyExtractor={(item, index) => `${index}`}
             renderItem={({item: eachTabData, index}) => (
               <AccordItem
@@ -84,7 +120,7 @@ const AccordationItem = props => {
                 }}
               />
             )}
-          />
+          /> */}
         </View>
       </List.Accordion>
       {size - 1 === index ? <View style={styles.listservicedivider} /> : null}

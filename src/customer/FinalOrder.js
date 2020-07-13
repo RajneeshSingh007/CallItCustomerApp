@@ -1065,15 +1065,15 @@ export default class FinalOrder extends React.Component {
         });
       } else {
         this.setState({smp: true});
-        // Helper.networkHelperToken(
-        //   Pref.ServerTimeUrl,
-        //   Pref.methodGet,
-        //   token,
-        //   value => {
-        //     const convertTime = Moment.utc(value)
-        //       .utcOffset(2, false)
-        //       .format('YYYY/MM/DD HH:mm');
-        //     const checkerDate = new Date(convertTime);
+        Helper.networkHelperToken(
+          Pref.ServerTimeUrl,
+          Pref.methodGet,
+          token,
+          value => {
+            const convertTime = Moment.utc(value)
+              .utcOffset(2, false)
+              .format('YYYY/MM/DD HH:mm');
+            const checkerDate = new Date(convertTime);
         Helper.networkHelperToken(
           Pref.BranchStatusUrl + branchData.idbranch,
           Pref.methodGet,
@@ -1327,11 +1327,11 @@ export default class FinalOrder extends React.Component {
             console.log(e);
           },
         );
-        //   },
-        //   error => {
-        //     this.setState({smp: false});
-        //   },
-        // );
+          },
+          error => {
+            this.setState({smp: false});
+          },
+        );
       }
     }
   }
