@@ -562,6 +562,19 @@ export default class TrackOrderPage extends React.Component {
     ]);
   };
 
+  getCombinedprice = () =>{
+    const {totalPrice, deliveryPrices} = this.state;
+    let price = Number(totalPrice);
+    if (
+      deliveryPrices !== undefined &&
+      deliveryPrices !== null &&
+      deliveryPrices !== ''
+    ) {
+      price += Number(deliveryPrices);
+    }
+    return price;
+  }
+
   render() {
     return (
       <SafeAreaView
@@ -579,11 +592,17 @@ export default class TrackOrderPage extends React.Component {
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}>
                 <View>
-                  {this.state.item !== null && this.state.item !== undefined ? (
+                  {this.state.item !== null &&
+                  this.state.item !== undefined ? (
                     <Image
                       styleName="large-wide"
-                      source={{uri: `${Pref.BASEURL}${this.state.imageUrl}`}}
-                      style={{height: sizeHeight(24), resizeMode: 'contain'}}
+                      source={{
+                        uri: `${Pref.BASEURL}${this.state.imageUrl}`,
+                      }}
+                      style={{
+                        height: sizeHeight(24),
+                        resizeMode: 'contain',
+                      }}
                     />
                   ) : null}
                   <View
@@ -615,7 +634,8 @@ export default class TrackOrderPage extends React.Component {
                       }
                     />
                   </View>
-                  {this.state.item !== null && this.state.item !== undefined ? (
+                  {this.state.item !== null &&
+                  this.state.item !== undefined ? (
                     <>
                       <View
                         style={{
@@ -658,13 +678,16 @@ export default class TrackOrderPage extends React.Component {
                                 fontSize: 16,
                                 marginEnd: sizeWidth(1),
                               }}>
-                              {`${i18n.t(k._106)} ${this.last3digitorder()}`}
+                              {`${i18n.t(
+                                k._106,
+                              )} ${this.last3digitorder()}`}
                             </Subtitle>
                           ) : null}
                         </View>
 
                         {this.state.status === 1 ? (
-                          <View style={{flex: 1, flexDirection: 'row-reverse'}}>
+                          <View
+                            style={{flex: 1, flexDirection: 'row-reverse'}}>
                             <Button
                               style={{
                                 color: i18n.t(k.WHITE),
@@ -760,13 +783,15 @@ export default class TrackOrderPage extends React.Component {
                                 fontSize: 15,
                                 fontWeight: '400',
                               }}>
-                              {`${i18n.t(k._6)}${this.state.deliveryPrices}`}
+                              {`${i18n.t(k._6)}${
+                                this.state.deliveryPrices
+                              }`}
                             </Title>
                           </Title>
                         ) : null}
-                        {this.state.totalPrice !== '' &&
+                        {this.state.totalPrice !== undefined &&
                         this.state.totalPrice !== null &&
-                        this.state.totalPrice !== undefined ? (
+                        this.state.totalPrice !== '' ? (
                           <Title
                             style={{
                               color: '#292929',
@@ -784,7 +809,7 @@ export default class TrackOrderPage extends React.Component {
                                 fontSize: 15,
                                 fontWeight: '700',
                               }}>
-                              {`${i18n.t(k._6)}${this.state.totalPrice}`}
+                              {`${i18n.t(k._6)}${this.getCombinedprice()}`}
                             </Title>
                           </Title>
                         ) : null}
@@ -824,7 +849,9 @@ export default class TrackOrderPage extends React.Component {
                               marginStart: sizeWidth(2),
                               fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._109)} ${this.state.businessMessage}`}
+                            {`${i18n.t(k._109)} ${
+                              this.state.businessMessage
+                            }`}
                           </Title>
                         ) : null}
 
@@ -856,7 +883,9 @@ export default class TrackOrderPage extends React.Component {
                                     marginBottom: 8,
                                   }}
                                   tintColor={
-                                    this.state.status <= 1 ? i18n.t(k.EBBD) : ''
+                                    this.state.status <= 1
+                                      ? i18n.t(k.EBBD)
+                                      : ''
                                   }
                                 />
 
