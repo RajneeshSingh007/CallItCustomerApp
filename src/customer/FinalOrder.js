@@ -1388,9 +1388,9 @@ export default class FinalOrder extends React.Component {
    * @param {*} result
    */
   orderDone = (newArr, result, paymentmode) => {
-    // this.setState({
-    //   smp: false,
-    // });
+    this.setState({
+      smp: false,
+    });
     if (result === "order didn't went through") {
       this.setState({
         smp: false,
