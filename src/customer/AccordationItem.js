@@ -55,7 +55,7 @@ const AccordationItem = props => {
         title={Lodash.capitalize(item.cat)}
         titleStyle={styles.listService}
         style={styles.listserviceacc}
-        expanded={item.expanded}
+        expanded={item.expanded || false}
         onPress={() => {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           accordClick(!expanded, item.cat);

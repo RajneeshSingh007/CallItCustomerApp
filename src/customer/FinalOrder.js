@@ -28,6 +28,7 @@ import {
   View,
   Row,
   Title,
+  ImageBackground,
 } from '@shoutem/ui';
 import {
   Button,
@@ -172,8 +173,8 @@ export default class FinalOrder extends React.Component {
       },
     );
     this.focusListener = this.props.navigation.addListener('didFocus', () => {
-      Pref.setVal(Pref.HomeReload, null);
-      this.work();
+    Pref.setVal(Pref.HomeReload, null);
+    this.work();
     });
   }
 
@@ -1074,259 +1075,272 @@ export default class FinalOrder extends React.Component {
               .utcOffset(2, false)
               .format('YYYY/MM/DD HH:mm');
             const checkerDate = new Date(convertTime);
-        Helper.networkHelperToken(
-          Pref.BranchStatusUrl + branchData.idbranch,
-          Pref.methodGet,
-          token,
-          res => {
-            this.setState({
-              smp: false,
-              convertTime: convertTime,
-            });
-            if (res === 'open') {
-              if (hasDelivery === 0) {
-                this.checknogps(fullcitiesInput).then(value => {
-                  //console.log("value", value);
-                  if (value === 0) {
-                    Alert.alert('', 'האם אתה בטוח שברצונך להזמין?', [
-                      {
-                        text: 'לא',
-                        onPress: () => console.log('Cancel Pressed'),
-                      },
+            Helper.networkHelperToken(
+              Pref.BranchStatusUrl + branchData.idbranch,
+              Pref.methodGet,
+              token,
+              res => {
+                this.setState({
+                  smp: false,
+                  convertTime: convertTime,
+                });
+                if (res === 'open') {
+                  if (hasDelivery === 0) {
+                    this.checknogps(fullcitiesInput).then(value => {
+                      //console.log("value", value);
+                      if (value === 0) {
+                        Alert.alert('', 'האם אתה בטוח שברצונך להזמין?', [
+                          {
+                            text: 'לא',
+                            onPress: () => console.log('Cancel Pressed'),
+                          },
 
-                      {
-                        text: 'כן',
-                        onPress: () => {
-                          const geolat = this.state.currentLat;
-                          const geolng = this.state.currentLog;
-                          // const day = Moment(Date.now()).format(
-                          //   "YYYY/MM/DD HH:mm"
-                          // );
-                          //cgUid
-                          //let cgUid = ``;
-                          if (selectedMode) {
-                            const findCardSelected = Lodash.find(
-                              this.state.cardList,
-                              cardx => cardx.selected === true,
-                            );
-                            //console.log(`findCardSelected`, findCardSelected)
-                            if (findCardSelected !== undefined) {
-                              this.setState({
-                                smp: true,
-                              });
-                              const total = this.state.totalAmt;
-                              let parstotal = '';
-                              if (total.toString().includes('.')) {
-                                parstotal = total.toString().replace('.', '');
-                              } else {
-                                parstotal = `${total.toString()}00`;
-                              }
-                              const datetime = this.state.convertTime;
-                              const terminalNumber = branchData.terminalNumber;
-                              //console.log(branchData);
-                              const {
-                                cardTempNumber,
-                                cardTempcvv,
-                                cardTempyear,
-                              } = this.state;
-                              let sendXml = '';
-                              if (findCardSelected.cardId !== '') {
-                                sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
-                                  findCardSelected.cardId
-                                }</cardId><terminalNumber>${terminalNumber}</terminalNumber><cardNo></cardNo><cardExpiration>${
-                                  findCardSelected.cardyear
-                                }</cardExpiration><cvv></cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
-                              } else {
-                                sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><terminalNumber>${terminalNumber}</terminalNumber><cardNo>${cardTempNumber}</cardNo><cardExpiration>${cardTempyear}</cardExpiration><cvv>${cardTempcvv}</cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
-                              }
-                              console.log(`sendXml`, sendXml);
-                              const cardurl = `${
-                                Pref.CreditCardUrl
-                              }?int_in=${sendXml}&sessionId=${
-                                this.state.cardSessionID
-                              }`;
-                              //console.log(`sendXml`, sendXml, cardurl);
-                              fetch(cardurl, {
-                                method: Pref.methodPost,
-                              })
-                                .then(response => {
-                                  return response.text();
-                                })
-                                .then(out => {
-                                  const parsexml = xml2js
-                                    .parseStringPromise(out, {
-                                      explicitArray: false,
+                          {
+                            text: 'כן',
+                            onPress: () => {
+                              const geolat = this.state.currentLat;
+                              const geolng = this.state.currentLog;
+                              // const day = Moment(Date.now()).format(
+                              //   "YYYY/MM/DD HH:mm"
+                              // );
+                              //cgUid
+                              //let cgUid = ``;
+                              if (selectedMode) {
+                                const findCardSelected = Lodash.find(
+                                  this.state.cardList,
+                                  cardx => cardx.selected === true,
+                                );
+                                //console.log(`findCardSelected`, findCardSelected)
+                                if (findCardSelected !== undefined) {
+                                  this.setState({
+                                    smp: true,
+                                  });
+                                  const total = this.state.totalAmt;
+                                  let parstotal = '';
+                                  if (total.toString().includes('.')) {
+                                    parstotal = total
+                                      .toString()
+                                      .replace('.', '');
+                                  } else {
+                                    parstotal = `${total.toString()}00`;
+                                  }
+                                  const datetime = this.state.convertTime;
+                                  const terminalNumber =
+                                    branchData.terminalNumber;
+                                  //console.log(branchData);
+                                  const {
+                                    cardTempNumber,
+                                    cardTempcvv,
+                                    cardTempyear,
+                                  } = this.state;
+                                  let sendXml = '';
+                                  if (findCardSelected.cardId !== '') {
+                                    sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
+                                      findCardSelected.cardId
+                                    }</cardId><terminalNumber>${terminalNumber}</terminalNumber><cardNo></cardNo><cardExpiration>${
+                                      findCardSelected.cardyear
+                                    }</cardExpiration><cvv></cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
+                                  } else {
+                                    sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><terminalNumber>${terminalNumber}</terminalNumber><cardNo>${cardTempNumber}</cardNo><cardExpiration>${cardTempyear}</cardExpiration><cvv>${cardTempcvv}</cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
+                                  }
+                                  console.log(`sendXml`, sendXml);
+                                  const cardurl = `${
+                                    Pref.CreditCardUrl
+                                  }?int_in=${sendXml}&sessionId=${
+                                    this.state.cardSessionID
+                                  }`;
+                                  //console.log(`sendXml`, sendXml, cardurl);
+                                  fetch(cardurl, {
+                                    method: Pref.methodPost,
+                                  })
+                                    .then(response => {
+                                      return response.text();
                                     })
-                                    .then(result => {
-                                      // console.log(
-                                      //   `result`,
-                                      //   JSON.stringify(result),
-                                      // );
-                                      const {ashrait} = result;
-                                      const {response} = ashrait;
-                                      const {
-                                        message,
-                                        doDeal,
-                                        additionalInfo,
-                                      } = response;
-                                      const {
-                                        cardId,
-                                        cgUid,
-                                        fileNumber,
-                                        slaveTerminalNumber,
-                                        slaveTerminalSequence,
-                                      } = doDeal;
-                                      //update card
-                                      this.updateCardid(cardTempNumber, cardId);
-                                      let shovar = `${fileNumber}${slaveTerminalNumber}${slaveTerminalSequence}`;
-                                      //console.log(`shovar`, shovar);
-                                      //cgUid = findCardSelected.cgUid;
-                                      const guid = Helper.guid();
-                                      const newArr = Lodash.map(
-                                        data,
-                                        (o, index) => {
-                                          o.orderdate = this.state.convertTime;
-                                          o.isdelivery = isDeliveryMode;
-                                          o.paid = selectedMode;
-                                          o.geolat = geolat;
-                                          o.geolng = geolng;
-                                          o.cgUid = cgUid;
-                                          //if (this.state.insertGuid) {
-                                          o.guid = guid;
-                                          //}
-                                          if (this.state.isDeliveryMode) {
-                                            if (index == 0) {
-                                              o.deliveryprice = Number(
-                                                this.state.deliveryprices,
-                                              );
-                                            }
+                                    .then(out => {
+                                      const parsexml = xml2js
+                                        .parseStringPromise(out, {
+                                          explicitArray: false,
+                                        })
+                                        .then(result => {
+                                          // console.log(
+                                          //   `result`,
+                                          //   JSON.stringify(result),
+                                          // );
+                                          const {ashrait} = result;
+                                          const {response} = ashrait;
+                                          const {
+                                            message,
+                                            doDeal,
+                                            additionalInfo,
+                                          } = response;
+                                          const {
+                                            cardId,
+                                            cgUid,
+                                            fileNumber,
+                                            slaveTerminalNumber,
+                                            slaveTerminalSequence,
+                                          } = doDeal;
+                                          //update card
+                                          this.updateCardid(
+                                            cardTempNumber,
+                                            cardId,
+                                          );
+                                          let shovar = `${fileNumber}${slaveTerminalNumber}${slaveTerminalSequence}`;
+                                          //console.log(`shovar`, shovar);
+                                          //cgUid = findCardSelected.cgUid;
+                                          const guid = Helper.guid();
+                                          const newArr = Lodash.map(
+                                            data,
+                                            (o, index) => {
+                                              o.orderdate = this.state.convertTime;
+                                              o.isdelivery = isDeliveryMode;
+                                              o.paid = selectedMode;
+                                              o.geolat = geolat;
+                                              o.geolng = geolng;
+                                              o.cgUid = cgUid;
+                                              //if (this.state.insertGuid) {
+                                              o.guid = guid;
+                                              //}
+                                              if (this.state.isDeliveryMode) {
+                                                if (index == 0) {
+                                                  o.deliveryprice = Number(
+                                                    this.state.deliveryprices,
+                                                  );
+                                                }
+                                              }
+                                              o.address =
+                                                isDeliveryMode === true
+                                                  ? this.state.fullAddressInput
+                                                  : '';
+                                              o.shovar = shovar || '';
+                                              return o;
+                                            },
+                                          );
+                                          if (
+                                            additionalInfo
+                                              .toString()
+                                              .includes(`SUCCESS`)
+                                          ) {
+                                            const datax = JSON.stringify(
+                                              newArr,
+                                            );
+                                            this.orderapiCallback(
+                                              datax,
+                                              newArr,
+                                              token,
+                                              true,
+                                            );
+                                          } else {
+                                            this.setState({
+                                              smp: false,
+                                              showAlert: true,
+                                              alertContent: `${i18n.t(
+                                                k.invalidCard,
+                                              )}`,
+                                            });
                                           }
-                                          o.address =
-                                            isDeliveryMode === true
-                                              ? this.state.fullAddressInput
-                                              : '';
-                                          o.shovar = shovar || '';
-                                          return o;
-                                        },
-                                      );
-                                      if (
-                                        additionalInfo
-                                          .toString()
-                                          .includes(`SUCCESS`)
-                                      ) {
-                                        const datax = JSON.stringify(newArr);
-                                        this.orderapiCallback(
-                                          datax,
-                                          newArr,
-                                          token,
-                                          true,
-                                        );
-                                      } else {
-                                        this.setState({
-                                          smp: false,
-                                          showAlert: true,
-                                          alertContent: `${i18n.t(
-                                            k.invalidCard,
-                                          )}`,
                                         });
-                                      }
+                                    })
+                                    .catch(e => {
+                                      this.setState({
+                                        smp: false,
+                                      });
                                     });
-                                })
-                                .catch(e => {
+                                } else {
                                   this.setState({
                                     smp: false,
+                                    alertContent: `${i18n.t(
+                                      k.nocardselectedorder,
+                                    )}`,
+                                    showAlert: true,
                                   });
-                                });
-                            } else {
-                              this.setState({
-                                smp: false,
-                                alertContent: `${i18n.t(
-                                  k.nocardselectedorder,
-                                )}`,
-                                showAlert: true,
-                              });
-                            }
-                          } else {
-                            this.setState({
-                              smp: true,
-                            });
-                            const guid = Helper.guid();
-                            const newArr = Lodash.map(data, (o, index) => {
-                              o.orderdate = this.state.convertTime;
-                              o.isdelivery = isDeliveryMode;
-                              o.paid = selectedMode;
-                              o.geolat = geolat;
-                              o.geolng = geolng;
-                              o.cgUid = '';
-                              //if (this.state.insertGuid) {
-                              o.guid = guid;
-                              //}
-                              if (this.state.isDeliveryMode) {
-                                if (index == 0) {
-                                  o.deliveryprice = Number(
-                                    this.state.deliveryprices,
-                                  );
                                 }
+                              } else {
+                                this.setState({
+                                  smp: true,
+                                });
+                                const guid = Helper.guid();
+                                const newArr = Lodash.map(data, (o, index) => {
+                                  o.orderdate = this.state.convertTime;
+                                  o.isdelivery = isDeliveryMode;
+                                  o.paid = selectedMode;
+                                  o.geolat = geolat;
+                                  o.geolng = geolng;
+                                  o.cgUid = '';
+                                  //if (this.state.insertGuid) {
+                                  o.guid = guid;
+                                  //}
+                                  if (this.state.isDeliveryMode) {
+                                    if (index == 0) {
+                                      o.deliveryprice = Number(
+                                        this.state.deliveryprices,
+                                      );
+                                    }
+                                  }
+                                  o.address =
+                                    isDeliveryMode === true
+                                      ? this.state.fullAddressInput
+                                      : '';
+                                  o.shovar = '';
+                                  return o;
+                                });
+                                const datax = JSON.stringify(newArr);
+                                this.orderapiCallback(
+                                  datax,
+                                  newArr,
+                                  token,
+                                  false,
+                                );
                               }
-                              o.address =
-                                isDeliveryMode === true
-                                  ? this.state.fullAddressInput
-                                  : '';
-                              o.shovar = '';
-                              return o;
-                            });
-                            const datax = JSON.stringify(newArr);
-                            this.orderapiCallback(datax, newArr, token, false);
-                          }
-                        },
-                      },
-                    ]);
-                  } else if (value === 2) {
-                    this.setState({
-                      alertTitle: i18n.t(k._4),
-                      flexChanged: false,
-                      alertContent: i18n.t(k._26),
-                      showAlert: true,
+                            },
+                          },
+                        ]);
+                      } else if (value === 2) {
+                        this.setState({
+                          alertTitle: i18n.t(k._4),
+                          flexChanged: false,
+                          alertContent: i18n.t(k._26),
+                          showAlert: true,
+                        });
+                      } else if (value === 3) {
+                        this.setState({
+                          alertTitle: i18n.t(k._4),
+                          flexChanged: false,
+                          alertContent: i18n.t(k._27),
+                          showAlert: true,
+                        });
+                      } else if (value === 4) {
+                      } else {
+                        this.setState({
+                          alertTitle: i18n.t(k._4),
+                          flexChanged: false,
+                          alertContent: `עלות משלוח היא ${value} שקל, האם אתה בטוח שאתה רוצה לסיים את ההזמנה?`,
+                          showAlert: true,
+                        });
+                      }
                     });
-                  } else if (value === 3) {
-                    this.setState({
-                      alertTitle: i18n.t(k._4),
-                      flexChanged: false,
-                      alertContent: i18n.t(k._27),
-                      showAlert: true,
-                    });
-                  } else if (value === 4) {
                   } else {
                     this.setState({
                       alertTitle: i18n.t(k._4),
-                      flexChanged: false,
-                      alertContent: `עלות משלוח היא ${value} שקל, האם אתה בטוח שאתה רוצה לסיים את ההזמנה?`,
+                      alertContent: i18n.t(k.deliverynotavailable),
                       showAlert: true,
+                      flexChanged: true,
                     });
                   }
-                });
-              } else {
-                this.setState({
-                  alertTitle: i18n.t(k._4),
-                  alertContent: i18n.t(k.deliverynotavailable),
-                  showAlert: true,
-                  flexChanged: true,
-                });
-              }
-            } else {
-              this.setState({
-                smp: false,
-                alertTitle: i18n.t(k._30),
-                alertContent: i18n.t(k._28),
-                showAlert: true,
-                flexChanged: true,
-              });
-            }
-          },
-          e => {
-            console.log(e);
-          },
-        );
+                } else {
+                  this.setState({
+                    smp: false,
+                    alertTitle: i18n.t(k._30),
+                    alertContent: i18n.t(k._28),
+                    showAlert: true,
+                    flexChanged: true,
+                  });
+                }
+              },
+              e => {
+                console.log(e);
+              },
+            );
           },
           error => {
             this.setState({smp: false});
@@ -2410,7 +2424,8 @@ export default class FinalOrder extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity
+                  onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -2449,7 +2464,8 @@ export default class FinalOrder extends React.Component {
               <DummyLoader
                 visibilty={this.state.progressView}
                 center={
-                  this.state.data != null && this.state.data !== undefined ? (
+                  this.state.data != null &&
+                  this.state.data !== undefined ? (
                     <FlatList
                       extraData={this.state}
                       showsVerticalScrollIndicator={false}
@@ -2546,7 +2562,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.isDeliveryMode ? 'white' : '#777777',
+                        color: this.state.isDeliveryMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2596,7 +2614,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.isDeliveryMode ? 'white' : '#777777',
+                        color: !this.state.isDeliveryMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2851,7 +2871,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.selectedMode ? 'white' : '#777777',
+                        color: this.state.selectedMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2894,7 +2916,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.selectedMode ? 'white' : '#777777',
+                        color: !this.state.selectedMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3072,7 +3096,7 @@ export default class FinalOrder extends React.Component {
                       }}>
                       <View
                         style={{
-                          flex: 0.15,
+                          flex: 0.1,
                           flexDirection: 'row',
                           justifyContent: 'space-between',
                           backgroundColor: 'white',
@@ -3117,233 +3141,228 @@ export default class FinalOrder extends React.Component {
 
                       <View
                         style={{
-                          flex: 0.7,
+                          flex: 0.8,
                           backgroundColor: 'white',
                           flexDirection: 'column',
                           alignContent: 'center',
                         }}>
                         <ScrollView
                           keyboardShouldPersistTaps={'handled'}
-                          style={{flex: 0.7}}
-                          showsVerticalScrollIndicator={false}
-                          showsHorizontalScrollIndicator={false}>
-                          <View>
-                            <View style={{flex: 0.05}} />
+                          showsHorizontalScrollIndicator={false}
+                          showsVerticalScrollIndicator>
+                          <View style={{flex: 1}}>
                             <View
                               style={{
-                                borderColor: 'black',
-                                borderWidth: 0.5,
-                                marginHorizontal: sizeWidth(4),
-                                borderRadius: 4,
-                                paddingHorizontal: 16,
-                                justifyContent: 'center',
-                                flex: 0.6,
-                                paddingVertical: 4,
+                                flex: 0.65,
+                                //backgroundColor: 'red',
+                                alignItems: 'center',
+                                alignContent: 'center',
                               }}>
-                              <Subtitle
+                              <ImageBackground
+                                source={require('../res/images/visacardbg.png')}
+                                styleName="large"
                                 style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 15,
-                                  alignSelf: 'flex-start',
-                                  marginTop: sizeHeight(1),
-                                  fontWeight: '400',
-                                }}>
-                                {`${i18n.t(k.cardnumber)}:`}
-                              </Subtitle>
-                              <View
-                                style={{
-                                  flexDirection: 'row-reverse',
-                                  //height: 24,
                                   width: '100%',
-                                  borderRadius: 2,
-                                  borderColor: i18n.t(k.DEDEDE1),
-                                  borderStyle: i18n.t(k.SOLID),
-                                  borderWidth: 1,
-                                  backgroundColor: i18n.t(k.FFFFFF),
-                                  //paddingEnd: 8,
-                                  //flex:1,
-                                }}>
-                                <TextInputMask
-                                  ref={this.cardnumberRef}
-                                  onChangeText={(formatted, extracted) => {
-                                    let formyear = formatted.split(' ');
-                                    const cardnumber = formyear.join('');
-                                    this.setState({
-                                      cardnumber: cardnumber,
-                                      creditCardImage: this.returnCardImage(
-                                        cardnumber,
-                                      ),
-                                    });
-                                  }}
-                                  mask={'[0000] [0000] [0000] [0000]'}
-                                  style={{
-                                    height: 36,
-                                    width: '100%',
-                                    flex: 0.95,
-                                    //borderRadius: 2,
-                                    //borderColor: i18n.t(k.DEDEDE1),
-                                    //borderStyle: i18n.t(k.SOLID),
-                                    //borderWidth: 1,
-                                    backgroundColor: i18n.t(k.FFFFFF),
-                                    color: `black`,
-                                    fontFamily: i18n.t(k.RUBIK),
-                                    fontSize: 15,
-                                    fontWeight: i18n.t(k._31),
-                                    letterSpacing: 4.5,
-                                    paddingEnd: 12,
-                                  }}
-                                  placeholder={`xxxx-xxxx-xxxx-xxxx`}
-                                  underlineColor="transparent"
-                                  underlineColorAndroid="transparent"
-                                  keyboardType={'numeric'}
-                                  value={this.state.cardnumber}
-                                  onSubmitEditing={e => {
-                                    if (this.cardcvvRef !== undefined) {
-                                      this.cardcvvRef.current.input.focus();
-                                    }
-                                  }}
-                                />
-
-                                <Image
-                                  source={{
-                                    uri: `${this.state.creditCardImage}`,
-                                  }}
-                                  style={{
-                                    marginEnd: 4,
-                                    marginStart: 4,
-                                    width: 24,
-                                    height: 24,
-                                    //tintColor: '#777777',
-                                    alignSelf: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                />
-                              </View>
-                              <View
-                                style={{
-                                  marginTop: sizeHeight(2.5),
-                                  flexDirection: 'row-reverse',
-                                  width: '100%',
-                                  flex: 1,
-                                  //backgroundColor:'yellow'
+                                  marginTop: -8,
+                                  //height:200
                                 }}>
                                 <View
-                                  style={{
-                                    flex: 0.5,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    alignContent: 'center',
-                                  }}>
-                                  <Subtitle
+                                  styleName="fill-parent"
+                                  style={{flex: 1}}>
+                                  <View style={{flex: 0.29}} />
+                                  <View
                                     style={{
-                                      color: '#292929',
-                                      fontFamily: 'Rubik',
-                                      fontSize: 15,
-                                      alignSelf: 'center',
-                                      fontWeight: '400',
-                                      marginEnd: 8,
-                                      justifyContent: 'center',
+                                      flex: 0.15,
+                                      flexDirection: 'row-reverse',
+                                      //borderColor: i18n.t(k.DEDEDE1),
+                                      //borderStyle: i18n.t(k.SOLID),
+                                      //borderWidth: 1,
+                                      //backgroundColor: i18n.t(k.FFFFFF),
+                                      //paddingEnd: 8,
+                                      //flex:1,
+                                      //borderRadius: 16,
+                                      marginStart: 22,
+                                      marginEnd: 7,
+                                      height: 36,
+                                      alignItems: 'center',
+                                      alignContent: 'center',
                                     }}>
-                                    {`${i18n.t(k.cardcvv)}:`}
-                                  </Subtitle>
-                                  <TextInputMask
-                                    onKeyPress={keyPress =>
-                                      console.log(keyPress)
-                                    }
-                                    ref={this.cardcvvRef}
-                                    onChangeText={(formatted, extracted) => {
-                                      this.setState({
-                                        cardcvv: formatted,
-                                      });
-                                    }}
-                                    mask={'[000]'}
-                                    style={{
-                                      width: '46%',
-                                      height: 32,
-                                      borderRadius: 2,
-                                      borderColor: i18n.t(k.DEDEDE1),
-                                      borderStyle: i18n.t(k.SOLID),
-                                      borderWidth: 1,
-                                      backgroundColor: i18n.t(k.FFFFFF),
-                                      color: `black`,
-                                      fontFamily: i18n.t(k.RUBIK),
-                                      fontSize: 15,
-                                      fontWeight: i18n.t(k._31),
-                                      letterSpacing: 4.5,
-                                      paddingEnd: 8,
-                                      //backgroundColor:'red'
-                                    }}
-                                    placeholder={`xxx`}
-                                    underlineColor="transparent"
-                                    underlineColorAndroid="transparent"
-                                    keyboardType={'numeric'}
-                                    value={this.state.cardcvv}
-                                    onSubmitEditing={e => {
-                                      if (this.cardyearRef !== undefined) {
-                                        this.cardyearRef.current.input.focus();
-                                      }
-                                    }}
-                                  />
-                                </View>
-                                <View
-                                  style={{
-                                    flex: 0.5,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    alignContent: 'center',
-                                  }}>
-                                  <Subtitle
-                                    style={{
-                                      color: '#292929',
-                                      fontFamily: 'Rubik',
-                                      fontSize: 15,
-                                      alignSelf: 'center',
-                                      fontWeight: '400',
-                                      marginEnd: 8,
-                                    }}>
-                                    {`${i18n.t(k.carddate)}:`}
-                                  </Subtitle>
-                                  <TextInputMask
-                                    ref={this.cardyearRef}
-                                    onChangeText={(formatted, extracted) => {
-                                      let formyear = formatted.replace('/', '');
-                                      this.setState({
-                                        cardyear: formyear,
-                                      });
-                                    }}
-                                    mask={'[00]{/}[00]'}
-                                    style={{
-                                      width: 82,
-                                      height: 32,
-                                      borderRadius: 2,
-                                      borderColor: i18n.t(k.DEDEDE1),
-                                      borderStyle: i18n.t(k.SOLID),
-                                      borderWidth: 1,
-                                      backgroundColor: i18n.t(k.FFFFFF),
-                                      color: `black`,
-                                      fontFamily: i18n.t(k.RUBIK),
-                                      fontSize: 15,
-                                      fontWeight: i18n.t(k._31),
-                                      letterSpacing: 4.5,
-                                      paddingEnd: 8,
-                                      paddingStart: 8,
-                                      //backgroundColor:'blue'
-                                    }}
-                                    placeholder={`00/00`}
-                                    underlineColor="transparent"
-                                    underlineColorAndroid="transparent"
-                                    keyboardType={'numeric'}
-                                    value={this.state.cardyear}
-                                  />
-                                </View>
-                              </View>
+                                    <TextInputMask
+                                      ref={this.cardnumberRef}
+                                      onChangeText={(
+                                        formatted,
+                                        extracted,
+                                      ) => {
+                                        let formyear = formatted.split(' ');
+                                        const cardnumber = formyear.join(
+                                          '',
+                                        );
+                                        this.setState({
+                                          cardnumber: cardnumber,
+                                          creditCardImage: this.returnCardImage(
+                                            cardnumber,
+                                          ),
+                                        });
+                                      }}
+                                      mask={'[0000] [0000] [0000] [0000]'}
+                                      style={{
+                                        height: 36,
+                                        flex: 0.85,
+                                        backgroundColor: i18n.t(k.FFFFFF),
+                                        color: `black`,
+                                        fontFamily: i18n.t(k.RUBIK),
+                                        fontSize: 14,
+                                        fontWeight: '700',
+                                        letterSpacing: 4.5,
+                                        paddingEnd: 16,
+                                        borderTopLeftRadius: 16,
+                                        borderBottomLeftRadius: 16,
+                                      }}
+                                      placeholder={`xxxx-xxxx-xxxx-xxxx`}
+                                      underlineColor="transparent"
+                                      underlineColorAndroid="transparent"
+                                      keyboardType={'numeric'}
+                                      value={this.state.cardnumber}
+                                      onSubmitEditing={e => {
+                                        if (this.cardcvvRef !== undefined) {
+                                          this.cardcvvRef.current.input.focus();
+                                        }
+                                      }}
+                                    />
 
+                                    <View
+                                      style={{
+                                        height: 36,
+                                        flex: 0.1,
+                                        backgroundColor: 'white',
+                                        borderTopLeftRadius: 16,
+                                        borderBottomLeftRadius: 16,
+                                        alignItems: 'center',
+                                        alignContent: 'center',
+                                        alignSelf: 'center',
+                                        justifyContent: 'flex-start',
+                                      }}>
+                                      <Image
+                                        source={{
+                                          uri: `${
+                                            this.state.creditCardImage
+                                          }`,
+                                        }}
+                                        style={{
+                                          //marginEnd: 4,
+                                          marginStart: 16,
+                                          width: 24,
+                                          height: 24,
+                                          marginTop: 5,
+                                          //tintColor: '#777777',
+                                          alignSelf: 'center',
+                                          alignItems: 'center',
+                                          alignContent: 'center',
+                                          justifyContent: 'center',
+                                        }}
+                                      />
+                                    </View>
+                                  </View>
+                                  <View style={{flex: 0.11}} />
+                                  <View
+                                    style={{
+                                      marginTop: 0.5,
+                                      flex: 0.32,
+                                      flexDirection: 'row',
+                                      height: 36,
+                                      justifyContent: 'space-between',
+                                      marginStart: 24,
+                                      marginEnd: 24,
+                                    }}>
+                                    <TextInputMask
+                                      ref={this.cardcvvRef}
+                                      onChangeText={(
+                                        formatted,
+                                        extracted,
+                                      ) => {
+                                        this.setState({
+                                          cardcvv: formatted,
+                                        });
+                                      }}
+                                      mask={'[000]'}
+                                      style={{
+                                        flex: 0.75,
+                                        height: 36,
+                                        borderRadius: 8,
+                                        //borderColor: i18n.t(k.DEDEDE1),
+                                        //borderStyle: i18n.t(k.SOLID),
+                                        //borderWidth: 1,
+                                        backgroundColor: i18n.t(k.FFFFFF),
+                                        color: `black`,
+                                        fontFamily: i18n.t(k.RUBIK),
+                                        fontSize: 14,
+                                        fontWeight: '700',
+                                        letterSpacing: 4.5,
+                                        paddingEnd: 8,
+                                        //backgroundColor:'red'
+                                      }}
+                                      placeholder={`xxx`}
+                                      underlineColor="transparent"
+                                      underlineColorAndroid="transparent"
+                                      keyboardType={'numeric'}
+                                      value={this.state.cardcvv}
+                                      onSubmitEditing={e => {
+                                        if (
+                                          this.cardyearRef !== undefined
+                                        ) {
+                                          this.cardyearRef.current.input.focus();
+                                        }
+                                      }}
+                                    />
+                                    <View style={{flex: 0.18}} />
+                                    <TextInputMask
+                                      ref={this.cardyearRef}
+                                      onChangeText={(
+                                        formatted,
+                                        extracted,
+                                      ) => {
+                                        let formyear = formatted.replace(
+                                          '/',
+                                          '',
+                                        );
+                                        this.setState({
+                                          cardyear: formyear,
+                                        });
+                                      }}
+                                      mask={'[00]{/}[00]'}
+                                      style={{
+                                        flex: 0.5,
+                                        height: 36,
+                                        borderRadius: 8,
+                                        //borderColor: i18n.t(k.DEDEDE1),
+                                        //borderStyle: i18n.t(k.SOLID),
+                                        //borderWidth: 1,
+                                        backgroundColor: i18n.t(k.FFFFFF),
+                                        color: `black`,
+                                        fontFamily: i18n.t(k.RUBIK),
+                                        fontSize: 14,
+                                        fontWeight: '700',
+                                        letterSpacing: 4.5,
+                                        paddingEnd: 8,
+                                        //paddingStart: 8,
+                                        //backgroundColor:'blue'
+                                      }}
+                                      placeholder={`00/00`}
+                                      underlineColor="transparent"
+                                      underlineColorAndroid="transparent"
+                                      keyboardType={'numeric'}
+                                      value={this.state.cardyear}
+                                    />
+                                  </View>
+                                  <View style={{flex: 0.12}} />
+                                </View>
+                              </ImageBackground>
+                            </View>
+                            <View style={{flex: 0.35, marginTop: -56}}>
                               <View
                                 style={{
                                   flexDirection: 'row',
                                   alignSelf: 'flex-start',
-                                  marginTop: sizeHeight(2),
                                 }}>
                                 <Checkbox.Android
                                   status={
@@ -3368,41 +3387,40 @@ export default class FinalOrder extends React.Component {
                                   {i18n.t(k.savecardcheckbox)}
                                 </Subtitle>
                               </View>
-                            </View>
-                            <View
-                              style={{
-                                flex: 0.25,
-                                alignItems: 'center',
-                                alignContent: 'center',
-                              }}>
-                              <Subtitle
+                              <View
                                 style={{
-                                  color: '#646464',
-                                  fontSize: 12,
-                                  alignSelf: 'center',
-                                  marginTop: sizeHeight(1.5),
-                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  alignContent: 'center',
+                                  paddingBottom: 6,
                                 }}>
-                                {`${i18n.t(k.cardsecurity)}`}
-                              </Subtitle>
-                              <Image
-                                source={require('./../res/images/card.png')}
-                                style={{
-                                  width: 24,
-                                  height: 24,
-                                  marginTop: 8,
-                                  tintColor: '#777777',
-                                  alignSelf: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              />
+                                <Subtitle
+                                  style={{
+                                    color: '#646464',
+                                    fontSize: 12,
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                  }}>
+                                  {`${i18n.t(k.cardsecurity)}`}
+                                </Subtitle>
+                                <Image
+                                  source={require('./../res/images/card.png')}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    marginTop: 8,
+                                    tintColor: '#777777',
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                />
+                              </View>
                             </View>
                           </View>
                         </ScrollView>
                       </View>
                       <View
                         style={{
-                          flex: 0.15,
+                          flex: 0.1,
                           backgroundColor: 'white',
                           flexDirection: 'column',
                           marginTop: 4,
