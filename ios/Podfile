@@ -3,6 +3,8 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 target 'CallIt' do
   # Pods for CallIt
+  pod 'Firebase/Auth'
+#  pod 'Firebase/Messaging', '~> 6.5.0'
   pod 'React', :path => '../node_modules/react-native/'
   pod 'React-Core', :path => '../node_modules/react-native/React'
   pod 'React-DevSupport', :path => '../node_modules/react-native/React'
@@ -37,8 +39,6 @@ target 'CallIt' do
 
   pod 'RNI18n', :path => '../node_modules/react-native-i18n'
 
-  pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
-
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
 
   pod 'react-native-slider', :path => '../node_modules/@react-native-community/slider'
@@ -47,11 +47,23 @@ target 'CallIt' do
 
   pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
 
-  pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
+#  pod 'Firebase/Messaging', '~> 6.13.0'
 
-  pod 'react-native-notifications', :path => '../node_modules/react-native-notifications'
+  pod 'ReactNativeGetLocation', :path => '../node_modules/react-native-get-location'
 
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
+
+  permissions_path = '../node_modules/react-native-permissions/ios'
+
+  pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways.podspec"
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse.podspec"
+  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications.podspec"
+
+  pod 'react-native-notifications', :path => '../node_modules/react-native-notifications/react-native-notifications.podspec'
+
+  pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
+
+  pod 'CodePush', :path => '../node_modules/react-native-code-push'
 
   target 'CallItTests' do
     inherit! :search_paths
