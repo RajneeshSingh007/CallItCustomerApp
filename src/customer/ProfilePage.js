@@ -792,14 +792,16 @@ export default class ProfilePage extends React.Component {
                           {`${i18n.t(k.cardsecurity)}`}
                         </Subtitle>
                         <Image
-                          source={require('./../res/images/card.png')}
+                          source={require('./../res/images/creditguard.png')}
+                          //styleName="medium-wide"
                           style={{
-                            width: 24,
-                            height: 24,
-                            marginTop: 8,
-                            tintColor: '#777777',
+                            width: '40%',
+                            height: 32,
+                            marginTop: 2,
+                            //tintColor: '#777777',
                             alignSelf: 'center',
                             justifyContent: 'center',
+                            padding: 8,
                           }}
                         />
                       </View>
