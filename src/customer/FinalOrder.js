@@ -65,6 +65,7 @@ var currentDate = new Date();
 const circleButtonFreeWidth = 32;
 const circleButtonFreeRadius = 32 / 2;
 let terminalNumbers = '';
+var tempCguid = '';
 
 export default class FinalOrder extends React.Component {
   constructor(props) {
@@ -136,6 +137,7 @@ export default class FinalOrder extends React.Component {
       cardTempNumber: '',
       cardTempcvv: '',
       cardTempyear: '',
+      cardTempID: '',
       cardSave: false,
       cardSessionID: '',
       freeS: [],
@@ -552,7 +554,10 @@ export default class FinalOrder extends React.Component {
                 hasDelivery: hasDelivery,
                 freeS: freeS,
                 freeItemS: freeItemS,
-                freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
+                freeServiceList:
+                  filter.length > 0
+                    ? this.firstItemfreeClickedshowAllButton(filter[0])
+                    : [],
                 ogFreeServiceList: filter,
                 freeServiceDialogCounter: dialogtimesShow,
                 showFreeServiceModal: filter.length > 0 ? true : false,
@@ -877,7 +882,10 @@ export default class FinalOrder extends React.Component {
         this.setState({
           data: removeFreeService,
           totalAmt: amt,
-          freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
+          freeServiceList:
+            filter.length > 0
+              ? this.firstItemfreeClickedshowAllButton(filter[0])
+              : [],
           freeServiceDialogCounter: -1,
           showFreeServiceModal: filter.length > 0 ? true : false,
           maxQuantity: max,
@@ -950,7 +958,10 @@ export default class FinalOrder extends React.Component {
     this.setState({
       data: removeFreeService,
       totalAmt: amt,
-      freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
+      freeServiceList:
+        filter.length > 0
+          ? this.firstItemfreeClickedshowAllButton(filter[0])
+          : [],
       freeServiceDialogCounter: -1,
       showFreeServiceModal: filter.length > 0 ? true : false,
       maxQuantity: max,
@@ -1147,6 +1158,10 @@ export default class FinalOrder extends React.Component {
                                     cardTempyear,
                                   } = this.state;
                                   let sendXml = '';
+                                  // console.log(
+                                  //   `findCardSelected`,
+                                  //   findCardSelected,
+                                  // );
                                   if (findCardSelected.cardId !== '') {
                                     sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
                                       findCardSelected.cardId
@@ -1156,7 +1171,7 @@ export default class FinalOrder extends React.Component {
                                   } else {
                                     sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><terminalNumber>${terminalNumber}</terminalNumber><cardNo>${cardTempNumber}</cardNo><cardExpiration>${cardTempyear}</cardExpiration><cvv>${cardTempcvv}</cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
                                   }
-                                  console.log(`sendXml`, sendXml);
+                                  //console.log(`sendXml`, sendXml);
                                   const cardurl = `${
                                     Pref.CreditCardUrl
                                   }?int_in=${sendXml}&sessionId=${
@@ -1193,6 +1208,7 @@ export default class FinalOrder extends React.Component {
                                             slaveTerminalNumber,
                                             slaveTerminalSequence,
                                           } = doDeal;
+                                          tempCguid = cgUid;
                                           //update card
                                           this.updateCardid(
                                             cardTempNumber,
@@ -1364,15 +1380,42 @@ export default class FinalOrder extends React.Component {
   }
 
   orderapiCallback = (datax, newArr, token, paymentmode) => {
-    console.log(`datax`, datax);
+    //console.log(`datax`, datax);
     Helper.networkHelperTokenPost(
       Pref.PostOrderUrl,
       datax,
       Pref.methodPost,
       token,
       result => {
-        //console.log('result', result);
-        this.orderDone(newArr, result, paymentmode);
+        //console.log('tempCguid', tempCguid);
+        if (tempCguid !== '') {
+          if (
+            result ===
+              `order didn't went through, invalid prices mismatch detected` ||
+            result === "order didn't went through"
+          ) {
+            Helper.networkHelperToken(
+              Pref.GetSessionCardUrl,
+              Pref.methodGet,
+              token,
+              cardSessionID => {
+                this.cancelvisapayment(
+                  newArr,
+                  result,
+                  paymentmode,
+                  cardSessionID,
+                );
+              },
+              error => {
+                //console.log(error);
+              },
+            );
+          } else {
+            this.orderDone(newArr, result, paymentmode);
+          }
+        } else {
+          this.orderDone(newArr, result, paymentmode);
+        }
       },
       error => {
         this.setState({
@@ -1396,6 +1439,7 @@ export default class FinalOrder extends React.Component {
         smp: false,
         alertContent: result,
         showAlert: true,
+        tempCguid: '',
       });
     } else if (result === 'GUID was used by this user, ack not accepted?') {
       Alert.alert(
@@ -1414,6 +1458,7 @@ export default class FinalOrder extends React.Component {
                   smp: false,
                   insertGuid: true,
                   paymentDoneAlready: paymentmode,
+                  tempCguid: '',
                 },
                 () => {
                   this.pressPayment();
@@ -1434,7 +1479,8 @@ export default class FinalOrder extends React.Component {
         showAlert: true,
         alertContent:
           'מחיר ההזמנה לא תואם למחיר האמיתי של המוצרים, אנא נסה שוב',
-          flexChanged:true
+        flexChanged: true,
+        tempCguid: '',
       });
       Pref.setVal(Pref.cartItem, []);
       Pref.setVal(Pref.EditModeEnabled, '');
@@ -1446,6 +1492,39 @@ export default class FinalOrder extends React.Component {
       NavigationActions.navigate('TrackOrder', {
         item: allDatas,
       });
+    }
+  };
+
+  cancelvisapayment = (newArr, result, paymentmode, cardSessionID) => {
+    const terminalNumber = branchData.terminalNumber;
+    if (terminalNumber !== '' && tempCguid !== '') {
+      const sendXml = `<ashrait><request><command>cancelDeal</command><requesteId></requesteId><dateTime/><version>2000</version><language>Eng</language><cancelDeal><terminalNumber>${terminalNumber}</terminalNumber><cgUid>${tempCguid}</cgUid></cancelDeal></request></ashrait>`;
+      //console.log(`sendXml`, sendXml);
+      fetch(
+        `${Pref.CreditCardUrl}?int_in=${sendXml}&sessionId=${cardSessionID}`,
+        {method: Pref.methodPost},
+      )
+        .then(response => {
+          return response.text();
+        })
+        .then(out => {
+          const parsexml = xml2js
+            .parseStringPromise(out, {
+              explicitArray: false,
+            })
+            .then(xxx => {
+              const {ashrait} = xxx;
+              const {response} = ashrait;
+              const {message, cancelDeal, additionalInfo} = response;
+              //console.log(`message`, message, additionalInfo);
+              if (additionalInfo.toString().includes('SUCCESS')) {
+                this.orderDone(newArr, result, paymentmode);
+              }
+            });
+        })
+        .catch(e => {
+          console.log(`e`, e);
+        });
     }
   };
 
@@ -1886,7 +1965,12 @@ export default class FinalOrder extends React.Component {
       this.setState({
         data: data,
         showFreeServiceModal: false,
-        freeServiceList: ogFreeServiceList[subtract].length > 0 ? this.firstItemfreeClickedshowAllButton(ogFreeServiceList[subtract]) : [],
+        freeServiceList:
+          ogFreeServiceList[subtract].length > 0
+            ? this.firstItemfreeClickedshowAllButton(
+                ogFreeServiceList[subtract],
+              )
+            : [],
         freeServiceDialogCounter: subtract,
         maxQuantity: max,
         maxTitle: maxTitle,
@@ -1962,7 +2046,7 @@ export default class FinalOrder extends React.Component {
     this.setState({freeServiceList: merge});
   };
 
-  firstItemfreeClickedshowAllButton = (freeServiceList) => {
+  firstItemfreeClickedshowAllButton = freeServiceList => {
     const merge = Lodash.map(freeServiceList, io => {
       const {idservice} = io;
       io.clicked = true;
@@ -2342,8 +2426,10 @@ export default class FinalOrder extends React.Component {
 
       const firsttwo = sub.substr(0, 1);
 
+      const creteid = `${sub}${firsttwo}`;
+
       const item = {
-        id: `${sub}${firsttwo}`,
+        id: creteid,
         cardyear: cardyear,
         cardId: '',
         name: `${sub}`,
@@ -2362,6 +2448,7 @@ export default class FinalOrder extends React.Component {
         cardTempNumber: cardnumber,
         cardTempcvv: cardcvv,
         cardTempyear: cardyear,
+        cardTempID: creteid,
         cardnumber: '',
         cardcvv: '',
         cardyear: '',
@@ -2380,16 +2467,14 @@ export default class FinalOrder extends React.Component {
         (val === undefined && val.length === 0)
       ) {
       } else {
-        const sub = cardnumber.toString().slice(cardnumber.length - 4);
-        const xxm = sub.substr(0, 1);
-        const id = `${sub}${xxm}`;
-        let find = Lodash.find(val, xmm => (xmm.id = id));
+        const {cardTempID} = this.state;
+        let find = Lodash.find(val, xmm => xmm.id === cardTempID);
         if (find !== undefined) {
-          const index = Lodash.findLastIndex(val, xm => (xm.id = id));
+          const index = Lodash.findLastIndex(val, xm => xm.id === cardTempID);
           if (index !== -1) {
             find.cardId = cardid;
             val[index] = find;
-            console.log(`val`, val);
+            //console.log(`updated`, val);
             Pref.setVal(Pref.cardList, val);
           }
         }

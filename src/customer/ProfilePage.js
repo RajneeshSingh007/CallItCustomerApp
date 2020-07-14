@@ -252,15 +252,20 @@ export default class ProfilePage extends React.Component {
 
   saveModal = () => {
     if (itemDelete !== null) {
+      const {cardList} = this.state;
       //console.log(`itemDelete`, itemDelete)
-      const filter = Lodash.filter(
-        this.state.cardList,
-        io => io.name !== itemDelete.name,
-      );
-      //console.log(`filter`, filter)
-      this.setState({showDelete: false, cardList: filter}, () => {
-        Pref.setVal(Pref.cardList, filter);
-      });
+      const find = Lodash.find(cardList, ix => ix.id === itemDelete.id);
+      if(find !== undefined){
+        const filter = Lodash.filter(
+          cardList,
+          io => io.id !== itemDelete.id,
+        );
+        //console.log(`filter`, filter)
+        this.setState({showDelete: false, cardList: filter}, () => {
+          Pref.setVal(Pref.cardList, filter);
+          itemDelete = null;
+        });
+      }
     }
   };
 
