@@ -173,8 +173,8 @@ export default class FinalOrder extends React.Component {
       },
     );
     this.focusListener = this.props.navigation.addListener('didFocus', () => {
-    Pref.setVal(Pref.HomeReload, null);
-    this.work();
+      Pref.setVal(Pref.HomeReload, null);
+      this.work();
     });
   }
 
@@ -545,13 +545,14 @@ export default class FinalOrder extends React.Component {
               const findmaxx = this.findTitleCountMax(filter, oppp);
               let max = Number(findmaxx[0]),
                 maxTitle = findmaxx[1];
+              //console.log(`findmaxx`, findmaxx);
 
               this.setState({
                 businessHours: businessHours,
                 hasDelivery: hasDelivery,
                 freeS: freeS,
                 freeItemS: freeItemS,
-                freeServiceList: filter.length > 0 ? filter[0] : [],
+                freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
                 ogFreeServiceList: filter,
                 freeServiceDialogCounter: dialogtimesShow,
                 showFreeServiceModal: filter.length > 0 ? true : false,
@@ -593,6 +594,7 @@ export default class FinalOrder extends React.Component {
       maxTitle = '';
     if (filter.length > 0) {
       const fip = filter[0];
+      //console.log(`fip`, fip);
       const {quantity, firstservice} = fip[0];
       max = fip[0].quantity;
       const find = Lodash.find(oppp, io => io.serviceid === firstservice);
@@ -651,6 +653,17 @@ export default class FinalOrder extends React.Component {
       }
       return fs;
     });
+
+    // const merge = Lodash.map(dataList, (io, ind) => {
+    //   io.clicked = true;
+    //   if (ind === 0) {
+    //     io.quantity = 0;
+    //   } else {
+    //     io.quantity = 0;
+    //   }
+    //   return io;
+    // });
+
     return dataList;
   };
 
@@ -864,7 +877,7 @@ export default class FinalOrder extends React.Component {
         this.setState({
           data: removeFreeService,
           totalAmt: amt,
-          freeServiceList: filter.length > 0 ? filter[0] : [],
+          freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
           freeServiceDialogCounter: -1,
           showFreeServiceModal: filter.length > 0 ? true : false,
           maxQuantity: max,
@@ -937,7 +950,7 @@ export default class FinalOrder extends React.Component {
     this.setState({
       data: removeFreeService,
       totalAmt: amt,
-      freeServiceList: filter.length > 0 ? filter[0] : [],
+      freeServiceList: filter.length > 0 ? this.firstItemfreeClickedshowAllButton(filter[0]) : [],
       freeServiceDialogCounter: -1,
       showFreeServiceModal: filter.length > 0 ? true : false,
       maxQuantity: max,
@@ -1351,7 +1364,7 @@ export default class FinalOrder extends React.Component {
   }
 
   orderapiCallback = (datax, newArr, token, paymentmode) => {
-    //console.log(`datax`, datax);
+    console.log(`datax`, datax);
     Helper.networkHelperTokenPost(
       Pref.PostOrderUrl,
       datax,
@@ -1375,11 +1388,12 @@ export default class FinalOrder extends React.Component {
    * @param {*} result
    */
   orderDone = (newArr, result, paymentmode) => {
-    this.setState({
-      smp: false,
-    });
+    // this.setState({
+    //   smp: false,
+    // });
     if (result === "order didn't went through") {
       this.setState({
+        smp: false,
         alertContent: result,
         showAlert: true,
       });
@@ -1397,6 +1411,7 @@ export default class FinalOrder extends React.Component {
             onPress: () => {
               this.setState(
                 {
+                  smp: false,
                   insertGuid: true,
                   paymentDoneAlready: paymentmode,
                 },
@@ -1415,13 +1430,15 @@ export default class FinalOrder extends React.Component {
       result === `order didn't went through, invalid prices mismatch detected`
     ) {
       this.setState({
+        smp: false,
         showAlert: true,
         alertContent:
           'מחיר ההזמנה לא תואם למחיר האמיתי של המוצרים, אנא נסה שוב',
+          flexChanged:true
       });
       Pref.setVal(Pref.cartItem, []);
       Pref.setVal(Pref.EditModeEnabled, '');
-      NavigationActions.goBack();
+      //NavigationActions.goBack();
     } else {
       Pref.setVal(Pref.cartItem, []);
       const {branches, order_Bs} = result;
@@ -1869,7 +1886,7 @@ export default class FinalOrder extends React.Component {
       this.setState({
         data: data,
         showFreeServiceModal: false,
-        freeServiceList: ogFreeServiceList[subtract],
+        freeServiceList: ogFreeServiceList[subtract].length > 0 ? this.firstItemfreeClickedshowAllButton(ogFreeServiceList[subtract]) : [],
         freeServiceDialogCounter: subtract,
         maxQuantity: max,
         maxTitle: maxTitle,
@@ -1945,6 +1962,16 @@ export default class FinalOrder extends React.Component {
     this.setState({freeServiceList: merge});
   };
 
+  firstItemfreeClickedshowAllButton = (freeServiceList) => {
+    const merge = Lodash.map(freeServiceList, io => {
+      const {idservice} = io;
+      io.clicked = true;
+      io.quantity = 0;
+      return io;
+    });
+    return merge;
+  };
+
   /**
    * FreeService
    * @param {free} item
@@ -1955,9 +1982,9 @@ export default class FinalOrder extends React.Component {
       <View>
         <TouchableWithoutFeedback
           onPress={() => {
-            if (!item.clicked) {
-              this.firstItemfreeClicked(item, index);
-            }
+            // if (!item.clicked) {
+            //   this.firstItemfreeClicked(item, index);
+            // }
           }}>
           <View
             styleName="space-between"
@@ -2424,8 +2451,7 @@ export default class FinalOrder extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity
-                  onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -2464,8 +2490,7 @@ export default class FinalOrder extends React.Component {
               <DummyLoader
                 visibilty={this.state.progressView}
                 center={
-                  this.state.data != null &&
-                  this.state.data !== undefined ? (
+                  this.state.data != null && this.state.data !== undefined ? (
                     <FlatList
                       extraData={this.state}
                       showsVerticalScrollIndicator={false}
@@ -2562,9 +2587,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.isDeliveryMode
-                          ? 'white'
-                          : '#777777',
+                        color: this.state.isDeliveryMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2614,9 +2637,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.isDeliveryMode
-                          ? 'white'
-                          : '#777777',
+                        color: !this.state.isDeliveryMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2871,9 +2892,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.selectedMode
-                          ? 'white'
-                          : '#777777',
+                        color: this.state.selectedMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2916,9 +2935,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.selectedMode
-                          ? 'white'
-                          : '#777777',
+                        color: !this.state.selectedMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3166,9 +3183,7 @@ export default class FinalOrder extends React.Component {
                                   marginTop: -8,
                                   //height:200
                                 }}>
-                                <View
-                                  styleName="fill-parent"
-                                  style={{flex: 1}}>
+                                <View styleName="fill-parent" style={{flex: 1}}>
                                   <View style={{flex: 0.29}} />
                                   <View
                                     style={{
@@ -3181,22 +3196,17 @@ export default class FinalOrder extends React.Component {
                                       //paddingEnd: 8,
                                       //flex:1,
                                       //borderRadius: 16,
-                                      marginStart: 22,
-                                      marginEnd: 7,
+                                      marginStart: sizeWidth(6),
+                                      marginEnd: sizeWidth(2),
                                       height: 36,
                                       alignItems: 'center',
                                       alignContent: 'center',
                                     }}>
                                     <TextInputMask
                                       ref={this.cardnumberRef}
-                                      onChangeText={(
-                                        formatted,
-                                        extracted,
-                                      ) => {
+                                      onChangeText={(formatted, extracted) => {
                                         let formyear = formatted.split(' ');
-                                        const cardnumber = formyear.join(
-                                          '',
-                                        );
+                                        const cardnumber = formyear.join('');
                                         this.setState({
                                           cardnumber: cardnumber,
                                           creditCardImage: this.returnCardImage(
@@ -3244,9 +3254,7 @@ export default class FinalOrder extends React.Component {
                                       }}>
                                       <Image
                                         source={{
-                                          uri: `${
-                                            this.state.creditCardImage
-                                          }`,
+                                          uri: `${this.state.creditCardImage}`,
                                         }}
                                         style={{
                                           //marginEnd: 4,
@@ -3271,15 +3279,14 @@ export default class FinalOrder extends React.Component {
                                       flexDirection: 'row',
                                       height: 36,
                                       justifyContent: 'space-between',
-                                      marginStart: 24,
-                                      marginEnd: 24,
+                                      //marginStart: 24,
+                                      //marginEnd: 24,
+                                      marginStart: sizeWidth(6),
+                                      marginEnd: sizeWidth(6),
                                     }}>
                                     <TextInputMask
                                       ref={this.cardcvvRef}
-                                      onChangeText={(
-                                        formatted,
-                                        extracted,
-                                      ) => {
+                                      onChangeText={(formatted, extracted) => {
                                         this.setState({
                                           cardcvv: formatted,
                                         });
@@ -3307,9 +3314,7 @@ export default class FinalOrder extends React.Component {
                                       keyboardType={'numeric'}
                                       value={this.state.cardcvv}
                                       onSubmitEditing={e => {
-                                        if (
-                                          this.cardyearRef !== undefined
-                                        ) {
+                                        if (this.cardyearRef !== undefined) {
                                           this.cardyearRef.current.input.focus();
                                         }
                                       }}
@@ -3317,10 +3322,7 @@ export default class FinalOrder extends React.Component {
                                     <View style={{flex: 0.18}} />
                                     <TextInputMask
                                       ref={this.cardyearRef}
-                                      onChangeText={(
-                                        formatted,
-                                        extracted,
-                                      ) => {
+                                      onChangeText={(formatted, extracted) => {
                                         let formyear = formatted.replace(
                                           '/',
                                           '',
@@ -3407,13 +3409,13 @@ export default class FinalOrder extends React.Component {
                                   source={require('./../res/images/creditguard.png')}
                                   //styleName="medium-wide"
                                   style={{
-                                     width: '40%',
-                                     height: 32,
+                                    width: '40%',
+                                    height: 32,
                                     marginTop: 2,
                                     //tintColor: '#777777',
                                     alignSelf: 'center',
                                     justifyContent: 'center',
-                                    padding:8
+                                    padding: 8,
                                   }}
                                 />
                               </View>
@@ -3614,10 +3616,26 @@ export default class FinalOrder extends React.Component {
               content={this.state.alertContent}
               flexChanged={this.state.flexChanged}
               callbacks={() =>
-                this.setState({
-                  showAlert: false,
-                  flexChanged: false,
-                })
+                this.setState(
+                  {
+                    showAlert: false,
+                    flexChanged: false,
+                  },
+                  () => {
+                    Pref.getVal(Pref.cartItem, value => {
+                      const val = JSON.parse(value);
+                      //console.log('orders', val);
+                      if (
+                        val === undefined ||
+                        val === null ||
+                        val.length === 0 ||
+                        val === ''
+                      ) {
+                        NavigationActions.goBack();
+                      }
+                    });
+                  },
+                )
               }
             />
           ) : null}

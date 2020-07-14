@@ -26,6 +26,7 @@ const AccordationItem = props => {
   const [itemList, setItemList] = useState(clone);
   const {expanded} = item;
 
+
   useEffect(() => {
     if (expanded) {
       if (itemList.length === 3) {
@@ -46,6 +47,9 @@ const AccordationItem = props => {
     return () => {};
   }, [expanded]);
 
+  //console.log(itemList.length);
+
+
   return (
     <View>
       {/* {index === 0 ? <View style={styles.listservicedivider} /> : null} */}
@@ -55,7 +59,7 @@ const AccordationItem = props => {
         title={Lodash.capitalize(item.cat)}
         titleStyle={styles.listService}
         style={styles.listserviceacc}
-        expanded={item.expanded || false}
+        expanded={item.expanded}
         onPress={() => {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           accordClick(!expanded, item.cat);

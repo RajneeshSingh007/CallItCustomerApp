@@ -245,7 +245,7 @@ export default class OrderProcess1 extends React.Component {
         if (item.cat === currentCat) {
           item.expanded = expanded;
         } else {
-          //item.expanded = false;
+          item.expanded = false;
         }
         const dataparse = (
           <AccordationItem
