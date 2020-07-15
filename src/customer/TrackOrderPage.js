@@ -40,7 +40,7 @@ export default class TrackOrderPage extends React.Component {
     this.cancelOrderClick = this.cancelOrderClick.bind(this);
     this.backClick = this.backClick.bind(this);
     this.renderRow = this.renderRow.bind(this);
-    //this._handleAppStateChange = this._handleAppStateChange.bind(this);
+    this._handleAppStateChange = this._handleAppStateChange.bind(this);
     this._notificationEvent = null;
     this.refresh = this.refresh.bind(this);
     this.state = {
@@ -72,7 +72,7 @@ export default class TrackOrderPage extends React.Component {
   }
 
   componentDidMount() {
-    //AppState.addEventListener('change', this._handleAppStateChange);
+    AppState.addEventListener('change', this._handleAppStateChange);
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     const {navigation} = this.props;
     const item = navigation.getParam('item', null);
@@ -187,7 +187,7 @@ export default class TrackOrderPage extends React.Component {
         this.state.token,
         result => {
           this.setState({progressView: false});
-          let {status, idorder} = this.state;
+          let {idorder} = this.state;
           const sumclone = result.order_Bs;
           const branches = result.branches;
           const opFinalOrders = Helper.orderData(sumclone, branches, true);
@@ -195,16 +195,17 @@ export default class TrackOrderPage extends React.Component {
           const fii = Lodash.find(opFinalOrders, xm => xm.idorder === idorder);
           //console.log(`fii`, fii);
           if (fii !== undefined) {
-            const {data} = fii;
+            const {data,status} = fii;
             const firstpos = data[0];
-            this.setState(prevState => {
-              return {
-                status: prevState.status + 1,
+            this.setState(
+              {
+                status: status,
                 businessMessage: firstpos.business_message,
-              };
-            }, () =>  {
-              this.forceUpdate();
-            });
+              },
+              () => {
+                this.forceUpdate();
+              },
+            );
             // this.setState({
             //   status: status + 1,
             //   businessMessage: firstpos.business_message,
@@ -314,7 +315,7 @@ export default class TrackOrderPage extends React.Component {
   }
 
   componentWillUnmount() {
-    //AppState.removeEventListener('change', this._handleAppStateChange);
+    AppState.removeEventListener('change', this._handleAppStateChange);
     Pref.setVal(Pref.DummyLoaderData, null);
     BackHandler.removeEventListener('hardwareBackPress', this.backClick);
     if (this.focusListener !== undefined) {
@@ -330,19 +331,19 @@ export default class TrackOrderPage extends React.Component {
     }
   }
 
-  // _handleAppStateChange = async nextAppState => {
-  //   const {appState} = this.state;
-  //   if (appState === 'active') {
-  //     // do this
-  //   } else if (appState === 'background') {
-  //     // do that
-  //     this.refresh();
-  //   } else if (appState === 'inactive') {
-  //     // do that other thing
-  //   }
+  _handleAppStateChange = async nextAppState => {
+    const {appState} = this.state;
+    if (appState === 'active') {
+      // do this
+    } else if (appState === 'background') {
+      // do that
+      this.refresh();
+    } else if (appState === 'inactive') {
+      // do that other thing
+    }
 
-  //   this.setState({appState: nextAppState});
-  // };
+    this.setState({appState: nextAppState});
+  };
 
   backClick = () => {
     NavigationActions.goBack();
