@@ -252,10 +252,11 @@ export default class SignupPageIos extends React.Component {
           Deviceid: fcmToken,
         });
 
-        Helper.networkHelper(
+        Helper.networkHelperTokenPost(
           Pref.SignUpUrl,
           data,
           Pref.methodPost,
+          Pref.LASTTOKEN,
           result => {
             this.setState({progressView: false, smp: false});
             const token = result['token'];
@@ -267,7 +268,7 @@ export default class SignupPageIos extends React.Component {
               Helper.itemClick(this.props, 'Home');
             }
           },
-          () => {
+          e => {
             this.setState({progressView: false, smp: false});
           },
         );

@@ -56,8 +56,8 @@ import {AlertDialog} from './../util/AlertDialog';
 import TextInputMask from 'react-native-text-input-mask';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
-import {request, PERMISSIONS} from 'react-native-permissions';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS} from 'react-native-permissions';
 
 let branchData = null;
 var now = new Date().getDay();

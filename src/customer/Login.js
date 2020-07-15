@@ -60,7 +60,7 @@ export default class Login extends React.Component {
         console.log(vale);
       });
     this.unsubscribe = auth().onAuthStateChanged(user => {
-      if (user) {
+      if (user != null) {
         const userx = user.toJSON();
         this.setState({user: user.toJSON(), progressView: true});
         const mob = userx.phoneNumber
@@ -135,10 +135,6 @@ export default class Login extends React.Component {
       }
     });
 
-    // if (this.timerlisterner !== undefined) {
-    //   clearInterval(this.timerlisterner);
-    // }
-    // this.timerlisterner = setInterval(this.runtimer, 1000);
   }
 
   componentWillUnmount() {
@@ -215,7 +211,7 @@ export default class Login extends React.Component {
                 Pref.methodPost,
                 Pref.LASTTOKEN,
                 result => {
-                  console.log('checkuserExists', result);
+                  //console.log('checkuserExists', result);
                   if (Helper.checkJson(result)) {
                     const ty = result.idcustomer;
                     messaging()
@@ -225,18 +221,17 @@ export default class Login extends React.Component {
                           const tt = JSON.stringify({
                             value: fcmToken,
                           });
-
-                          console.log('datasendDevicetoken', tt, ty);
+                          //console.log('datasendDevicetoken', tt, ty);
                           Helper.networkHelperTokenPost(
                             Pref.UpdateTokenUrl + ty,
                             tt,
                             Pref.methodPost,
                             Pref.LASTTOKEN,
                             result => {
-                              console.log(
-                                'updateCustomerDeviceApi Success',
-                                result,
-                              );
+                              // console.log(
+                              //   'updateCustomerDeviceApi Success',
+                              //   result,
+                              // );
                               const token = result['token'];
                               if (token !== '') {
                                 Pref.setVal(Pref.TOS, '0');
@@ -246,7 +241,7 @@ export default class Login extends React.Component {
                               }
                             },
                             error => {
-                              console.log('updateCustomerDevice Error', error);
+                              //console.log('updateCustomerDevice Error', error);
                               this.setState({
                                 progressView: false,
                                 smp: false,

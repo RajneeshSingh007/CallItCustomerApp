@@ -75,7 +75,7 @@ export default class LoginIos extends React.Component {
         //console.log(vale);
       });
     this.unsubscribe = auth().onAuthStateChanged(user => {
-      if (user) {
+      if (user != null) {
         const userx = user.toJSON();
         this.setState({user: user.toJSON(), progressView: true});
         //console.log('mob', mob);

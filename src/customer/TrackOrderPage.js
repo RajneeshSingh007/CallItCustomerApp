@@ -32,7 +32,7 @@ import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
 import {SafeAreaView} from 'react-navigation';
-import {Notifications} from 'react-native-notifications';
+//import {Notifications} from 'react-native-notifications';
 
 export default class TrackOrderPage extends React.Component {
   constructor(props) {

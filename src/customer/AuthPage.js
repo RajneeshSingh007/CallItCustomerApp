@@ -20,7 +20,7 @@ export default class AuthPage extends React.Component {
     Pref.getVal(Pref.loggedStatus, value => {
       let mks = Helper.removeQuotes(value);
       //console.log(mks);
-      if (mks == '') {
+      if (mks === '') {
         Helper.itemClick(this.props, 'Login');
       } else {
         if (mks === 'true') {

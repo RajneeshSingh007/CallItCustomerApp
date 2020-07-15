@@ -214,6 +214,7 @@ export default class SignupPage extends React.Component {
         .getToken()
         .then(fcmToken => {
           if (fcmToken) {
+            //console.log(`fcmToken`, fcmToken);
             const data = JSON.stringify({
               phone: this.state.mobileNo,
               firstname: this.state.firstName,
@@ -222,11 +223,13 @@ export default class SignupPage extends React.Component {
               Deviceid: fcmToken,
             });
 
-            Helper.networkHelper(
+            Helper.networkHelperTokenPost(
               Pref.SignUpUrl,
               data,
               Pref.methodPost,
+              Pref.LASTTOKEN,
               result => {
+                //console.log(`result`, result);
                 this.setState({progressView: false, smp: false});
                 const token = result['token'];
                 //alert(JSON.stringify(result));
@@ -237,7 +240,8 @@ export default class SignupPage extends React.Component {
                   Helper.itemClick(this.props, 'Home');
                 }
               },
-              () => {
+              (e) => {
+                //console.log(e)
                 this.setState({progressView: false, smp: false});
               },
             );

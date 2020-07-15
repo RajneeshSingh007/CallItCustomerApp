@@ -4,7 +4,7 @@ import './src/i18n/init';
 import React, { Component } from "react";
 import { AppRegistry,Platform } from "react-native";
 import App from "./App";
-import AppIos from './AppIos';
+//import AppIos from './AppIos';
 import { name as appName } from "./app.json";
 import {
     Colors,
