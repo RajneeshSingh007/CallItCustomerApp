@@ -408,7 +408,7 @@ export const orderData = (arr, branches, isHistory) => {
       const branchFind = findBranchces.branch;
       if (find === undefined) {
         const data = [];
-        console.log(`io`, io);
+        //console.log(`io`, io);
         data.push(io);
         result.push({
           keys: date,

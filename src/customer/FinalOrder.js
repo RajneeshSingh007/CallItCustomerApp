@@ -3185,10 +3185,10 @@ export default class FinalOrder extends React.Component {
                     style={{
                       flex: 1,
                     }}>
-                    <View style={{flex: 0.15}} />
+                    <View style={{flex: 0.05}} />
                     <View
                       style={{
-                        flex: 0.7,
+                        flex: 0.85,
                         marginTop: sizeHeight(4),
                         marginBottom: sizeHeight(8),
                         marginHorizontal: sizeWidth(4),
@@ -3319,8 +3319,8 @@ export default class FinalOrder extends React.Component {
                                       keyboardType={'numeric'}
                                       value={this.state.cardnumber}
                                       onSubmitEditing={e => {
-                                        if (this.cardcvvRef !== undefined) {
-                                          this.cardcvvRef.current.input.focus();
+                                        if (this.cardyearRef !== undefined) {
+                                          this.cardyearRef.current.input.focus();
                                         }
                                       }}
                                     />
@@ -3398,11 +3398,6 @@ export default class FinalOrder extends React.Component {
                                       underlineColorAndroid="transparent"
                                       keyboardType={'numeric'}
                                       value={this.state.cardcvv}
-                                      onSubmitEditing={e => {
-                                        if (this.cardyearRef !== undefined) {
-                                          this.cardyearRef.current.input.focus();
-                                        }
-                                      }}
                                     />
                                     <View style={{flex: 0.18}} />
                                     <TextInputMask
@@ -3434,23 +3429,29 @@ export default class FinalOrder extends React.Component {
                                         //paddingStart: 8,
                                         //backgroundColor:'blue'
                                       }}
-                                      placeholder={`00/00`}
+                                      placeholder={`MM/YY`}
                                       underlineColor="transparent"
                                       underlineColorAndroid="transparent"
                                       keyboardType={'numeric'}
                                       value={this.state.cardyear}
+                                      onSubmitEditing={e => {
+                                        if (this.cardcvvRef !== undefined) {
+                                          this.cardcvvRef.current.input.focus();
+                                        }
+                                      }}
                                     />
                                   </View>
                                   <View style={{flex: 0.12}} />
                                 </View>
                               </ImageBackground>
                             </View>
-                            <View style={{flex: 0.35, marginTop: -56}}>
+                            <View style={{flex: 0.35,}}>
                               <View
                                 style={{
                                   flexDirection: 'row',
                                   alignSelf: 'flex-start',
                                   marginStart: 8,
+                                  marginTop: -36
                                 }}>
                                 <Checkbox.Android
                                   status={
@@ -3480,6 +3481,7 @@ export default class FinalOrder extends React.Component {
                                   alignItems: 'center',
                                   alignContent: 'center',
                                   paddingBottom: 6,
+                                  marginTop:12
                                 }}>
                                 <Subtitle
                                   style={{
@@ -3496,7 +3498,7 @@ export default class FinalOrder extends React.Component {
                                   style={{
                                     width: '40%',
                                     height: 32,
-                                    marginTop: 2,
+                                    marginTop: 4,
                                     //tintColor: '#777777',
                                     alignSelf: 'center',
                                     justifyContent: 'center',
@@ -3546,7 +3548,7 @@ export default class FinalOrder extends React.Component {
                         </View>
                       </View>
                     </View>
-                    <View style={{flex: 0.15}} />
+                    <View style={{flex: 0.1}} />
                   </View>
                 </TouchableWithoutFeedback>
               </KeyboardAvoidingView>

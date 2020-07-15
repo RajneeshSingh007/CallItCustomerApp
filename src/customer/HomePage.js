@@ -1897,7 +1897,8 @@ class HomePage extends React.Component {
             styleName="inline no-border"
             rightComponent={
               !this.state.backSearchshow ? (
-                <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
+                <View
+                  style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
                   {/* {this.state.showOrderNo ? 
                <TouchableWithoutFeedback onPress={() => NavigationActions.navigate('FinalOrder', { orderData: this.state.cartDatas, })}>
                 <View style={{
@@ -1953,7 +1954,8 @@ class HomePage extends React.Component {
                /> */}
                 </View>
               ) : (
-                <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
+                <View
+                  style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
                   <TouchableWithoutFeedback
                     onPress={() => {
                       this.setState({
@@ -2175,7 +2177,9 @@ class HomePage extends React.Component {
                                       }}
                                       horizontal
                                       // inverted={true}
-                                      keyExtractor={(item, index) => `${index}`}
+                                      keyExtractor={(item, index) =>
+                                        `${index}`
+                                      }
                                       renderItem={({item, index}) =>
                                         this.renderCatItemRow(item, index)
                                       }
@@ -2210,7 +2214,11 @@ class HomePage extends React.Component {
                                   backgroundColor: 'transparent',
                                 }}
                                 onPress={() =>
-                                  this.itemClick(section.title, section.data, 1)
+                                  this.itemClick(
+                                    section.title,
+                                    section.data,
+                                    1,
+                                  )
                                 }>
                                 <Title
                                   styleName="v-center h-center"
@@ -2252,7 +2260,8 @@ class HomePage extends React.Component {
                                     this.renderHomepageItemRow(item, index)
                                   }
                                 />
-                                {index < this.state.restaurants.length - 1 ? (
+                                {index <
+                                this.state.restaurants.length - 1 ? (
                                   <View
                                     style={{
                                       height: 0.8,
@@ -2317,7 +2326,8 @@ class HomePage extends React.Component {
                         }}>
                         <Subtitle>
                           {`${i18n.t(k.N)} `}
-                          <Subtitle style={{color: Colors.blue500}}>{`${i18n.t(
+                          <Subtitle
+                            style={{color: Colors.blue500}}>{`${i18n.t(
                             k.HTTPS_WWW_INSTAGRAM_COM_CALL,
                           )}`}</Subtitle>
                         </Subtitle>
@@ -2350,9 +2360,14 @@ class HomePage extends React.Component {
                       label={i18n.t(k._35)}
                       underlineColor="transparent"
                       underlineColorAndroid="transparent"
-                      style={[styles.inputStyle, {marginTop: sizeHeight(2)}]}
+                      style={[
+                        styles.inputStyle,
+                        {marginTop: sizeHeight(2)},
+                      ]}
                       placeholderTextColor={i18n.t(k.DEDEDE)}
-                      onChangeText={value => this.fetchbizsuggestions(value)}
+                      onChangeText={value =>
+                        this.fetchbizsuggestions(value)
+                      }
                       value={this.state.filterBusiness}
                     />
 
@@ -2822,7 +2837,10 @@ class HomePage extends React.Component {
                       uppercase={true}
                       dark={true}
                       loading={false}
-                      style={[styles.buttonStyle, {marginTop: sizeHeight(7.5)}]}
+                      style={[
+                        styles.buttonStyle,
+                        {marginTop: sizeHeight(7.5)},
+                      ]}
                       onPress={this.onFilterClick}>
                       <Subtitle
                         style={{
@@ -2912,91 +2930,76 @@ class HomePage extends React.Component {
                     flex: 1,
                   }}>
                   <View style={{flex: 0.3}} />
-                  <View
-                    style={{
-                      flex: 0.4,
-                      marginTop: sizeHeight(4),
-                      marginBottom: sizeHeight(8),
-                      marginHorizontal: sizeWidth(4),
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      position: 'relative',
-                      borderRadius: 4,
-                    }}>
-                    <Subtitle
-                      style={{
-                        color: 'black',
-                        fontSize: 16,
-                        fontWeight: '700',
-                        alignSelf: 'center',
-                        paddingVertical: 12,
-                        marginStart: 4,
-                      }}>
-                      {` ${i18n.t(k.tosinsidetitle)}`}
-                    </Subtitle>
+                  <View style={styles.tosmiddelcontainer}>
                     <View
                       style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        alignContent: 'center',
+                        backgroundColor: 'white',
+                        borderRadius: 4,
                       }}>
-                      <Subtitle
-                        styleName="wrap"
-                        style={{
-                          alignSelf: 'center',
-                          color: '#292929',
-                          fontSize: 14,
-                          marginStart: 8,
-                        }}>
-                        {i18n.t(k.tosinsidesub)}
-                        <TouchableWithoutFeedback
-                          onPress={() => Linking.openURL(`${Pref.TOSWEBURL}`)}>
-                          <Subtitle
-                            styleName="wrap"
-                            style={{
-                              alignSelf: 'center',
-                              color: i18n.t(k.DACCF),
-                              fontSize: 14,
-                            }}>
-                            {` ${i18n.t(k.tosTextLink)}`}
-                          </Subtitle>
-                        </TouchableWithoutFeedback>
+                      <Subtitle style={styles.tostitle}>
+                        {` ${i18n.t(k.tosinsidetitle)}`}
+                      </Subtitle>
+                      <View style={styles.toscontent}>
                         <Subtitle
                           styleName="wrap"
                           style={{
                             alignSelf: 'center',
                             color: '#292929',
                             fontSize: 14,
+                            marginStart: 8,
                           }}>
-                          {` ${i18n.t(k.tosinsidesub2)}\n${i18n.t(
-                            k.toinsidesub1,
-                          )}`}
+                          {i18n.t(k.tosinsidesub)}
+                          <TouchableWithoutFeedback
+                            onPress={() =>
+                              Linking.openURL(`${Pref.TOSWEBURL}`)
+                            }>
+                            <Subtitle
+                              styleName="wrap"
+                              style={{
+                                alignSelf: 'center',
+                                color: i18n.t(k.DACCF),
+                                fontSize: 14,
+                              }}>
+                              {` ${i18n.t(k.tosTextLink)}`}
+                            </Subtitle>
+                          </TouchableWithoutFeedback>
+                          <Subtitle
+                            styleName="wrap"
+                            style={{
+                              alignSelf: 'center',
+                              color: '#292929',
+                              fontSize: 14,
+                            }}>
+                            {` ${i18n.t(k.tosinsidesub2)}\n${i18n.t(
+                              k.toinsidesub1,
+                            )}`}
+                          </Subtitle>
                         </Subtitle>
-                      </Subtitle>
+                      </View>
+                      <Button
+                        styleName=" muted border"
+                        mode={i18n.t(k.CONTAINED)}
+                        uppercase={true}
+                        dark={true}
+                        loading={false}
+                        style={[
+                          styles.buttonStyle,
+                          {
+                            marginTop: sizeHeight(7.5),
+                            borderRadius: 0,
+                            borderBottomEndRadius: 4,
+                            borderBottomStartRadius: 4,
+                          },
+                        ]}
+                        onPress={this.tosagreement}>
+                        <Subtitle
+                          style={{
+                            color: 'white',
+                          }}>
+                          {i18n.t(k.cardconfirmfinal)}
+                        </Subtitle>
+                      </Button>
                     </View>
-                    <Button
-                      styleName=" muted border"
-                      mode={i18n.t(k.CONTAINED)}
-                      uppercase={true}
-                      dark={true}
-                      loading={false}
-                      style={[
-                        styles.buttonStyle,
-                        {
-                          marginTop: sizeHeight(7.5),
-                          borderRadius: 0,
-                          borderBottomEndRadius: 4,
-                          borderBottomStartRadius: 4,
-                        },
-                      ]}
-                      onPress={this.tosagreement}>
-                      <Subtitle
-                        style={{
-                          color: 'white',
-                        }}>
-                        {i18n.t(k.cardconfirmfinal)}
-                      </Subtitle>
-                    </Button>
                   </View>
                   <View style={{flex: 0.3}} />
                 </View>
@@ -3012,6 +3015,31 @@ class HomePage extends React.Component {
 export default HomePage;
 
 const styles = StyleSheet.create({
+  toscontent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center',
+    backgroundColor: 'white',
+  },
+  tostitle: {
+    backgroundColor: 'white',
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '700',
+    alignSelf: 'center',
+    paddingVertical: 12,
+    marginStart: 4,
+  },
+  tosmiddelcontainer: {
+    flex: 0.4,
+    marginTop: sizeHeight(4),
+    marginBottom: sizeHeight(8),
+    marginHorizontal: sizeWidth(4),
+    backgroundColor: 'white',
+    flexDirection: 'column',
+    position: 'relative',
+    borderRadius: 4,
+  },
   triangleCorner: {
     position: i18n.t(k.ABSOLUTE),
     right: 0,

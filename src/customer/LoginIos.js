@@ -257,17 +257,17 @@ export default class LoginIos extends React.Component {
                         value: tokenx,
                       });
 
-                      console.log('datasendDevicetoken', tt, ty);
+                      //console.log('datasendDevicetoken', tt, ty);
                       Helper.networkHelperTokenPost(
                         Pref.UpdateTokenUrl + ty,
                         tt,
                         Pref.methodPost,
                         Pref.LASTTOKEN,
                         result => {
-                          console.log(
-                            'updateCustomerDeviceApi Success',
-                            result,
-                          );
+                          // console.log(
+                          //   'updateCustomerDeviceApi Success',
+                          //   result,
+                          // );
                           const token = result['token'];
                           if (token !== '') {
                             Pref.setVal(Pref.TOS, '0');
@@ -277,7 +277,7 @@ export default class LoginIos extends React.Component {
                           }
                         },
                         error => {
-                          console.log('updateCustomerDevice Error', error);
+                          //console.log('updateCustomerDevice Error', error);
                           this.setState({
                             progressView: false,
                             smp: false,
