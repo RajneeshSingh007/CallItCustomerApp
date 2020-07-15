@@ -53,7 +53,7 @@ import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
 import {Loader} from './Loader';
 import Moment from 'moment';
 import {AlertDialog} from './../util/AlertDialog';
-import TextInputMask from 'react-native-text-input-mask';
+import MaskedInput from 'react-native-masked-input-text';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
 //import Geolocation from '@react-native-community/geolocation';
@@ -203,7 +203,7 @@ export default class FinalOrder extends React.Component {
         if (res == 'granted') {
           this.getLoc();
         } else {
-         this.setState({noLocationEnabled: true});
+          this.setState({noLocationEnabled: true});
         }
       });
     } else {
@@ -2383,7 +2383,7 @@ export default class FinalOrder extends React.Component {
 
   saveCardsData = () => {
     const {cardnumber, cardcvv, cardyear, cardList} = this.state;
-    //console.log(`cardDetails`, cardnumber, cardcvv, cardyear);
+    console.log(`cardDetails`, cardnumber, cardcvv, cardyear);
     if (cardnumber === '' || cardcvv === '' || cardyear === '') {
       alert(`${i18n.t(k.carddetailsEmpty)}`);
     } else {
@@ -2439,7 +2439,7 @@ export default class FinalOrder extends React.Component {
         creditCardImage: this.state.creditCardImage,
       };
       cardList.push(item);
-      if (this.state.cardSave) {
+      if (checked) {
         Pref.setVal(Pref.cardList, cardList);
       }
       this.setState({
@@ -3287,9 +3287,10 @@ export default class FinalOrder extends React.Component {
                                       alignItems: 'center',
                                       alignContent: 'center',
                                     }}>
-                                    <TextInputMask
-                                      ref={this.cardnumberRef}
+                                    <MaskedInput
+                                      innerRef={this.cardnumberRef}
                                       onChangeText={(formatted, extracted) => {
+                                        //console.log(formatted);
                                         let formyear = formatted.split(' ');
                                         const cardnumber = formyear.join('');
                                         this.setState({
@@ -3299,7 +3300,7 @@ export default class FinalOrder extends React.Component {
                                           ),
                                         });
                                       }}
-                                      mask={'[0000] [0000] [0000] [0000]'}
+                                      mask={'0000 0000 0000 0000'}
                                       style={{
                                         height: 36,
                                         flex: 0.85,
@@ -3313,14 +3314,14 @@ export default class FinalOrder extends React.Component {
                                         borderTopLeftRadius: 16,
                                         borderBottomLeftRadius: 16,
                                       }}
-                                      placeholder={`xxxx-xxxx-xxxx-xxxx`}
+                                      placeholder={`xxxx xxxx xxxx xxxx`}
                                       underlineColor="transparent"
                                       underlineColorAndroid="transparent"
                                       keyboardType={'numeric'}
                                       value={this.state.cardnumber}
                                       onSubmitEditing={e => {
                                         if (this.cardyearRef !== undefined) {
-                                          this.cardyearRef.current.input.focus();
+                                          this.cardyearRef.current.focus();
                                         }
                                       }}
                                     />
@@ -3369,14 +3370,15 @@ export default class FinalOrder extends React.Component {
                                       marginStart: sizeWidth(6),
                                       marginEnd: sizeWidth(6),
                                     }}>
-                                    <TextInputMask
-                                      ref={this.cardcvvRef}
+                                    <MaskedInput
+                                      innerRef={this.cardcvvRef}
                                       onChangeText={(formatted, extracted) => {
+                                        // console.log(formatted);
                                         this.setState({
                                           cardcvv: formatted,
                                         });
                                       }}
-                                      mask={'[000]'}
+                                      mask={'000'}
                                       style={{
                                         flex: 0.75,
                                         height: 36,
@@ -3400,18 +3402,22 @@ export default class FinalOrder extends React.Component {
                                       value={this.state.cardcvv}
                                     />
                                     <View style={{flex: 0.18}} />
-                                    <TextInputMask
-                                      ref={this.cardyearRef}
+                                    <MaskedInput
+                                      innerRef={this.cardyearRef}
                                       onChangeText={(formatted, extracted) => {
                                         let formyear = formatted.replace(
                                           '/',
                                           '',
                                         );
+                                        // console.log(
+                                        //   `formyear`,
+                                        //   formyear,
+                                        // );
                                         this.setState({
                                           cardyear: formyear,
                                         });
                                       }}
-                                      mask={'[00]{/}[00]'}
+                                      mask={'00/00'}
                                       style={{
                                         flex: 0.5,
                                         height: 36,
@@ -3436,7 +3442,7 @@ export default class FinalOrder extends React.Component {
                                       value={this.state.cardyear}
                                       onSubmitEditing={e => {
                                         if (this.cardcvvRef !== undefined) {
-                                          this.cardcvvRef.current.input.focus();
+                                          this.cardcvvRef.current.focus();
                                         }
                                       }}
                                     />
@@ -3445,13 +3451,12 @@ export default class FinalOrder extends React.Component {
                                 </View>
                               </ImageBackground>
                             </View>
-                            <View style={{flex: 0.35,}}>
+                            <View style={{flex: 0.35, marginTop: -36}}>
                               <View
                                 style={{
                                   flexDirection: 'row',
                                   alignSelf: 'flex-start',
                                   marginStart: 8,
-                                  marginTop: -36
                                 }}>
                                 <Checkbox.Android
                                   status={
@@ -3481,7 +3486,7 @@ export default class FinalOrder extends React.Component {
                                   alignItems: 'center',
                                   alignContent: 'center',
                                   paddingBottom: 6,
-                                  marginTop:12
+                                  marginTop: 12,
                                 }}>
                                 <Subtitle
                                   style={{

@@ -191,7 +191,6 @@ export const networkHelperTokenPost = (
     body: jsonData,
   })
     .then(response => {
-      console.log(response)
       return response.json();
     })
     .then(responseJson => {
