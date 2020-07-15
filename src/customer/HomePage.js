@@ -45,8 +45,8 @@ import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import {sizeHeight, sizeWidth} from './../util/Size';
 import {SafeAreaView} from 'react-navigation';
-//import Geolocation from '@react-native-community/geolocation';
-//import {request, PERMISSIONS} from 'react-native-permissions';
+import Geolocation from '@react-native-community/geolocation';
+import {request, PERMISSIONS} from 'react-native-permissions';
 
 var now = new Date().getDay();
 
