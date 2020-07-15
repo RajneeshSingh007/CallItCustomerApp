@@ -408,6 +408,7 @@ export const orderData = (arr, branches, isHistory) => {
       const branchFind = findBranchces.branch;
       if (find === undefined) {
         const data = [];
+        console.log(`io`, io);
         data.push(io);
         result.push({
           keys: date,
@@ -422,6 +423,7 @@ export const orderData = (arr, branches, isHistory) => {
           paid: io.paid,
           status: io.status,
           cartGuid: io.cartGuid,
+          idorder:io.idorder,
           data: data,
           totalPrice: io.price,
           servicelist: [],

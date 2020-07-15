@@ -27,7 +27,7 @@ import PushNotificationAndroid from 'react-native-push-android';
 import Lodash from 'lodash';
 import {EmptyMessage} from './EmptyMessage';
 import {SafeAreaView} from 'react-navigation';
-import {Notifications} from 'react-native-notifications';
+//import {Notifications} from 'react-native-notifications';
 
 export default class OrdersPage extends React.Component {
   constructor(props) {
@@ -88,7 +88,6 @@ export default class OrdersPage extends React.Component {
         details => {
           console.log('notifyOrder', details);
           PushNotificationAndroid.notify(details);
-          //this.setState({ progressView: true });
           this.fetchAllOrder();
         },
       );
@@ -97,8 +96,6 @@ export default class OrdersPage extends React.Component {
 
   _handleAppStateChange = async nextAppState => {
     const {appState} = this.state;
-    //////console.log('nextAppState -->', nextAppState);
-    //////console.log('appState -->', appState);
     if (appState === 'active') {
       // do this
     } else if (appState === 'background') {
@@ -141,162 +138,21 @@ export default class OrdersPage extends React.Component {
   fetchAllOrder() {
     Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
-      //console.log(token);
       Helper.networkHelperToken(
         Pref.GetOrdersUrl,
         Pref.methodGet,
         token,
         result => {
-          //console.log('res', result);
           const sumclone = result.order_Bs;
           const sumcloneH = result.order_history;
           const branches = result.branches;
-
-          //console.log('branches', sumcloneH);
-          //console.log('allDatasH', sumclone);
-
-          //orders
-          // let allDatas = [];
-          // const againgroup = Lodash.groupBy(sumclone, function(exData) {
-          //   return Moment(exData.orderdate).format('YYYY/MM/DD HH:mm');
-          // });
-          // Object.keys(againgroup).map(keyx => {
-          //   const pppp = againgroup[keyx];
-          //   const iii = pppp[0];
-          //   const ty = Lodash.find(branches, (ele, index) => {
-          //     const tu = ele.branch;
-          //     if (tu.idbranch == iii.fkbranchO) {
-          //       return ele;
-          //     }
-          //   });
-          //   ////console.log('ty', ty);
-          //   let servicelist = [];
-          //   var result = againgroup[keyx].reduce(function(p, c) {
-          //     var defaultValue = {
-          //       name: c.serviceName,
-          //       count: 0,
-          //     };
-
-          //     p[c.serviceName] = p[c.serviceName] || defaultValue;
-          //     p[c.serviceName].count++;
-          //     return p;
-          //   }, {});
-          //   for (var k in result) {
-          //     const uuu = result[k];
-          //     let count = uuu.count;
-          //     let jjj = '';
-          //     if (count > 1) {
-          //       jjj = uuu.name + ' ' + uuu.count + 'x';
-          //     } else {
-          //       jjj = uuu.name;
-          //     }
-          //     servicelist.push(jjj);
-          //   }
-          //   let finalPricess = Lodash.sumBy(pppp, function(o) {
-          //     return o.price;
-          //   });
-          //   if (iii.deliveryprice !== undefined && iii.deliveryprice !== null) {
-          //     if (Number(iii.deliveryprice) > 0) {
-          //       finalPricess += iii.deliveryprice;
-          //     }
-          //   }
-          //   allDatas.push({
-          //     keys: keyx,
-          //     orderdate: keyx,
-          //     totalPrice: finalPricess,
-          //     status: iii.status,
-          //     paid: iii.paid,
-          //     data: pppp,
-          //     isHistory: true,
-          //     isdelivery: iii.isdelivery,
-          //     title: ty !== undefined ? ty.branch.name : '',
-          //     message: '',
-          //     idorder: iii.idorder,
-          //     servicelist: servicelist,
-          //     imageUrl: ty !== undefined ? ty.imageUrl : '',
-          //     idbranch: ty !== undefined ? ty.branch.idbranch : 0,
-          //   });
-          // });
-
-          // //orders history
-          // let allDatasH = [];
-          // const againgroup1 = Lodash.groupBy(sumcloneH, function(exData) {
-          //   return Moment(exData.orderdate).format('YYYY/MM/DD HH:mm');
-          // });
-          // Object.keys(againgroup1).map(keyx => {
-          //   const pppp = againgroup1[keyx];
-          //   const iii = pppp[0];
-          //   const ty = Lodash.find(branches, (ele, index) => {
-          //     const tu = ele.branch;
-          //     if (tu.idbranch == iii.fkbranchO) {
-          //       return ele;
-          //     }
-          //   });
-          //   let servicelist = [];
-          //   var result = againgroup1[keyx].reduce(function(p, c) {
-          //     var defaultValue = {
-          //       name: c.serviceName,
-          //       count: 0,
-          //     };
-
-          //     p[c.serviceName] = p[c.serviceName] || defaultValue;
-          //     p[c.serviceName].count++;
-          //     return p;
-          //   }, {});
-          //   for (var k in result) {
-          //     const uuu = result[k];
-          //     let count = uuu.count;
-          //     let jjj = '';
-          //     if (count > 1) {
-          //       jjj = uuu.name + ' ' + uuu.count + 'x';
-          //     } else {
-          //       jjj = uuu.name;
-          //     }
-          //     servicelist.push(jjj);
-          //   }
-          //   //////console.log('servicelist', servicelist);
-          //   let finalPricess = Lodash.sumBy(pppp, function(o) {
-          //     return o.price;
-          //   });
-          //   if (iii.deliveryprice !== undefined && iii.deliveryprice !== null) {
-          //     if (Number(iii.deliveryprice) > 0) {
-          //       finalPricess += iii.deliveryprice;
-          //     }
-          //   }
-
-          //   allDatasH.push({
-          //     isdelivery: iii.isdelivery,
-          //     keys: keyx,
-          //     orderdate: keyx,
-          //     title: ty !== undefined ? ty.branch.name : '',
-          //     message: '',
-          //     totalPrice: finalPricess,
-          //     status: iii.status,
-          //     paid: iii.paid,
-          //     data: pppp,
-          //     isHistory: false,
-          //     servicelist: servicelist,
-          //     imageUrl: ty !== undefined ? ty.imageUrl : '',
-          //     idbranch: ty !== undefined ? ty.branch.idbranch : 0,
-          //   });
-          // });
-
           let boolm = this.state.selectedMode;
-          // const opFinalOrders = Lodash.orderBy(allDatas, ['keys'], ['desc']);
-          // const opFinalOrdersHistory = Lodash.orderBy(
-          //   allDatasH,
-          //   ['keys'],
-          //   ['desc'],
-          // );
-
           const opFinalOrders = Helper.orderData(sumclone, branches, true);
-
           const opFinalOrdersHistory = Helper.orderData(
             sumcloneH,
             branches,
             false,
           );
-
           this.setState({
             branches: result.branches,
             progressView: false,

@@ -156,16 +156,16 @@ export default class FinalOrder extends React.Component {
       paymentDoneAlready: false,
     };
     if (Platform.OS === 'ios') {
-      // Geolocation.setRNConfiguration({
-      //   authorizationLevel: 'whenInUse',
-      //   skipPermissionRequests: false,
-      // });
+      Geolocation.setRNConfiguration({
+        authorizationLevel: 'whenInUse',
+        skipPermissionRequests: false,
+      });
     }
   }
 
   componentDidMount() {
     if (Platform.OS === 'ios') {
-      //Geolocation.requestAuthorization();
+      Geolocation.requestAuthorization();
     }
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(
@@ -199,13 +199,13 @@ export default class FinalOrder extends React.Component {
   work() {
     this.getAllData();
     if (Platform.OS === 'ios') {
-      // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-      //   if (res == 'granted') {
-      //     this.getLoc();
-      //   } else {
-      //    this.setState({noLocationEnabled: true});
-      //   }
-      // });
+      request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
+        if (res == 'granted') {
+          this.getLoc();
+        } else {
+         this.setState({noLocationEnabled: true});
+        }
+      });
     } else {
       RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
         interval: 1000,

@@ -32,7 +32,7 @@ const AccordItem = props => {
       {index === 0 ? <View style={styles.listserviceItemDivider} /> : null}
       <TouchableOpacity styleName="flexible" onPress={onPressItem}>
         <Row styleName="vertical">
-          <Card elevation={4} style={styles.serviceImageCard}>
+          <Card elevation={0} style={styles.serviceImageCard}>
             <Image
               source={{
                 uri: `${Pref.BASEURL}${eachTabData.imageUrl}`,

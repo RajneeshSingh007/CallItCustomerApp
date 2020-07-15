@@ -32,7 +32,7 @@ import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
 import {SafeAreaView} from 'react-navigation';
-import {Notifications} from 'react-native-notifications';
+//import {Notifications} from 'react-native-notifications';
 
 export default class TrackOrderPage extends React.Component {
   constructor(props) {
@@ -40,7 +40,7 @@ export default class TrackOrderPage extends React.Component {
     this.cancelOrderClick = this.cancelOrderClick.bind(this);
     this.backClick = this.backClick.bind(this);
     this.renderRow = this.renderRow.bind(this);
-    this._handleAppStateChange = this._handleAppStateChange.bind(this);
+    //this._handleAppStateChange = this._handleAppStateChange.bind(this);
     this._notificationEvent = null;
     this.refresh = this.refresh.bind(this);
     this.state = {
@@ -66,11 +66,13 @@ export default class TrackOrderPage extends React.Component {
       smp: false,
       orderidList: [],
       allDatasOg: [],
+      fkbranchO: 0,
+      cartGuid: '',
     };
   }
 
   componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);
+    //AppState.addEventListener('change', this._handleAppStateChange);
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     const {navigation} = this.props;
     const item = navigation.getParam('item', null);
@@ -89,7 +91,6 @@ export default class TrackOrderPage extends React.Component {
             tn,
             value => {
               //value
-              //console.log('ServerTimeUrl', value);
               const convertTime = Moment.utc(value)
                 .utcOffset(2, false)
                 .format('YYYY-MM-DD HH');
@@ -105,35 +106,22 @@ export default class TrackOrderPage extends React.Component {
         });
       });
     }
-
-    // this.willfocusListener = this.props.navigation.addListener(
-    //   'willFocus',
-    //   () => {
-    //     this.setState({progressView: true});
-    //   },
-    // );
-    // this.focusListener = this.props.navigation.addListener('didFocus', () => {
-    //   const {navigation} = this.props;
-    //   const item = navigation.getParam('item', null);
-    //   if (item !== null) {
-    //     this.fetchData(item);
-    //   }
-    // });
     if (Platform.OS === 'ios') {
       Notifications.registerRemoteNotifications();
 
       Notifications.events().registerNotificationReceivedForeground(
         (notification, completion) => {
-          this.setState(
-            prevState => {
-              return {
-                status: prevState.status + 1,
-              };
-            },
-            () => {
-              this.refresh();
-            },
-          );
+          this.refresh();
+          // this.setState(
+          //   prevState => {
+          //     return {
+          //       status: prevState.status + 1,
+          //     };
+          //   },
+          //   () => {
+          //     this.refresh();
+          //   },
+          // );
           completion({
             alert: false,
             sound: true,
@@ -144,16 +132,17 @@ export default class TrackOrderPage extends React.Component {
 
       Notifications.events().registerNotificationOpened(
         (notification, completion) => {
-          this.setState(
-            prevState => {
-              return {
-                status: prevState.status + 1,
-              };
-            },
-            () => {
-              this.refresh();
-            },
-          );
+          this.refresh();
+          // this.setState(
+          //   prevState => {
+          //     return {
+          //       status: prevState.status + 1,
+          //     };
+          //   },
+          //   () => {
+          //     this.refresh();
+          //   },
+          // );
           completion();
         },
       );
@@ -190,7 +179,6 @@ export default class TrackOrderPage extends React.Component {
   }
 
   refresh = () => {
-    //console.log('isHistory', this.state.isHistory);
     if (this.state.isHistory) {
       this.setState({progressView: true});
       Helper.networkHelperToken(
@@ -199,14 +187,28 @@ export default class TrackOrderPage extends React.Component {
         this.state.token,
         result => {
           this.setState({progressView: false});
+          let {status, idorder} = this.state;
           const sumclone = result.order_Bs;
-          const fii = Lodash.findIndex(sumclone, {idorder: this.state.idorder});
-          if (fii !== -1) {
-            const kddd = sumclone[fii];
-            this.setState({
-              status: kddd.status,
-              businessMessage: kddd.business_message,
+          const branches = result.branches;
+          const opFinalOrders = Helper.orderData(sumclone, branches, true);
+          //console.log(`keyx`, idorder);
+          const fii = Lodash.find(opFinalOrders, xm => xm.idorder === idorder);
+          //console.log(`fii`, fii);
+          if (fii !== undefined) {
+            const {data} = fii;
+            const firstpos = data[0];
+            this.setState(prevState => {
+              return {
+                status: prevState.status + 1,
+                businessMessage: firstpos.business_message,
+              };
+            }, () =>  {
+              this.forceUpdate();
             });
+            // this.setState({
+            //   status: status + 1,
+            //   businessMessage: firstpos.business_message,
+            // });
           }
         },
         () => {
@@ -233,10 +235,7 @@ export default class TrackOrderPage extends React.Component {
     if (pp !== undefined && pp !== null) {
       const firstData = pp[0];
       const allDatas = firstData.data;
-      //const groupByProduct = Lodash.groupBy(allDatas, item => item.serviceName);
       const finalDisplayData = [];
-      //Object.keys(groupByProduct).map(keyx => {
-      //let pppp = groupByProduct[keyx];
       Lodash.map(allDatas, firspos => {
         const {
           extras,
@@ -247,24 +246,7 @@ export default class TrackOrderPage extends React.Component {
           quantity,
         } = firspos;
         let total = Number(price);
-        // let found = false;
-        // for (let lu = index + 1; lu < pppp.length; lu++) {
-        //   const cc = pppp[lu];
-        //   const check = this.objectsEqual(extras, cc.extras);
-        //   if (check && message === cc.message) {
-        //     found = true;
-        //     total += Number(cc.price);
-        //   }
-        // }
-        //console.log(`found`, found);
-        //if (find === undefined) {
         const exstr = Helper.groupExtraWithCountString(extras, false);
-        //console.log(`exstr`, exstr);
-        // const find = Lodash.filter(
-        //   finalDisplayData,
-        //   z => z.orderdate === orderdate,
-        // );
-        //if (find.length === 0) {
         finalDisplayData.push({
           orderdate: orderdate,
           serviceName: serviceName,
@@ -273,10 +255,6 @@ export default class TrackOrderPage extends React.Component {
           price: total,
           counter: quantity || 0,
         });
-        //}
-
-        //}
-        //});
       });
       this.setState(
         {
@@ -285,6 +263,8 @@ export default class TrackOrderPage extends React.Component {
           deliveryss: allDatas[0].isdelivery,
           isHistory: firstData.isHistory,
           keyx: firstData.keys,
+          fkbranchO: firstData.fkbranchO,
+          cartGuid: firstData.cartGuid,
           orderdatex: firstData.orderdate,
           totalPrice: firstData.totalPrice,
           orderdate: allDatas[0].orderdate,
@@ -334,7 +314,7 @@ export default class TrackOrderPage extends React.Component {
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener('change', this._handleAppStateChange);
+    //AppState.removeEventListener('change', this._handleAppStateChange);
     Pref.setVal(Pref.DummyLoaderData, null);
     BackHandler.removeEventListener('hardwareBackPress', this.backClick);
     if (this.focusListener !== undefined) {
@@ -350,50 +330,24 @@ export default class TrackOrderPage extends React.Component {
     }
   }
 
-  _handleAppStateChange = async nextAppState => {
-    const {appState} = this.state;
-    //////console.log('nextAppState -->', nextAppState);
-    //////console.log('appState -->', appState);
-    if (appState === 'active') {
-      // do this
-    } else if (appState === 'background') {
-      // do that
-      this.refresh();
-    } else if (appState === 'inactive') {
-      // do that other thing
-    }
+  // _handleAppStateChange = async nextAppState => {
+  //   const {appState} = this.state;
+  //   if (appState === 'active') {
+  //     // do this
+  //   } else if (appState === 'background') {
+  //     // do that
+  //     this.refresh();
+  //   } else if (appState === 'inactive') {
+  //     // do that other thing
+  //   }
 
-    this.setState({appState: nextAppState});
-  };
+  //   this.setState({appState: nextAppState});
+  // };
 
   backClick = () => {
     NavigationActions.goBack();
     return true;
   };
-
-  // filterExtrasCat(result) {
-  //   let groupedExtra = Lodash.groupBy(result, function(exData) {
-  //     if (exData.category !== '') {
-  //       return exData.category;
-  //     }
-  //   });
-  //   let fias = [];
-  //   Object.keys(groupedExtra).map(key => {
-  //     let filterExtras = key + ': ';
-  //     const datass = groupedExtra[key];
-  //     Lodash.map(datass, (ele, index) => {
-  //       if (index === datass.length - 1) {
-  //         filterExtras += ele.name;
-  //       } else {
-  //         filterExtras += ele.name + ',';
-  //       }
-  //     });
-  //     //console.log('filterExtras', filterExtras);
-  //     fias.push({data: filterExtras});
-  //   });
-  //   ////console.log('fias', fias);
-  //   return fias;
-  // }
 
   renderRow(itemx) {
     return (
@@ -412,7 +366,7 @@ export default class TrackOrderPage extends React.Component {
               alignSelf: 'flex-start',
               fontWeight: '700',
             }}>
-            {itemx.serviceName}{' '}
+            {itemx.serviceName}
             {itemx.counter > 0 ? (
               <Title
                 styleName="bold"
@@ -562,7 +516,7 @@ export default class TrackOrderPage extends React.Component {
     ]);
   };
 
-  getCombinedprice = () =>{
+  getCombinedprice = () => {
     const {totalPrice, deliveryPrices} = this.state;
     let price = Number(totalPrice);
     if (
@@ -573,7 +527,7 @@ export default class TrackOrderPage extends React.Component {
       price += Number(deliveryPrices);
     }
     return price;
-  }
+  };
 
   render() {
     return (
@@ -592,8 +546,7 @@ export default class TrackOrderPage extends React.Component {
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}>
                 <View>
-                  {this.state.item !== null &&
-                  this.state.item !== undefined ? (
+                  {this.state.item !== null && this.state.item !== undefined ? (
                     <Image
                       styleName="large-wide"
                       source={{
@@ -634,8 +587,7 @@ export default class TrackOrderPage extends React.Component {
                       }
                     />
                   </View>
-                  {this.state.item !== null &&
-                  this.state.item !== undefined ? (
+                  {this.state.item !== null && this.state.item !== undefined ? (
                     <>
                       <View
                         style={{
@@ -678,16 +630,13 @@ export default class TrackOrderPage extends React.Component {
                                 fontSize: 16,
                                 marginEnd: sizeWidth(1),
                               }}>
-                              {`${i18n.t(
-                                k._106,
-                              )} ${this.last3digitorder()}`}
+                              {`${i18n.t(k._106)} ${this.last3digitorder()}`}
                             </Subtitle>
                           ) : null}
                         </View>
 
                         {this.state.status === 1 ? (
-                          <View
-                            style={{flex: 1, flexDirection: 'row-reverse'}}>
+                          <View style={{flex: 1, flexDirection: 'row-reverse'}}>
                             <Button
                               style={{
                                 color: i18n.t(k.WHITE),
@@ -774,7 +723,7 @@ export default class TrackOrderPage extends React.Component {
                               fontSize: 15,
                               fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._17)}`}{' '}
+                            {`${i18n.t(k._17)}`}
                             <Title
                               style={{
                                 color: '#292929',
@@ -783,9 +732,7 @@ export default class TrackOrderPage extends React.Component {
                                 fontSize: 15,
                                 fontWeight: '400',
                               }}>
-                              {`${i18n.t(k._6)}${
-                                this.state.deliveryPrices
-                              }`}
+                              {`${i18n.t(k._6)}${this.state.deliveryPrices}`}
                             </Title>
                           </Title>
                         ) : null}
@@ -800,7 +747,7 @@ export default class TrackOrderPage extends React.Component {
                               fontSize: 15,
                               fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._108)}`}{' '}
+                            {`${i18n.t(k._108)}`}
                             <Title
                               style={{
                                 color: '#292929',
@@ -849,9 +796,7 @@ export default class TrackOrderPage extends React.Component {
                               marginStart: sizeWidth(2),
                               fontWeight: '400',
                             }}>
-                            {`${i18n.t(k._109)} ${
-                              this.state.businessMessage
-                            }`}
+                            {`${i18n.t(k._109)} ${this.state.businessMessage}`}
                           </Title>
                         ) : null}
 
@@ -883,9 +828,7 @@ export default class TrackOrderPage extends React.Component {
                                     marginBottom: 8,
                                   }}
                                   tintColor={
-                                    this.state.status <= 1
-                                      ? i18n.t(k.EBBD)
-                                      : ''
+                                    this.state.status <= 1 ? i18n.t(k.EBBD) : ''
                                   }
                                 />
 

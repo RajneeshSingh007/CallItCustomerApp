@@ -66,10 +66,10 @@ class HomePage extends React.Component {
     this.tosagreement = this.tosagreement.bind(this);
     this.state = this.initialState();
     if (Platform.OS === 'ios') {
-      // Geolocation.setRNConfiguration({
-      //   authorizationLevel: 'whenInUse',
-      //   skipPermissionRequests: false,
-      // });
+      Geolocation.setRNConfiguration({
+        authorizationLevel: 'whenInUse',
+        skipPermissionRequests: false,
+      });
     }
   }
 
@@ -129,7 +129,7 @@ class HomePage extends React.Component {
       //console.log(e);
     }
     if (Platform.OS === 'ios') {
-      //Geolocation.requestAuthorization();
+      Geolocation.requestAuthorization();
     }
     BackHandler.addEventListener('hardwareBackPress', this.backClick);
     this.willfocusListener = this.props.navigation.addListener(
@@ -207,19 +207,19 @@ class HomePage extends React.Component {
 
   callapi = () => {
     if (Platform.OS === 'ios') {
-      // request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-      //   if (res == 'granted') {
-      //     this.geodatass();
-      //   } else {
-      //     this.setState({
-      //       progressView: true,
-      //       locaDialog: true,
-      //       backSearchshow: false,
-      //     });
-      //     this.fetchallbusinessss();
-      //     Pref.setVal(Pref.AskedLocationDailog, '0');
-      //   }
-      // });
+      request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
+        if (res == 'granted') {
+          this.geodatass();
+        } else {
+          this.setState({
+            progressView: true,
+            locaDialog: true,
+            backSearchshow: false,
+          });
+          this.fetchallbusinessss();
+          Pref.setVal(Pref.AskedLocationDailog, '0');
+        }
+      });
     } else {
       RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
         interval: 10000,
