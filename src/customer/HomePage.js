@@ -45,8 +45,8 @@ import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import {sizeHeight, sizeWidth} from './../util/Size';
 import {SafeAreaView} from 'react-navigation';
-//import Geolocation from '@react-native-community/geolocation';
-//import {request, PERMISSIONS} from 'react-native-permissions';
+import Geolocation from '@react-native-community/geolocation';
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 var now = new Date().getDay();
 
@@ -208,16 +208,38 @@ class HomePage extends React.Component {
   callapi = () => {
     if (Platform.OS === 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-        if (res == 'granted') {
-          this.geodatass();
-        } else {
-          this.setState({
-            progressView: true,
-            locaDialog: true,
-            backSearchshow: false,
-          });
-          this.fetchallbusinessss();
-          Pref.setVal(Pref.AskedLocationDailog, '0');
+        console.log(`res`, res);
+        switch (res) {
+          case RESULTS.UNAVAILABLE:
+            this.setState({
+              progressView: true,
+              locaDialog: true,
+              backSearchshow: false,
+            });
+            this.fetchallbusinessss();
+            Pref.setVal(Pref.AskedLocationDailog, '0');
+            break;
+          case RESULTS.DENIED:
+            this.setState({
+              progressView: true,
+              locaDialog: true,
+              backSearchshow: false,
+            });
+            this.fetchallbusinessss();
+            Pref.setVal(Pref.AskedLocationDailog, '0');
+            break;
+          case RESULTS.GRANTED:
+            this.geodatass();
+            break;
+          case RESULTS.BLOCKED:
+            this.setState({
+              progressView: true,
+              locaDialog: true,
+              backSearchshow: false,
+            });
+            this.fetchallbusinessss();
+            Pref.setVal(Pref.AskedLocationDailog, '0');
+            break;
         }
       });
     } else {
@@ -374,13 +396,20 @@ class HomePage extends React.Component {
 
   geodatass = () => {
     const ispresentData = true;
-    GetLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 30000,
-      maximumAge: 10000,
-    })
+    const option =
+      Platform.OS === 'ios'
+        ? {
+            enableHighAccuracy: true,
+            timeout: 15000,
+          }
+        : {
+            enableHighAccuracy: true,
+            timeout: 30000,
+            maximumAge: 10000,
+          };
+    GetLocation.getCurrentPosition(option)
       .then(location => {
-        //console.log(`location`, location)
+        console.log(`location`, location);
         const lat = location.latitude;
         const lon = location.longitude;
         this.setState({
@@ -1897,8 +1926,7 @@ class HomePage extends React.Component {
             styleName="inline no-border"
             rightComponent={
               !this.state.backSearchshow ? (
-                <View
-                  style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
+                <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
                   {/* {this.state.showOrderNo ? 
                <TouchableWithoutFeedback onPress={() => NavigationActions.navigate('FinalOrder', { orderData: this.state.cartDatas, })}>
                 <View style={{
@@ -1954,8 +1982,7 @@ class HomePage extends React.Component {
                /> */}
                 </View>
               ) : (
-                <View
-                  style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
+                <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
                   <TouchableWithoutFeedback
                     onPress={() => {
                       this.setState({
@@ -2177,9 +2204,7 @@ class HomePage extends React.Component {
                                       }}
                                       horizontal
                                       // inverted={true}
-                                      keyExtractor={(item, index) =>
-                                        `${index}`
-                                      }
+                                      keyExtractor={(item, index) => `${index}`}
                                       renderItem={({item, index}) =>
                                         this.renderCatItemRow(item, index)
                                       }
@@ -2214,11 +2239,7 @@ class HomePage extends React.Component {
                                   backgroundColor: 'transparent',
                                 }}
                                 onPress={() =>
-                                  this.itemClick(
-                                    section.title,
-                                    section.data,
-                                    1,
-                                  )
+                                  this.itemClick(section.title, section.data, 1)
                                 }>
                                 <Title
                                   styleName="v-center h-center"
@@ -2260,8 +2281,7 @@ class HomePage extends React.Component {
                                     this.renderHomepageItemRow(item, index)
                                   }
                                 />
-                                {index <
-                                this.state.restaurants.length - 1 ? (
+                                {index < this.state.restaurants.length - 1 ? (
                                   <View
                                     style={{
                                       height: 0.8,
@@ -2326,8 +2346,7 @@ class HomePage extends React.Component {
                         }}>
                         <Subtitle>
                           {`${i18n.t(k.N)} `}
-                          <Subtitle
-                            style={{color: Colors.blue500}}>{`${i18n.t(
+                          <Subtitle style={{color: Colors.blue500}}>{`${i18n.t(
                             k.HTTPS_WWW_INSTAGRAM_COM_CALL,
                           )}`}</Subtitle>
                         </Subtitle>
@@ -2360,14 +2379,9 @@ class HomePage extends React.Component {
                       label={i18n.t(k._35)}
                       underlineColor="transparent"
                       underlineColorAndroid="transparent"
-                      style={[
-                        styles.inputStyle,
-                        {marginTop: sizeHeight(2)},
-                      ]}
+                      style={[styles.inputStyle, {marginTop: sizeHeight(2)}]}
                       placeholderTextColor={i18n.t(k.DEDEDE)}
-                      onChangeText={value =>
-                        this.fetchbizsuggestions(value)
-                      }
+                      onChangeText={value => this.fetchbizsuggestions(value)}
                       value={this.state.filterBusiness}
                     />
 
@@ -2837,10 +2851,7 @@ class HomePage extends React.Component {
                       uppercase={true}
                       dark={true}
                       loading={false}
-                      style={[
-                        styles.buttonStyle,
-                        {marginTop: sizeHeight(7.5)},
-                      ]}
+                      style={[styles.buttonStyle, {marginTop: sizeHeight(7.5)}]}
                       onPress={this.onFilterClick}>
                       <Subtitle
                         style={{

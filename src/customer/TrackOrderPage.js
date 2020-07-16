@@ -32,7 +32,7 @@ import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
 import {SafeAreaView} from 'react-navigation';
-//import {Notifications} from 'react-native-notifications';
+import {Notifications} from 'react-native-notifications';
 
 export default class TrackOrderPage extends React.Component {
   constructor(props) {
@@ -326,8 +326,13 @@ export default class TrackOrderPage extends React.Component {
     if (this.willfocusListener !== undefined) {
       this.willfocusListener.remove();
     }
-    if (this._notificationEvent !== undefined) {
-      this._notificationEvent.remove();
+    if (Platform.OS === 'android') {
+      if (
+        this._notificationEvent !== undefined &&
+        this._notificationEvent !== null
+      ) {
+        this._notificationEvent.remove();
+      }
     }
   }
 

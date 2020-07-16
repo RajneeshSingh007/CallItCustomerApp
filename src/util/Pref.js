@@ -41,6 +41,8 @@ export const LASTTOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwMTA0MjhjYThmMWM0NDlkYmUwOGE2YmM0MTRiNDIyMSIsIm5hbWVpZCI6ImF1dG9jb21wbHQzMiIsImV4cCI6MTkwMTAzMzQ2OSwiaXNzIjoiY2FsbGl0YXBwbGljYXRpb24iLCJhdWQiOiJjYWxsaXRhcHBsaWNhdGlvbiJ9.czeFZoed1-yKdum3YKN7GIqAzbNMFaT3ms60DWFQ83w";
 export const STAGING_CODE_PUSH = "pzTiXQn5GTKQVhOuDjgCCiJy-J8nZS7OEHgR2";
 export const PRODUCTION_CODE_PUSH = "LviuK_U1uxkfbpaDPsguwAzF5uc67oaNfJDnC";
+export const STAGING_CODE_PUSH_IOS = 'G0mzh-_qZ3FbFWdPNJITYZA413VDxmyXOgMmg';
+export const PRODUCTION_CODE_PUSH_IOS ='Ucc7FaxsZLffsSDQcbFWHy4uOcfbHfBe8Yv8j';
 
 //http://djangoman123-001-site1.btempurl.com/
 //http://192.236.162.188/

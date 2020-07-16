@@ -11,7 +11,7 @@ import {createMaterialBottomTabNavigator} from 'react-navigation-material-bottom
 import {Colors} from 'react-native-paper';
 import HomePage from './../customer/HomePage';
 import Login from './../customer/Login';
-//import LoginIos from './../customer/LoginIos';
+import LoginIos from './../customer/LoginIos';
 import AuthPage from './../customer/AuthPage';
 import Order from './../customer/OrdersPage';
 import Fav from './../customer/FavPage';
@@ -20,7 +20,7 @@ import NewBusinessPage from './../customer/NewBusinessPage';
 import ReviewsPage from './../customer/ReviewsPage';
 import TrackOrderPage from './../customer/TrackOrderPage';
 import SignupPage from './../customer/SignupPage';
-//import SignupPageIos from './../customer/SignupPageIos';
+import SignupPageIos from './../customer/SignupPageIos';
 import FinalOrder from './../customer/FinalOrder';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Image} from '@shoutem/ui';
@@ -122,7 +122,11 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           <Image
             source={require('./../res/images/home.png')}
             tintColor={focused ? i18n.t(k.DACCF) : i18n.t(k._57)}
-            style={{width: 24, height: 24}}
+            style={{
+              width: 24,
+              height: 24,
+              tintColor: focused ? i18n.t(k.DACCF) : i18n.t(k._57),
+            }}
           />
         ),
 
@@ -147,7 +151,11 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           <Image
             source={require('./../res/images/choices.png')}
             tintColor={focused ? i18n.t(k.DACCF) : i18n.t(k._57)}
-            style={{width: 24, height: 24}}
+            style={{
+              width: 24,
+              height: 24,
+              tintColor: focused ? i18n.t(k.DACCF) : i18n.t(k._57),
+            }}
           />
         ),
 
@@ -174,7 +182,11 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           <Image
             source={require('./../res/images/favorites.png')}
             tintColor={focused ? i18n.t(k.DACCF) : i18n.t(k._57)}
-            style={{width: 24, height: 24}}
+            style={{
+              width: 24,
+              height: 24,
+              tintColor: focused ? i18n.t(k.DACCF) : i18n.t(k._57),
+            }}
           />
         ),
 
@@ -195,7 +207,11 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           <Image
             source={require('./../res/images/avatar.png')}
             tintColor={focused ? i18n.t(k.DACCF) : i18n.t(k._57)}
-            style={{width: 24, height: 24}}
+            style={{
+              width: 24,
+              height: 24,
+              tintColor: focused ? i18n.t(k.DACCF) : i18n.t(k._57),
+            }}
           />
         ),
 
@@ -214,6 +230,10 @@ const customerBottomtab = createMaterialBottomTabNavigator(
     initialRouteName: 'Home',
     shifting: false,
     labeled: true,
+    tabBarOptions: {
+      activeTintColor: '#3daccf',
+      inactiveTintColor: '#292929',
+    },
     activeTintColor: '#3daccf',
     inactiveTintColor: '#292929',
     backBehavior: 'none',

@@ -10,6 +10,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   NativeModules,
+  Keyboard,
 } from 'react-native';
 import {Button, Snackbar, TextInput, Card, Checkbox} from 'react-native-paper';
 import {
@@ -249,7 +250,7 @@ export default class SignupPageIos extends React.Component {
           firstname: this.state.firstName,
           lastname: this.state.lastName,
           Address: fullAddress,
-          Deviceid: fcmToken,
+          Deviceid: token,
         });
 
         Helper.networkHelperTokenPost(

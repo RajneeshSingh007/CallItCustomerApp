@@ -56,8 +56,8 @@ import {AlertDialog} from './../util/AlertDialog';
 import MaskedInput from 'react-native-masked-input-text';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
-//import Geolocation from '@react-native-community/geolocation';
-//import {request, PERMISSIONS} from 'react-native-permissions';
+import Geolocation from '@react-native-community/geolocation';
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 let branchData = null;
 var now = new Date().getDay();
@@ -200,11 +200,25 @@ export default class FinalOrder extends React.Component {
     this.getAllData();
     if (Platform.OS === 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-        if (res == 'granted') {
-          this.getLoc();
-        } else {
-          this.setState({noLocationEnabled: true});
+        switch (res) {
+          case RESULTS.UNAVAILABLE:
+            this.setState({noLocationEnabled: true});
+            break;
+          case RESULTS.DENIED:
+            this.setState({noLocationEnabled: true});
+            break;
+          case RESULTS.GRANTED:
+            this.getLoc();
+            break;
+          case RESULTS.BLOCKED:
+            this.setState({noLocationEnabled: true});
+            break;
         }
+        // if (res == 'granted') {
+        //   this.getLoc();
+        // } else {
+        // this.setState({noLocationEnabled: true});
+        // }
       });
     } else {
       RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
@@ -235,11 +249,18 @@ export default class FinalOrder extends React.Component {
   }
 
   getLoc() {
-    GetLocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 30000,
-      maximumAge: 10000,
-    })
+    const option =
+      Platform.OS === 'ios'
+        ? {
+            enableHighAccuracy: true,
+            timeout: 15000,
+          }
+        : {
+            enableHighAccuracy: true,
+            timeout: 30000,
+            maximumAge: 10000,
+          };
+    GetLocation.getCurrentPosition(option)
       .then(location => {
         const lat = location.latitude;
         const lon = location.longitude;

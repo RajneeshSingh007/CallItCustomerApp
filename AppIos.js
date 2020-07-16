@@ -1,3 +1,4 @@
+import './src/util/patch';
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import {StatusBar, StyleSheet, View, NativeModules} from 'react-native';
@@ -7,7 +8,6 @@ import {inject, observer} from 'mobx-react';
 import * as Helper from './src/util/Helper';
 import * as Pref from './src/util/Pref';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
-import {CustomToast} from './src/util/CustomToast';
 import {Notifications} from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 import {Snackbar} from 'react-native-paper';
@@ -42,8 +42,8 @@ class AppIos extends React.Component {
     });
     this.registerForPushNotificationsAsync();
 
-    StatusBar.setBarStyle('dark-content', true);
-    StatusBar.setTranslucent(true);
+    StatusBar.setBarStyle('dark-content', false);
+    StatusBar.setTranslucent(false);
     Pref.setVal(Pref.TrackHomePageData, '');
     requestNotifications(['alert', 'badge', 'sound']).then(
       ({status, settings}) => {
@@ -189,4 +189,4 @@ const getActiveRouteName = navigationState => {
   return route.routeName;
 };
 
-export default inject('navigationStore')(observer(App));
+export default inject('navigationStore')(observer(AppIos));
