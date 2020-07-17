@@ -9,7 +9,7 @@ import {
 } from 'react-native-paper';
 import {AppRegistry} from 'react-native';
 import App from './App';
-//import AppIos from './AppIos';
+import AppIos from './AppIos';
 import {name as appName} from './app.json';
 import stores from './src/mobx';
 import {Provider} from 'mobx-react';
