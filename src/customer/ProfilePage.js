@@ -113,7 +113,6 @@ export default class ProfilePage extends React.Component {
         Pref.methodGet,
         token,
         result => {
-          //console.log(result);
           var details = JSON.parse(JSON.stringify(result));
           const fullName = result.firstname + ' ' + result.lastname;
           const {address} = result;

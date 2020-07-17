@@ -79,6 +79,30 @@ class App extends React.Component {
           });
       }
     });
+
+    Pref.getVal(Pref.CustData, rel => {
+      if (rel !== undefined && rel !== null && rel !== '') {
+        const vo = JSON.parse(rel);
+        const {idcustomer} = vo;
+        if (idcustomer !== undefined || idcustomer !== null) {
+          Helper.networkHelperTokenPost(
+            Pref.RefreshToken,
+            JSON.stringify({
+              idcustomer: idcustomer,
+            }),
+            Pref.methodPost,
+            Pref.LASTTOKEN,
+            res => {
+              const token = res['token'];
+              if (token !== '') {
+                Pref.setVal(Pref.bearerToken, token);
+              }
+            },
+            error => {},
+          );
+        }
+      }
+    });
   }
 
   refreshToken(fcmToken) {
@@ -112,6 +136,30 @@ class App extends React.Component {
           },
           error => {},
         );
+      } else {
+        Pref.getVal(Pref.CustData, rel => {
+          if (rel !== undefined && rel !== null && rel !== '') {
+            const vo = JSON.parse(rel);
+            const {idcustomer} = vo;
+            if (idcustomer !== undefined || idcustomer !== null) {
+              Helper.networkHelperTokenPost(
+                Pref.RefreshToken,
+                JSON.stringify({
+                  idcustomer: idcustomer,
+                }),
+                Pref.methodPost,
+                Pref.LASTTOKEN,
+                res => {
+                  const token = res['token'];
+                  if (token !== '') {
+                    Pref.setVal(Pref.bearerToken, token);
+                  }
+                },
+                error => {},
+              );
+            }
+          }
+        });
       }
     });
   }

@@ -31,6 +31,14 @@ import NavigationActions from '../util/NavigationActions';
 import Lodash from 'lodash';
 import {SafeAreaView} from 'react-navigation';
 
+/**
+ * arabic, hebrew, english
+ */
+const withoutnumberReg = /^[a-zA-Z\u05D0-\u05EA\u0621-\u064A'‘’`,.\s]*$/;
+const numberReg = /^[0-9\u0660-\u0669]*$/;
+const withnumberAddReg = /^[a-zA-Z0-9\u05D0-\u05EA\u0621-\u064A\u0660-\u0669'‘’`,.\s]*$/;
+
+
 export default class SignupPage extends React.Component {
   constructor(props) {
     super(props);
@@ -401,15 +409,16 @@ export default class SignupPage extends React.Component {
               ref={this.scrollViewRef}
               style={{flex: 1}}>
               <View style={{marginHorizontal: sizeWidth(4)}}>
-                <Subtitle
+                {/* <Subtitle
                   style={{
                     color: '#292929',
                     fontSize: 16,
                     alignSelf: 'flex-start',
                   }}>
                   {i18n.t(k._49)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._49)}
                   dense={true}
                   style={styles.inputStyle}
                   mode={'flat'}
@@ -418,7 +427,13 @@ export default class SignupPage extends React.Component {
                   onFocus={() => !this.state.errorFName}
                   error={this.state.errorFName}
                   onChangeText={text => {
-                    this.setState({firstName: text});
+                    this.setState({
+                      firstName:
+                        text.match(withoutnumberReg) ===
+                        null
+                          ? ''
+                          : text,
+                    });
                   }}
                   value={this.state.firstName}
                   returnKeyType="next"
@@ -428,7 +443,7 @@ export default class SignupPage extends React.Component {
                   underlineColorAndroid={'transparent'}
                 />
 
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{
                     color: '#292929',
@@ -437,8 +452,9 @@ export default class SignupPage extends React.Component {
                     marginTop: sizeHeight(1),
                   }}>
                   {i18n.t(k._50)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._50)}
                   style={styles.inputStyle}
                   mode={'flat'}
                   onBlur={() => !this.state.errorLName}
@@ -446,7 +462,13 @@ export default class SignupPage extends React.Component {
                   password={false}
                   error={this.state.errorLName}
                   onChangeText={text => {
-                    this.setState({lastName: text});
+                    this.setState({
+                      lastName:
+                        text.match(withoutnumberReg) ===
+                        null
+                          ? ''
+                          : text,
+                    });
                   }}
                   value={this.state.lastName}
                   returnKeyType="next"
@@ -456,7 +478,7 @@ export default class SignupPage extends React.Component {
                   underlineColorAndroid={'transparent'}
                 />
 
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{
                     color: '#292929',
@@ -465,15 +487,18 @@ export default class SignupPage extends React.Component {
                     marginTop: sizeHeight(1),
                   }}>
                   {i18n.t(k._51)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._51)}
                   style={styles.inputStyle}
                   mode={'flat'}
                   value={this.state.mobileNo}
                   editable={false}
                   disabled={true}
                   onChangeText={text => {
-                    this.setState({mobileNo: text});
+                    this.setState({
+                      mobileNo: text,
+                    });
                   }}
                   placeholderTextColor={'#DEDEDE'}
                   password={false}
@@ -483,7 +508,7 @@ export default class SignupPage extends React.Component {
                   underlineColorAndroid={'transparent'}
                 />
 
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{
                     color: '#292929',
@@ -492,8 +517,9 @@ export default class SignupPage extends React.Component {
                     marginTop: sizeHeight(1),
                   }}>
                   {i18n.t(k._52)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._52)}
                   ref={this.fourRef}
                   style={styles.inputStyle}
                   mode={'flat'}
@@ -503,7 +529,12 @@ export default class SignupPage extends React.Component {
                   placeholderTextColor={'#DEDEDE'}
                   numberOfLines={1}
                   onChangeText={text => {
-                    this.setState({add1: text});
+                    this.setState({
+                      add1:
+                        text.match(withnumberAddReg) === null
+                          ? ''
+                          : text,
+                    });
                   }}
                   value={this.state.add1}
                   error={this.state.errorAdd1}
@@ -535,7 +566,7 @@ export default class SignupPage extends React.Component {
                 underlineColor={"transparent"}
                 underlineColorAndroid={"transparent"}
                /> */}
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{
                     color: '#292929',
@@ -544,8 +575,9 @@ export default class SignupPage extends React.Component {
                     marginTop: sizeHeight(1),
                   }}>
                   {i18n.t(k._14)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._14)}
                   ref={this.fiveRef}
                   style={styles.inputStyle}
                   mode={'flat'}
@@ -613,7 +645,7 @@ export default class SignupPage extends React.Component {
                   </View>
                 ) : null}
 
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{
                     color: '#292929',
@@ -622,8 +654,9 @@ export default class SignupPage extends React.Component {
                     marginTop: sizeHeight(1),
                   }}>
                   {i18n.t(k._53)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
+                  label={i18n.t(k._53)}
                   ref={this.sixRef}
                   onBlur={() => !this.state.errorAdd4}
                   onFocus={() => !this.state.errorAdd4}
@@ -632,7 +665,13 @@ export default class SignupPage extends React.Component {
                   placeholderTextColor={'#DEDEDE'}
                   password={false}
                   onChangeText={text => {
-                    this.setState({add4: text});
+                    this.setState({
+                      add4:
+                        text.match(numberReg) ===
+                        null
+                          ? ''
+                          : text,
+                    });
                   }}
                   value={this.state.add4}
                   error={this.state.errorAdd4}
@@ -640,6 +679,7 @@ export default class SignupPage extends React.Component {
                   numberOfLines={1}
                   underlineColor={'transparent'}
                   underlineColorAndroid={'transparent'}
+                  keyboardType={'number-pad'}
                 />
 
                 <View
@@ -648,7 +688,7 @@ export default class SignupPage extends React.Component {
                     marginVertical: 12,
                     alignContent: 'center',
                     alignItems: 'center',
-                  flex:1
+                    flex: 1,
                   }}>
                   <Checkbox.Android
                     status={
@@ -697,7 +737,6 @@ export default class SignupPage extends React.Component {
                     </Subtitle>
                   </Subtitle>
                 </View>
-              
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
@@ -747,7 +786,7 @@ export default class SignupPage extends React.Component {
 
 const styles = StyleSheet.create({
   inputStyle: {
-    height: 48,
+    height: 56,
     borderRadius: 2,
     borderColor: '#dedede',
     borderStyle: 'solid',
@@ -757,6 +796,7 @@ const styles = StyleSheet.create({
     fontFamily: i18n.t(k.RUBIK),
     fontSize: 16,
     fontWeight: i18n.t(k._58),
+    marginTop: sizeHeight(2.5),
   },
 
   loginButtonStyle: {

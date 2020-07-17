@@ -416,13 +416,14 @@ export default class Login extends React.Component {
                   marginVertical: sizeHeight(1),
                   justifyContent: 'space-between',
                 }}>
-                <Subtitle
+                {/* <Subtitle
                   styleName="v-center h-center"
                   style={{color: '#292929', fontSize: 16}}>
                   {i18n.t(k._94)}
-                </Subtitle>
+                </Subtitle> */}
                 <TextInput
                   mode="flat"
+                  label={i18n.t(k._94)}
                   underlineColor="transparent"
                   underlineColorAndroid="transparent"
                   style={[styles.inputStyle, {justifyContent: 'center'}]}
@@ -435,13 +436,14 @@ export default class Login extends React.Component {
 
                 {this.state.mode > 0 ? (
                   <View style={{marginTop: 16}}>
-                    <Subtitle
+                    {/* <Subtitle
                       styleName="v-center h-center"
                       style={{color: '#292929', fontSize: 16}}>
                       {i18n.t(k._95)}
-                    </Subtitle>
+                    </Subtitle> */}
                     <TextInput
                       mode="flat"
+                      label={i18n.t(k._95)}
                       underlineColor="transparent"
                       underlineColorAndroid="transparent"
                       placeholderTextColor={i18n.t(k.DEDEDE)}
