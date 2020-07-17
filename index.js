@@ -1,22 +1,22 @@
 /** @format */
 import 'react-native-gesture-handler';
-import {AppRegistry} from 'react-native';
-import AppIos from './AppIos';
-import App from './App';
-import {name as appName} from './app.json';
 import React, {Component} from 'react';
 import './src/i18n/init';
-import {Platform} from 'react-native';
 import {
   Colors,
   DefaultTheme,
   Provider as PaperProvider,
 } from 'react-native-paper';
+import {AppRegistry} from 'react-native';
+import App from './App';
+//import AppIos from './AppIos';
+import {name as appName} from './app.json';
 import stores from './src/mobx';
 import {Provider} from 'mobx-react';
 import * as ReactNative from 'react-native';
 import codePush from 'react-native-code-push';
 import * as Pref from './src/util/Pref';
+import {Platform} from 'react-native';
 
 const theme = {
   ...DefaultTheme,

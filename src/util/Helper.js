@@ -399,6 +399,7 @@ export const orderData = (arr, branches, isHistory) => {
           xm.date === io.date &&
           xm.cartGuid === io.cartGuid,
       );
+      //console.log(`find`, find);
       const findBranchces = Lodash.find(branches, x => {
         const br = x.branch;
         if (Number(br.idbranch) === Number(io.fkbranchO)) {

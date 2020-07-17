@@ -27,7 +27,7 @@ import PushNotificationAndroid from 'react-native-push-android';
 import Lodash from 'lodash';
 import {EmptyMessage} from './EmptyMessage';
 import {SafeAreaView} from 'react-navigation';
-import {Notifications} from 'react-native-notifications';
+//import {Notifications} from 'react-native-notifications';
 
 export default class OrdersPage extends React.Component {
   constructor(props) {
@@ -35,7 +35,6 @@ export default class OrdersPage extends React.Component {
     this.findBranchName = this.findBranchName.bind(this);
     this._notificationEvent = null;
     this.renderRow = this.renderRow.bind(this);
-    this.extraRow = this.extraRow.bind(this);
     this.state = {
       selectedTab: 0,
       selected: 0,
@@ -86,7 +85,7 @@ export default class OrdersPage extends React.Component {
       this._notificationEvent = PushNotificationAndroid.addEventListener(
         'notification',
         details => {
-          console.log('notifyOrder', details);
+          //console.log('notifyOrder', details);
           PushNotificationAndroid.notify(details);
           this.fetchAllOrder();
         },
@@ -182,52 +181,19 @@ export default class OrdersPage extends React.Component {
     }
   };
 
-  extraRow(eachTabData) {
-    return (
-      <Row styleName="vertical" styleName="small">
-        <View styleName="vertical">
-          <View styleName="horizontal space-between">
-            <Title
-              styleName="bold"
-              style={{
-                color: '#292929',
-                fontFamily: 'Rubik',
-                fontSize: 16,
-                fontWeight: '400',
-                lineHeight: 20,
-              }}>
-              {Lodash.capitalize(eachTabData.category)}
-            </Title>
-            <Title
-              styleName="bold"
-              style={{
-                color: '#292929',
-                fontFamily: 'Rubik',
-                fontSize: 16,
-                fontWeight: '700',
-                lineHeight: 20,
-              }}>
-              {eachTabData.price}
-              {i18n.t(k._66)}
-            </Title>
-          </View>
-          <View styleName="horizontal space-between">
-            <Subtitle
-              styleName="multiline"
-              style={{
-                color: '#292929',
-                fontFamily: 'Rubik',
-                fontSize: 14,
-                fontWeight: '400',
-                lineHeight: 20,
-              }}>
-              {Lodash.capitalize(eachTabData.name)}
-            </Subtitle>
-          </View>
-        </View>
-      </Row>
-    );
-  }
+
+  getCombinedprice = (totalPrice, datax) => {
+    let price = Number(totalPrice);
+    const {deliveryprice} = datax[0];
+    if (
+      deliveryprice !== undefined &&
+      deliveryprice !== null &&
+      deliveryprice !== ''
+    ) {
+      price += Number(deliveryprice);
+    }
+    return price;
+  };
 
   renderRow(item) {
     return (
@@ -240,10 +206,8 @@ export default class OrdersPage extends React.Component {
         <TouchableWithoutFeedback
           onPress={() => {
             let oo = item;
-            //	oo.businessName = this.findBranchName(item.fkbranchO);
             const arry = [];
             arry.push(oo);
-            //Pref.setVal(Pref.DummyLoaderData, arry);
             NavigationActions.navigate('TrackOrder', {item: arry});
           }}>
           <Card
@@ -262,18 +226,6 @@ export default class OrdersPage extends React.Component {
                 },
               }),
             }}>
-            {/* <Image
-                     styleName="medium-square"
-                     //source={{ uri: `http://192.236.162.188/${item.imageurl}` }}
-                     source={{ uri: 'https://picsum.photos/700' }}
-                     style={{
-                     	width:'100%',
-                     	borderTopLeftRadius: 8,
-                     	borderTopEndRadius: 8,
-                     	borderTopRightRadius: 8,
-                     	borderTopStartRadius: 8,
-                     }}
-                     /> */}
             <View
               style={{
                 flexDirection: 'column',
@@ -315,53 +267,6 @@ export default class OrdersPage extends React.Component {
                     })
                   : null}
               </View>
-              {/* {item.extras != null && item.extras !== undefined && item.extras.length > 0 ? <List.Accordion title={'Extras'} titleStyle={{
-                        fontFamily: 'Rubik',
-                        fontSize: 16,
-                        fontWeight: '400',
-                        marginHorizontal: 1,
-                        }} style={{ marginVertical: -12, marginHorizontal: -12 }} >
-                        <FlatList
-                        extraData={this.state}
-                        showsHorizontalScrollIndicator={false}
-                        showsVerticalScrollIndicator={false}
-                        data={item.extras}
-                        nestedScrollEnabled={true}
-                        ItemSeparatorComponent={() => {
-                        	return <View style={{
-                        		backgroundColor: '#d9d9d9',
-                        		height: 1,
-                        	}} />
-                        }}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item: eachTabData, index }) =>
-                        	this.extraRow(eachTabData, index)
-                        }
-                        />
-                        </List.Accordion> : null} */}
-              {/* <Title styleName='bold' style={{
-                        color: '#292929',
-                        fontFamily: 'Rubik',
-                        fontSize: 14,
-                        marginTop: 8,
-                        marginHorizontal: sizeWidth(3),
-                        alignSelf: 'flex-start',
-                        fontWeight: '400',
-                        }}>{`${item.quantity} :Quantity`}</Title>
-                        {item.extras != null && item.extras !== undefined && item.extras.length > 0 ? <Title styleName='bold' style={{
-                        color: '#292929',
-                        fontFamily: 'Rubik',
-                        fontSize: 14,
-                        marginHorizontal: sizeWidth(3),
-                        alignSelf: 'flex-start',
-                        fontWeight: '400',
-                        }}>{`${item.extras.length} :Extra Quantity`}</Title> : null} */}
-              {/* {item.message !== "" && item.message !== null && item.message !== undefined ?<Subtitle style={{
-                        color: '#292929',
-                        fontFamily: 'Rubik',
-                        alignSelf: 'flex-start',
-                        fontSize: 14,
-                        }}>{`${item.message} :Message`}</Subtitle> : null} */}
               <Subtitle
                 style={{
                   color: '#292929',
@@ -379,7 +284,7 @@ export default class OrdersPage extends React.Component {
                     fontSize: 14,
                     fontWeight: '700',
                   }}>
-                  {`${i18n.t(k._6)}${item.totalPrice}`}
+                  {`${i18n.t(k._6)}${this.getCombinedprice(item.totalPrice, item.data)}`}
                 </Subtitle>
               </Subtitle>
               <Subtitle

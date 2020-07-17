@@ -56,8 +56,8 @@ import {AlertDialog} from './../util/AlertDialog';
 import MaskedInput from 'react-native-masked-input-text';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 let branchData = null;
 var now = new Date().getDay();
@@ -138,7 +138,7 @@ export default class FinalOrder extends React.Component {
       cardTempcvv: '',
       cardTempyear: '',
       cardTempID: '',
-      cardSave: false,
+      cardSave: true,
       cardSessionID: '',
       freeS: [],
       freeServiceList: [],
@@ -2557,7 +2557,8 @@ export default class FinalOrder extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity
+                  onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -2596,7 +2597,8 @@ export default class FinalOrder extends React.Component {
               <DummyLoader
                 visibilty={this.state.progressView}
                 center={
-                  this.state.data != null && this.state.data !== undefined ? (
+                  this.state.data != null &&
+                  this.state.data !== undefined ? (
                     <FlatList
                       extraData={this.state}
                       showsVerticalScrollIndicator={false}
@@ -2693,7 +2695,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.isDeliveryMode ? 'white' : '#777777',
+                        color: this.state.isDeliveryMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2743,7 +2747,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.isDeliveryMode ? 'white' : '#777777',
+                        color: !this.state.isDeliveryMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2998,7 +3004,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.selectedMode ? 'white' : '#777777',
+                        color: this.state.selectedMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3041,7 +3049,9 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.selectedMode ? 'white' : '#777777',
+                        color: !this.state.selectedMode
+                          ? 'white'
+                          : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3289,7 +3299,9 @@ export default class FinalOrder extends React.Component {
                                   marginTop: -8,
                                   //height:200
                                 }}>
-                                <View styleName="fill-parent" style={{flex: 1}}>
+                                <View
+                                  styleName="fill-parent"
+                                  style={{flex: 1,}}>
                                   <View style={{flex: 0.29}} />
                                   <View
                                     style={{
@@ -3298,84 +3310,110 @@ export default class FinalOrder extends React.Component {
                                       //borderColor: i18n.t(k.DEDEDE1),
                                       //borderStyle: i18n.t(k.SOLID),
                                       //borderWidth: 1,
-                                      //backgroundColor: i18n.t(k.FFFFFF),
+                                      backgroundColor: 'transparent',
                                       //paddingEnd: 8,
                                       //flex:1,
                                       //borderRadius: 16,
-                                      marginStart: sizeWidth(6),
-                                      marginEnd: sizeWidth(2),
+                                      //marginStart: sizeWidth(6),
+                                      width:'100%',
+                                      //marginEnd: sizeWidth(3),
                                       height: 36,
                                       alignItems: 'center',
                                       alignContent: 'center',
+                                      justifyContent:'space-between',
+                                      borderRadius: 24,
                                     }}>
-                                    <MaskedInput
-                                      innerRef={this.cardnumberRef}
-                                      onChangeText={(formatted, extracted) => {
-                                        //console.log(formatted);
-                                        let formyear = formatted.split(' ');
-                                        const cardnumber = formyear.join('');
-                                        this.setState({
-                                          cardnumber: cardnumber,
-                                          creditCardImage: this.returnCardImage(
-                                            cardnumber,
-                                          ),
-                                        });
-                                      }}
-                                      mask={'0000 0000 0000 0000'}
-                                      style={{
-                                        height: 36,
-                                        flex: 0.85,
-                                        backgroundColor: i18n.t(k.FFFFFF),
-                                        color: `black`,
-                                        fontFamily: i18n.t(k.RUBIK),
-                                        fontSize: 14,
-                                        fontWeight: '700',
-                                        letterSpacing: 4.5,
-                                        paddingEnd: 16,
-                                        borderTopLeftRadius: 16,
-                                        borderBottomLeftRadius: 16,
-                                      }}
-                                      placeholder={`xxxx xxxx xxxx xxxx`}
-                                      underlineColor="transparent"
-                                      underlineColorAndroid="transparent"
-                                      keyboardType={'numeric'}
-                                      value={this.state.cardnumber}
-                                      onSubmitEditing={e => {
-                                        if (this.cardyearRef !== undefined) {
-                                          this.cardyearRef.current.focus();
-                                        }
-                                      }}
-                                    />
-
                                     <View
                                       style={{
-                                        height: 36,
-                                        flex: 0.1,
-                                        backgroundColor: 'white',
-                                        borderTopLeftRadius: 16,
-                                        borderBottomLeftRadius: 16,
-                                        alignItems: 'center',
-                                        alignContent: 'center',
-                                        alignSelf: 'center',
-                                        justifyContent: 'flex-start',
+                                        height:36,
+                                        flex: 1,
+                                        backgroundColor: i18n.t(k.FFFFFF),
+                                        borderRadius: 24,
+                                        flexDirection: 'row-reverse',
+                                        justifyContent: 'space-between',
+                                        marginHorizontal:sizeWidth(5)
                                       }}>
-                                      <Image
-                                        source={{
-                                          uri: `${this.state.creditCardImage}`,
+                                      <MaskedInput
+                                        innerRef={this.cardnumberRef}
+                                        onChangeText={(
+                                          formatted,
+                                          extracted,
+                                        ) => {
+                                          //console.log(formatted);
+                                          let formyear = formatted.split(
+                                            ' ',
+                                          );
+                                          const cardnumber = formyear.join(
+                                            '',
+                                          );
+                                          this.setState({
+                                            cardnumber: cardnumber,
+                                            creditCardImage: this.returnCardImage(
+                                              cardnumber,
+                                            ),
+                                          });
                                         }}
+                                        mask={'0000 0000 0000 0000'}
                                         style={{
-                                          //marginEnd: 4,
-                                          marginStart: 16,
-                                          width: 24,
-                                          height: 24,
-                                          marginTop: 5,
-                                          //tintColor: '#777777',
-                                          alignSelf: 'center',
-                                          alignItems: 'center',
-                                          alignContent: 'center',
-                                          justifyContent: 'center',
+                                          height: 36,
+                                          flex: 0.85,
+                                          //backgroundColor: i18n.t(k.FFFFFF),
+                                          color: `black`,
+                                          fontFamily: i18n.t(k.RUBIK),
+                                          fontSize: 14,
+                                          fontWeight: '700',
+                                          letterSpacing: 4.5,
+                                          paddingEnd: 16,
+                                          //borderTopLeftRadius: 16,
+                                          //borderBottomLeftRadius: 16,
+                                          textAlign: 'left',
+                                        }}
+                                        placeholder={`xxxx xxxx xxxx xxxx`}
+                                        underlineColor="transparent"
+                                        underlineColorAndroid="transparent"
+                                        keyboardType={'numeric'}
+                                        value={this.state.cardnumber}
+                                        onSubmitEditing={e => {
+                                          if (
+                                            this.cardyearRef !== undefined
+                                          ) {
+                                            this.cardyearRef.current.focus();
+                                          }
                                         }}
                                       />
+
+                                      <View
+                                        style={{
+                                          height: 36,
+                                          flex: 0.1,
+                                          //backgroundColor: 'white',
+                                          //borderTopLeftRadius: 16,
+                                          //borderBottomLeftRadius: 16,
+                                          alignItems: 'center',
+                                          alignContent: 'center',
+                                          alignSelf: 'center',
+                                          justifyContent: 'flex-start',
+                                        }}>
+                                        <Image
+                                          source={{
+                                            uri: `${
+                                              this.state.creditCardImage
+                                            }`,
+                                          }}
+                                          style={{
+                                            //marginEnd: 4,
+                                            marginStart: 16,
+                                            width: 24,
+                                            height: 24,
+                                            marginTop: 5,
+                                            //tintColor: '#777777',
+                                            alignSelf: 'center',
+                                            alignItems: 'center',
+                                            alignContent: 'center',
+                                            justifyContent: 'center',
+                                          }}
+                                        />
+                                      </View>
                                     </View>
                                   </View>
                                   <View style={{flex: 0.11}} />
@@ -3393,7 +3431,10 @@ export default class FinalOrder extends React.Component {
                                     }}>
                                     <MaskedInput
                                       innerRef={this.cardcvvRef}
-                                      onChangeText={(formatted, extracted) => {
+                                      onChangeText={(
+                                        formatted,
+                                        extracted,
+                                      ) => {
                                         // console.log(formatted);
                                         this.setState({
                                           cardcvv: formatted,
@@ -3414,6 +3455,8 @@ export default class FinalOrder extends React.Component {
                                         fontWeight: '700',
                                         letterSpacing: 4.5,
                                         paddingEnd: 8,
+                                        textAlign: 'left',
+
                                         //backgroundColor:'red'
                                       }}
                                       placeholder={`xxx`}
@@ -3425,7 +3468,10 @@ export default class FinalOrder extends React.Component {
                                     <View style={{flex: 0.18}} />
                                     <MaskedInput
                                       innerRef={this.cardyearRef}
-                                      onChangeText={(formatted, extracted) => {
+                                      onChangeText={(
+                                        formatted,
+                                        extracted,
+                                      ) => {
                                         let formyear = formatted.replace(
                                           '/',
                                           '',
@@ -3453,6 +3499,7 @@ export default class FinalOrder extends React.Component {
                                         fontWeight: '700',
                                         letterSpacing: 4.5,
                                         paddingEnd: 8,
+                                        textAlign: 'left',
                                         //paddingStart: 8,
                                         //backgroundColor:'blue'
                                       }}
