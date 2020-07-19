@@ -21,6 +21,7 @@ class App extends React.Component {
     this.state = {
       showToast: false,
       message: '',
+      fcmToken: '',
     };
     changeNavigationBarColor('white', true);
   }
@@ -34,22 +35,17 @@ class App extends React.Component {
     this._notificationEvent = PushNotificationAndroid.addEventListener(
       'notification',
       details => {
-        console.log('notifyOrder', details);
         const {fcm} = details;
         const title = fcm.title;
         this.setState({message: title, showToast: true});
-        // setTimeout(()=>{
-        //     this.setState({message:'', showToast:false});
-        //     clearTimeout()
-        // }, 15000);
       },
     );
 
     this.onTokenRefreshListener = firebase
       .messaging()
       .onTokenRefresh(fcmToken => {
-        console.log('fcmToken', fcmToken);
         if (fcmToken) {
+          this.setState({fcmToken: fcmToken});
           Pref.getVal(Pref.userDeviceID, userDeviceID => {
             const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
             if (trimuserDeviceID !== '' && trimuserDeviceID !== fcmToken) {
@@ -61,6 +57,7 @@ class App extends React.Component {
 
     Pref.getVal(Pref.userDeviceID, userDeviceID => {
       const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
+      let tokenx = this.state.fcmToken;
       if (trimuserDeviceID === '') {
         messaging()
           .getToken()
@@ -69,7 +66,7 @@ class App extends React.Component {
               this.refreshToken(fcmToken);
             }
           });
-      } else {
+      } else if (tokenx !== trimuserDeviceID) {
         messaging()
           .getToken()
           .then(fcmToken => {
@@ -80,11 +77,15 @@ class App extends React.Component {
       }
     });
 
+    this.onrefreshtoken();
+  }
+
+  onrefreshtoken = () => {
     Pref.getVal(Pref.CustData, rel => {
-      if (rel !== undefined && rel !== null && rel !== '') {
-        const vo = JSON.parse(rel);
+      const vo = JSON.parse(rel);
+      if (rel !== undefined && rel !== null && rel !== '' && vo !== null) {
         const {idcustomer} = vo;
-        if (idcustomer !== undefined || idcustomer !== null) {
+        if (idcustomer !== undefined && idcustomer !== null) {
           Helper.networkHelperTokenPost(
             Pref.RefreshToken,
             JSON.stringify({
@@ -94,7 +95,8 @@ class App extends React.Component {
             Pref.LASTTOKEN,
             res => {
               const token = res['token'];
-              if (token !== '') {
+              //console.log(new Date(), token);
+              if (token !== undefined && token !== '') {
                 Pref.setVal(Pref.bearerToken, token);
               }
             },
@@ -103,7 +105,7 @@ class App extends React.Component {
         }
       }
     });
-  }
+  };
 
   refreshToken(fcmToken) {
     Pref.getVal(Pref.bearerToken, value => {
@@ -115,6 +117,7 @@ class App extends React.Component {
           token,
           result => {
             var details = JSON.parse(JSON.stringify(result));
+            Pref.setVal(Pref.CustData, details);
             const idcustomer = details.idcustomer;
             const tt = JSON.stringify({
               value: fcmToken,
@@ -127,7 +130,7 @@ class App extends React.Component {
               Pref.LASTTOKEN,
               result => {
                 const token = result['token'];
-                if (token !== '') {
+                if (token !== undefined && token !== '') {
                   Pref.setVal(Pref.bearerToken, token);
                 }
               },
@@ -136,30 +139,6 @@ class App extends React.Component {
           },
           error => {},
         );
-      } else {
-        Pref.getVal(Pref.CustData, rel => {
-          if (rel !== undefined && rel !== null && rel !== '') {
-            const vo = JSON.parse(rel);
-            const {idcustomer} = vo;
-            if (idcustomer !== undefined || idcustomer !== null) {
-              Helper.networkHelperTokenPost(
-                Pref.RefreshToken,
-                JSON.stringify({
-                  idcustomer: idcustomer,
-                }),
-                Pref.methodPost,
-                Pref.LASTTOKEN,
-                res => {
-                  const token = res['token'];
-                  if (token !== '') {
-                    Pref.setVal(Pref.bearerToken, token);
-                  }
-                },
-                error => {},
-              );
-            }
-          }
-        });
       }
     });
   }

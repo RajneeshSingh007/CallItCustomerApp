@@ -74,6 +74,7 @@ export default class FinalOrder extends React.Component {
     this.cardcvvRef = React.createRef();
     this.cardyearRef = React.createRef();
     this.pressPayment = this.pressPayment.bind(this);
+    this.checkout = this.checkout.bind(this);
     this.renderRow = this.renderRow.bind(this);
     this.extraRow = this.extraRow.bind(this);
     this.backClick = this.backClick.bind(this);
@@ -543,31 +544,31 @@ export default class FinalOrder extends React.Component {
               //console.log(`freeS`, freeS);
               const freeItemS = result.services;
               //count cart data
-              const countarray = this.counterservicesArray(val, true);
-              const filter = [];
-              let dialogtimesShow = 0;
-              if (freeS.length > 0) {
-                const groupedData = this.groupFreeListServicesArray(freeS, -1);
-                dialogtimesShow = groupedData.length - 1;
-                if (countarray.length > 0) {
-                  Lodash.map(groupedData, gd => {
-                    const {data} = gd;
-                    const dataList = this.returnFreeServiceArrayShowModal(
-                      data,
-                      freeItemS,
-                      countarray,
-                      false,
-                      -1,
-                    );
-                    if (dataList.length > 0) {
-                      filter.push(dataList);
-                    }
-                  });
-                }
-              }
-              const findmaxx = this.findTitleCountMax(filter, oppp);
-              let max = Number(findmaxx[0]),
-                maxTitle = findmaxx[1];
+              // const countarray = this.counterservicesArray(val, true);
+              // const filter = [];
+              // let dialogtimesShow = 0;
+              // if (freeS.length > 0) {
+              //   const groupedData = this.groupFreeListServicesArray(freeS, -1);
+              //   dialogtimesShow = groupedData.length - 1;
+              //   if (countarray.length > 0) {
+              //     Lodash.map(groupedData, gd => {
+              //       const {data} = gd;
+              //       const dataList = this.returnFreeServiceArrayShowModal(
+              //         data,
+              //         freeItemS,
+              //         countarray,
+              //         false,
+              //         -1,
+              //       );
+              //       if (dataList.length > 0) {
+              //         filter.push(dataList);
+              //       }
+              //     });
+              //   }
+              // }
+              // const findmaxx = this.findTitleCountMax(filter, oppp);
+              // let max = Number(findmaxx[0]),
+              //   maxTitle = findmaxx[1];
               //console.log(`findmaxx`, findmaxx);
 
               this.setState({
@@ -575,17 +576,18 @@ export default class FinalOrder extends React.Component {
                 hasDelivery: hasDelivery,
                 freeS: freeS,
                 freeItemS: freeItemS,
-                freeServiceList:
-                  filter.length > 0
-                    ? this.firstItemfreeClickedshowAllButton(filter[0])
-                    : [],
-                ogFreeServiceList: filter,
-                freeServiceDialogCounter: dialogtimesShow,
-                showFreeServiceModal: filter.length > 0 ? true : false,
+                // freeServiceList:
+                //   filter.length > 0
+                //     ? this.firstItemfreeClickedshowAllButton(filter[0])
+                //     : [],
+                //ogFreeServiceList: filter,
+                //freeServiceDialogCounter: dialogtimesShow,
+                //showFreeServiceModal: filter.length > 0 ? true : false,
+                showFreeServiceModal: false,
                 showorderButton: true,
                 freeDeliveryAmount: freeDelivery,
-                maxQuantity: max,
-                maxTitle: maxTitle,
+                //maxQuantity: max,
+                //maxTitle: maxTitle,
               });
             },
             error => {
@@ -700,13 +702,17 @@ export default class FinalOrder extends React.Component {
    */
   requiredFreeQuantity = (counter, quantity) => {
     let firstpos = '';
+    //console.log(counter, quantity);
     let isMultiplable = Number(counter % quantity);
     if (isMultiplable != 0) {
-      if (counter >= quantity) {
-        const reduceone = counter - 1;
+      const reduceone = counter - 1;
+      if (reduceone >= quantity) {
+        //console.log('reduceone', reduceone);
         isMultiplable = Number(reduceone % quantity);
       }
     }
+    //console.log('isMultiplable', isMultiplable);
+
     if (isMultiplable === 0) {
       const divisible = Number(counter) / Number(quantity);
       if (divisible > 0) {
@@ -853,72 +859,103 @@ export default class FinalOrder extends React.Component {
    */
   itemRemove = (item, iii) => {
     const itemID = item.idservice;
-    const cartData = JSON.parse(JSON.stringify(this.state.data));
-    if (item.firstservice !== undefined && item.free === true) {
-      cartData.splice(iii, 1);
-      this.setState({data: cartData});
-      const removeFreeService = Lodash.filter(
-        cartData,
-        i => i.firstservice === undefined,
-      );
-      Pref.setVal(Pref.cartItem, removeFreeService);
-    } else {
-      const amt = this.state.totalAmt - item.price;
-      cartData.splice(iii, 1);
-      const removeFreeService = Lodash.filter(
-        cartData,
-        i => i.firstservice === undefined,
-      );
-      Pref.setVal(Pref.cartTotalAmt, amt);
-      Pref.setVal(Pref.cartItem, removeFreeService);
-      const serviceData = Lodash.find(
-        cartData,
-        ix => ix.firstservice !== undefined && ix.firstservice === itemID,
-      );
-      if (serviceData !== undefined) {
-        const fill1 = Lodash.filter(cartData, ix => ix.idservice === itemID);
-        const counter = fill1.length;
-        const {freeS, freeItemS} = this.state;
-        const filter = [];
-        if (freeS.length > 0) {
-          const groupedData = this.groupFreeListServicesArray(freeS, itemID);
-          Lodash.map(groupedData, gd => {
-            const {data} = gd;
-            const dataList = this.returnFreeServiceArrayShowModal(
-              data,
-              freeItemS,
-              -1,
-              true,
-              counter,
-            );
-            if (dataList.length > 0) {
-              filter.push(dataList);
-            }
-          });
-        }
-        const findmaxx = this.findTitleCountMax(filter, removeFreeService);
-        let max = Number(findmaxx[0]),
-          maxTitle = findmaxx[1];
+    const cartData = this.state.data;
+    // if (item.firstservice !== undefined && item.free === true) {
+    cartData.splice(iii, 1);
+    //   this.setState({data: filters});
+    //   const removeFreeService = Lodash.filter(
+    //     filters,
+    //     i => i.firstservice === undefined,
+    //   );
+    //   Pref.setVal(Pref.cartItem, removeFreeService);
+    // } else {
+    const amt = this.state.totalAmt - item.price;
+    //cartData.splice(iii, 1);
+    // const removeFreeService = Lodash.filter(
+    //   cartData,
+    //   i => i.firstservice === undefined,
+    // );
+    Pref.setVal(Pref.cartTotalAmt, amt);
+    Pref.setVal(Pref.cartItem, cartData);
 
-        this.setState({
-          data: removeFreeService,
-          totalAmt: amt,
-          freeServiceList:
-            filter.length > 0
-              ? this.firstItemfreeClickedshowAllButton(filter[0])
-              : [],
-          freeServiceDialogCounter: -1,
-          showFreeServiceModal: filter.length > 0 ? true : false,
-          maxQuantity: max,
-          maxTitle: maxTitle,
-        });
-      } else {
-        this.setState({
-          totalAmt: amt,
-          data: removeFreeService,
-        });
-      }
-    }
+    // const filterOtherItem = Lodash.filter(
+    //   cartData,
+    //   iz => iz.idservice === itemID,
+    // );
+    // const counter = filterOtherItem.length;
+    // const {freeS, freeItemS} = this.state;
+    // const filter = [];
+    // if (freeS.length > 0) {
+    //   const groupedData = this.groupFreeListServicesArray(freeS, -1);
+    //   Lodash.map(groupedData, gd => {
+    //     const {data, name} = gd;
+    //     if (name === itemID) {
+    //       const dataList = this.returnFreeServiceArrayShowModal(
+    //         data,
+    //         freeItemS,
+    //         -1,
+    //         true,
+    //         counter,
+    //       );
+    //       if (dataList.length > 0) {
+    //         filter.push(dataList);
+    //       }
+    //     }
+    //   });
+    // }
+    // const findmaxx = this.findTitleCountMax(filter, removeFreeService);
+    // let max = Number(findmaxx[0]),
+    //   maxTitle = findmaxx[1];
+    // const serviceData = Lodash.find(
+    //   cartData,
+    //   ix => ix.firstservice !== undefined && ix.firstservice === itemID,
+    // );
+    // if (serviceData !== undefined) {
+    //   const fill1 = Lodash.filter(cartData, ix => ix.idservice === itemID);
+    //   const counter = fill1.length;
+    //   const {freeS, freeItemS} = this.state;
+    //   const filter = [];
+    //   if (freeS.length > 0) {
+    //     const groupedData = this.groupFreeListServicesArray(freeS, itemID);
+    //     console.log(`groupedData`, groupedData);
+    //     Lodash.map(groupedData, gd => {
+    //       const {data} = gd;
+    //       const dataList = this.returnFreeServiceArrayShowModal(
+    //         data,
+    //         freeItemS,
+    //         -1,
+    //         true,
+    //         counter,
+    //       );
+    //       console.log(`dataList`, dataList);
+    //       if (dataList.length > 0) {
+    //         filter.push(dataList);
+    //       }
+    //     });
+    //   }
+    //   const findmaxx = this.findTitleCountMax(filter, removeFreeService);
+    //   let max = Number(findmaxx[0]),
+    //     maxTitle = findmaxx[1];
+
+    this.setState({
+      data: cartData,
+      totalAmt: amt,
+      // freeServiceList:
+      //   filter.length > 0
+      //     ? this.firstItemfreeClickedshowAllButton(filter[0])
+      //     : [],
+      // freeServiceDialogCounter: -1,
+      // showFreeServiceModal: filter.length > 0 ? true : false,
+      // maxQuantity: max,
+      // maxTitle: maxTitle,
+    });
+    // } else {
+    //   this.setState({
+    //     totalAmt: amt,
+    //     data: removeFreeService,
+    //   });
+    // }
+    //}
     if (cartData.length === 0) {
       Pref.setVal(Pref.cartItem, []);
       Pref.setVal(Pref.EditModeEnabled, '');
@@ -935,58 +972,58 @@ export default class FinalOrder extends React.Component {
     const cartTime = Moment(Date.now()).format('YYYY/MM/DD HH:mm:ss.SSS');
     item.cartTime = cartTime;
     item.servicenamex = ppop;
-    let itemId = item.idservice;
-    const data = JSON.parse(JSON.stringify(this.state.data));
+    //let itemId = item.idservice;
+    const data = this.state.data;
     const amt = this.state.totalAmt + item.price;
     data[data.length] = item;
-    const removeFreeService = Lodash.filter(
-      data,
-      i => i.firstservice === undefined,
-    );
-    Pref.setVal(Pref.cartItem, removeFreeService);
+    // const removeFreeService = Lodash.filter(
+    //   data,
+    //   i => i.firstservice === undefined,
+    // );
+    Pref.setVal(Pref.cartItem, data);
     Pref.setVal(Pref.cartTotalAmt, amt);
     // const serviceData = Lodash.find(
     //   data,
     //   ix => ix.firstservice !== undefined && ix.firstservice === itemId,
     // );
     // if (serviceData !== undefined) {
-    const filterOtherItem = Lodash.filter(data, iz => iz.idservice === itemId);
-    const counter = filterOtherItem.length;
-    const {freeS, freeItemS} = this.state;
-    const filter = [];
-    if (freeS.length > 0) {
-      const groupedData = this.groupFreeListServicesArray(freeS, -1);
-      Lodash.map(groupedData, gd => {
-        const {data, name} = gd;
-        if (name === itemId) {
-          const dataList = this.returnFreeServiceArrayShowModal(
-            data,
-            freeItemS,
-            -1,
-            true,
-            counter,
-          );
-          if (dataList.length > 0) {
-            filter.push(dataList);
-          }
-        }
-      });
-    }
-    const findmaxx = this.findTitleCountMax(filter, removeFreeService);
-    let max = Number(findmaxx[0]),
-      maxTitle = findmaxx[1];
+    // const filterOtherItem = Lodash.filter(data, iz => iz.idservice === itemId);
+    // const counter = filterOtherItem.length;
+    // const {freeS, freeItemS} = this.state;
+    // const filter = [];
+    // if (freeS.length > 0) {
+    //   const groupedData = this.groupFreeListServicesArray(freeS, -1);
+    //   Lodash.map(groupedData, gd => {
+    //     const {data, name} = gd;
+    //     if (name === itemId) {
+    //       const dataList = this.returnFreeServiceArrayShowModal(
+    //         data,
+    //         freeItemS,
+    //         -1,
+    //         true,
+    //         counter,
+    //       );
+    //       if (dataList.length > 0) {
+    //         filter.push(dataList);
+    //       }
+    //     }
+    //   });
+    // }
+    // const findmaxx = this.findTitleCountMax(filter, removeFreeService);
+    // let max = Number(findmaxx[0]),
+    //   maxTitle = findmaxx[1];
 
     this.setState({
-      data: removeFreeService,
+      data: data,
       totalAmt: amt,
-      freeServiceList:
-        filter.length > 0
-          ? this.firstItemfreeClickedshowAllButton(filter[0])
-          : [],
-      freeServiceDialogCounter: -1,
-      showFreeServiceModal: filter.length > 0 ? true : false,
-      maxQuantity: max,
-      maxTitle: maxTitle,
+      // freeServiceList:
+      //   filter.length > 0
+      //     ? this.firstItemfreeClickedshowAllButton(filter[0])
+      //     : [],
+      // freeServiceDialogCounter: -1,
+      // showFreeServiceModal: filter.length > 0 ? true : false,
+      // maxQuantity: max,
+      // maxTitle: maxTitle,
     });
     // } else {
     //   this.setState({
@@ -1082,6 +1119,57 @@ export default class FinalOrder extends React.Component {
     return promisreturn;
   }
 
+  /**
+   *
+   */
+  checkout = () => {
+    const {freeS, freeItemS} = this.state;
+    if (freeS !== undefined && freeS !== null && freeS.length > 0) {
+      const countarray = this.counterservicesArray(this.state.data, true);
+      const filter = [];
+      let dialogtimesShow = 0;
+      if (freeS.length > 0) {
+        const groupedData = this.groupFreeListServicesArray(freeS, -1);
+        dialogtimesShow = groupedData.length - 1;
+        if (countarray.length > 0) {
+          Lodash.map(groupedData, gd => {
+            const {data} = gd;
+            const dataList = this.returnFreeServiceArrayShowModal(
+              data,
+              freeItemS,
+              countarray,
+              false,
+              -1,
+            );
+            if (dataList.length > 0) {
+              filter.push(dataList);
+            }
+          });
+        }
+      }
+      const findmaxx = this.findTitleCountMax(filter, this.state.data);
+      let max = Number(findmaxx[0]),
+        maxTitle = findmaxx[1];
+      if (filter.length > 0) {
+        this.setState({
+          freeServiceList:
+            filter.length > 0
+              ? this.firstItemfreeClickedshowAllButton(filter[0])
+              : [],
+          ogFreeServiceList: filter,
+          freeServiceDialogCounter: dialogtimesShow,
+          showFreeServiceModal: filter.length > 0 ? true : false,
+          maxQuantity: max,
+          maxTitle: maxTitle,
+        });
+      } else {
+        this.pressPayment();
+      }
+    } else {
+      this.pressPayment();
+    }
+  };
+
   pressPayment() {
     const {
       data,
@@ -1095,7 +1183,12 @@ export default class FinalOrder extends React.Component {
       hasDelivery,
     } = this.state;
     if (isDeliveryMode && fullAddressInput === '' && !gpsChecked) {
+      const removeFreeService = Lodash.filter(
+        data,
+        i => i.firstservice === undefined,
+      );
       this.setState({
+        data: removeFreeService,
         alertContent: i18n.t(k._24),
         showAlert: true,
       });
@@ -1105,7 +1198,12 @@ export default class FinalOrder extends React.Component {
         fullAddressInput.includes('#') ||
         fullAddressInput.includes('^')
       ) {
+        const removeFreeService = Lodash.filter(
+          data,
+          i => i.firstservice === undefined,
+        );
         this.setState({
+          data: removeFreeService,
           alertContent: i18n.t(k._25),
           showAlert: true,
         });
@@ -1137,9 +1235,14 @@ export default class FinalOrder extends React.Component {
                         Alert.alert('', 'האם אתה בטוח שברצונך להזמין?', [
                           {
                             text: 'לא',
-                            onPress: () => console.log('Cancel Pressed'),
+                            onPress: () => {
+                              const removeFreeService = Lodash.filter(
+                                data,
+                                i => i.firstservice === undefined,
+                              );
+                              this.setState({data: removeFreeService});
+                            },
                           },
-
                           {
                             text: 'כן',
                             onPress: () => {
@@ -1292,7 +1395,12 @@ export default class FinalOrder extends React.Component {
                                         });
                                     })
                                     .catch(e => {
+                                      const removeFreeService = Lodash.filter(
+                                        data,
+                                        i => i.firstservice === undefined,
+                                      );
                                       this.setState({
+                                        data: removeFreeService,
                                         smp: false,
                                       });
                                     });
@@ -1346,14 +1454,24 @@ export default class FinalOrder extends React.Component {
                           },
                         ]);
                       } else if (value === 2) {
+                        const removeFreeService = Lodash.filter(
+                          data,
+                          i => i.firstservice === undefined,
+                        );
                         this.setState({
+                          data: removeFreeService,
                           alertTitle: i18n.t(k._4),
                           flexChanged: false,
                           alertContent: i18n.t(k._26),
                           showAlert: true,
                         });
                       } else if (value === 3) {
+                        const removeFreeService = Lodash.filter(
+                          data,
+                          i => i.firstservice === undefined,
+                        );
                         this.setState({
+                          data: removeFreeService,
                           alertTitle: i18n.t(k._4),
                           flexChanged: false,
                           alertContent: i18n.t(k._27),
@@ -1361,7 +1479,12 @@ export default class FinalOrder extends React.Component {
                         });
                       } else if (value === 4) {
                       } else {
+                        const removeFreeService = Lodash.filter(
+                          data,
+                          i => i.firstservice === undefined,
+                        );
                         this.setState({
+                          data: removeFreeService,
                           alertTitle: i18n.t(k._4),
                           flexChanged: false,
                           alertContent: `עלות משלוח היא ${value} שקל, האם אתה בטוח שאתה רוצה לסיים את ההזמנה?`,
@@ -1370,7 +1493,12 @@ export default class FinalOrder extends React.Component {
                       }
                     });
                   } else {
+                    const removeFreeService = Lodash.filter(
+                      data,
+                      i => i.firstservice === undefined,
+                    );
                     this.setState({
+                      data: removeFreeService,
                       alertTitle: i18n.t(k._4),
                       alertContent: i18n.t(k.deliverynotavailable),
                       showAlert: true,
@@ -1378,7 +1506,12 @@ export default class FinalOrder extends React.Component {
                     });
                   }
                 } else {
+                  const removeFreeService = Lodash.filter(
+                    data,
+                    i => i.firstservice === undefined,
+                  );
                   this.setState({
+                    data: removeFreeService,
                     smp: false,
                     alertTitle: i18n.t(k._30),
                     alertContent: i18n.t(k._28),
@@ -1388,12 +1521,27 @@ export default class FinalOrder extends React.Component {
                 }
               },
               e => {
+                const removeFreeService = Lodash.filter(
+                  data,
+                  i => i.firstservice === undefined,
+                );
+                this.setState({
+                  data: removeFreeService,
+                  smp: false,
+                });
                 console.log(e);
               },
             );
           },
           error => {
-            this.setState({smp: false});
+            const removeFreeService = Lodash.filter(
+              data,
+              i => i.firstservice === undefined,
+            );
+            this.setState({
+              data: removeFreeService,
+              smp: false,
+            });
           },
         );
       }
@@ -1439,7 +1587,12 @@ export default class FinalOrder extends React.Component {
         }
       },
       error => {
+        const removeFreeService = Lodash.filter(
+          data,
+          i => i.firstservice === undefined,
+        );
         this.setState({
+          data: removeFreeService,
           smp: false,
         });
       },
@@ -1456,7 +1609,12 @@ export default class FinalOrder extends React.Component {
       smp: false,
     });
     if (result === "order didn't went through") {
+      const removeFreeService = Lodash.filter(
+        this.state.data,
+        i => i.firstservice === undefined,
+      );
       this.setState({
+        data: removeFreeService,
         smp: false,
         alertContent: result,
         showAlert: true,
@@ -1469,13 +1627,26 @@ export default class FinalOrder extends React.Component {
         [
           {
             text: 'לא',
-            onPress: () => console.log('Cancel Pressed'),
+            onPress: () => {
+              const removeFreeService = Lodash.filter(
+                data,
+                i => i.firstservice === undefined,
+              );
+              this.setState({
+                data: removeFreeService,
+              });
+            },
           },
           {
             text: 'כן',
             onPress: () => {
+              const removeFreeService = Lodash.filter(
+                this.state.data,
+                i => i.firstservice === undefined,
+              );
               this.setState(
                 {
+                  data: removeFreeService,
                   smp: false,
                   insertGuid: true,
                   paymentDoneAlready: paymentmode,
@@ -1496,6 +1667,7 @@ export default class FinalOrder extends React.Component {
       result === `order didn't went through, invalid prices mismatch detected`
     ) {
       this.setState({
+        data: [],
         smp: false,
         showAlert: true,
         alertContent:
@@ -1682,6 +1854,7 @@ export default class FinalOrder extends React.Component {
                   fontWeight: '400',
                   paddingHorizontal: 2,
                   writingDirection: 'ltr',
+                  textAlign: 'left',
                 }}>
                 {`${Lodash.capitalize(item.extraDisplayArray.trim())}`}
               </Title>
@@ -1901,7 +2074,7 @@ export default class FinalOrder extends React.Component {
    * @param {*} mode
    */
   freeserviceSelect = (item, index, mode) => {
-    const {freeServiceList} = this.state;
+    const {freeServiceList, maxQuantity} = this.state;
     let {quantity, ogquantiy} = item;
     if (mode) {
       if (quantity < ogquantiy) {
@@ -1913,45 +2086,103 @@ export default class FinalOrder extends React.Component {
       }
     }
     freeServiceList[index] = item;
-    let mapping = freeServiceList;
-    let totalselection = 0;
-    if (item.quantity === ogquantiy) {
-      mapping = Lodash.map(freeServiceList, io => {
-        if (item.idservice !== io.idservice) {
-          io.quantity = -1;
-        }
-        return io;
-      });
-    } else {
-      mapping = Lodash.map(freeServiceList, io => {
-        if (totalselection === ogquantiy) {
-          io.quantity = -1;
-        } else {
-          totalselection += io.quantity;
-          if (io.quantity === -1) {
-            io.quantity = 0;
+    let mapping = [];
+    let maxqq = this.gettotalSelectedFreeitemCount();
+    //if(maxqq > Number(maxQuantity)){
+    let caltotal = 0;
+    if (mode) {
+      console.log(maxqq, Number(maxQuantity));
+      if (maxqq === Number(maxQuantity)) {
+        const check = Lodash.map(freeServiceList, xm => {
+          if (caltotal >= Number(maxQuantity)) {
+            xm.quantity = -1;
+          } else {
+            caltotal += xm.quantity;
           }
+          return xm;
+        });
+        mapping = Lodash.map(check, xm => {
+          if (xm.quantity === 0) {
+            xm.quantity = -1;
+          }
+          return xm;
+        });
+      } else {
+        mapping = freeServiceList;
+      }
+    } else {
+      mapping = Lodash.map(freeServiceList, xm => {
+        if (xm.quantity === -1) {
+          xm.quantity = 0;
         }
-        //console.log(`quantity`, io.quantity);
-        return io;
+        return xm;
       });
     }
-    if (totalselection === ogquantiy) {
-      mapping = Lodash.map(freeServiceList, io => {
-        if (io.quantity === 0) {
-          io.quantity = -1;
-        }
-        return io;
-      });
-    }
-    //console.log(`totalselection`, totalselection);
-    let maxqq = Lodash.sumBy(mapping, xm => xm.quantity);
-    //console.log(`maxqq`, maxqq);
+
+    // }else{
+    //   mapping = freeServiceList;
+    // }
+
+    // let totalselection = 0;
+    // if (item.quantity === ogquantiy && item.quantity === maxQuantity) {
+    //   mapping = Lodash.map(freeServiceList, io => {
+    //     if (item.idservice !== io.idservice) {
+    //       io.quantity = -1;
+    //     }
+    //     return io;
+    //   });
+    // } else {
+    //   mapping = Lodash.map(freeServiceList, io => {
+    //     if (totalselection === ogquantiy) {
+    //       io.quantity = -1;
+    //     } else {
+    //       totalselection += io.quantity;
+    //       if (io.quantity === -1) {
+    //         io.quantity = 0;
+    //       }
+    //     }
+    //     //console.log(`quantity`, io.quantity);
+    //     return io;
+    //   });
+    // }
+    // if (totalselection === ogquantiy && totalselection === maxQuantity) {
+    //   mapping = Lodash.map(freeServiceList, io => {
+    //     if (io.quantity === 0) {
+    //       io.quantity = -1;
+    //     }
+    //     return io;
+    //   });
+    // }
+    // //console.log(`totalselection`, totalselection);
+    // console.log(`maxqq`, maxqq);
+
+    // if (maxqq === Number(maxQuantity)) {
+    //   let againcheck = 1;
+    //   mapping = Lodash.map(freeServiceList, io => {
+    //     if (againcheck < Number(maxQuantity)) {
+    //       againcheck += 1;
+    //     } else if (againcheck === Number(maxQuantity)) {
+    //       io.quantity = -1;
+    //     }
+    //     return io;
+    //   });
+    // }
+
     this.setState({
       freeServiceList: mapping,
       //maxQuantity:totalselection === ogquantiy ? 0 : maxqq === 0 ? ogquantiy : maxqq,
     });
   };
+
+  gettotalSelectedFreeitemCount = () =>{
+    const {freeServiceList} = this.state;
+    let maxqq = Lodash.sumBy(freeServiceList, xm => {
+      if (xm.quantity !== -1) {
+        return xm.quantity;
+      }
+    });
+    return maxqq;
+  }
 
   saveFreeData = () => {
     const {
@@ -1969,11 +2200,16 @@ export default class FinalOrder extends React.Component {
       }
     });
     if (freeServiceDialogCounter === 0 || freeServiceDialogCounter === -1) {
-      this.setState({
-        data: data,
-        showFreeServiceModal: false,
-        freeServiceList: [],
-      });
+      this.setState(
+        {
+          data: data,
+          showFreeServiceModal: false,
+          freeServiceList: [],
+        },
+        () => {
+          this.pressPayment();
+        },
+      );
     } else {
       let subtract = freeServiceDialogCounter - 1;
       const findmaxx = this.findTitleCountMax(
@@ -2159,10 +2395,12 @@ export default class FinalOrder extends React.Component {
                     alignContent: 'center',
                     marginEnd: 8,
                   }}>
-                  {item.quantity < item.ogquantiy &&
-                  this.state.maxQuantity !== 0 ? (
+                  {this.gettotalSelectedFreeitemCount() <
+                  Number(this.state.maxQuantity) ? (
                     <TouchableOpacity
-                      onPress={() => this.freeserviceSelect(item, index, true)}>
+                      onPress={() =>
+                        this.freeserviceSelect(item, index, true)
+                      }>
                       <View
                         style={{
                           borderRadius: circleButtonFreeRadius,
@@ -2557,8 +2795,7 @@ export default class FinalOrder extends React.Component {
               <View
                 styleName="horizontal space-between"
                 style={{marginStart: 12}}>
-                <TouchableOpacity
-                  onPress={() => NavigationActions.goBack()}>
+                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
                   <Icon
                     name="arrow-forward"
                     size={36}
@@ -2597,8 +2834,7 @@ export default class FinalOrder extends React.Component {
               <DummyLoader
                 visibilty={this.state.progressView}
                 center={
-                  this.state.data != null &&
-                  this.state.data !== undefined ? (
+                  this.state.data != null && this.state.data !== undefined ? (
                     <FlatList
                       extraData={this.state}
                       showsVerticalScrollIndicator={false}
@@ -2695,9 +2931,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.isDeliveryMode
-                          ? 'white'
-                          : '#777777',
+                        color: this.state.isDeliveryMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -2747,9 +2981,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.isDeliveryMode
-                          ? 'white'
-                          : '#777777',
+                        color: !this.state.isDeliveryMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3004,9 +3236,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: this.state.selectedMode
-                          ? 'white'
-                          : '#777777',
+                        color: this.state.selectedMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3049,9 +3279,7 @@ export default class FinalOrder extends React.Component {
                     <Title
                       styleName="bold"
                       style={{
-                        color: !this.state.selectedMode
-                          ? 'white'
-                          : '#777777',
+                        color: !this.state.selectedMode ? 'white' : '#777777',
                         fontFamily: 'Rubik',
                         fontSize: 16,
                         fontWeight: '700',
@@ -3180,7 +3408,7 @@ export default class FinalOrder extends React.Component {
                 dark={true}
                 uppercase={true}
                 color={'white'}
-                onPress={this.pressPayment}
+                onPress={this.checkout}
                 loading={false}>
                 <Subtitle
                   styleName="v-center h-center"
@@ -3299,9 +3527,7 @@ export default class FinalOrder extends React.Component {
                                   marginTop: -8,
                                   //height:200
                                 }}>
-                                <View
-                                  styleName="fill-parent"
-                                  style={{flex: 1,}}>
+                                <View styleName="fill-parent" style={{flex: 1}}>
                                   <View style={{flex: 0.29}} />
                                   <View
                                     style={{
@@ -3315,23 +3541,23 @@ export default class FinalOrder extends React.Component {
                                       //flex:1,
                                       //borderRadius: 16,
                                       //marginStart: sizeWidth(6),
-                                      width:'100%',
+                                      width: '100%',
                                       //marginEnd: sizeWidth(3),
                                       height: 36,
                                       alignItems: 'center',
                                       alignContent: 'center',
-                                      justifyContent:'space-between',
+                                      justifyContent: 'space-between',
                                       borderRadius: 24,
                                     }}>
                                     <View
                                       style={{
-                                        height:36,
+                                        height: 36,
                                         flex: 1,
                                         backgroundColor: i18n.t(k.FFFFFF),
                                         borderRadius: 24,
                                         flexDirection: 'row-reverse',
                                         justifyContent: 'space-between',
-                                        marginHorizontal:sizeWidth(5)
+                                        marginHorizontal: sizeWidth(5),
                                       }}>
                                       <MaskedInput
                                         innerRef={this.cardnumberRef}
@@ -3340,12 +3566,8 @@ export default class FinalOrder extends React.Component {
                                           extracted,
                                         ) => {
                                           //console.log(formatted);
-                                          let formyear = formatted.split(
-                                            ' ',
-                                          );
-                                          const cardnumber = formyear.join(
-                                            '',
-                                          );
+                                          let formyear = formatted.split(' ');
+                                          const cardnumber = formyear.join('');
                                           this.setState({
                                             cardnumber: cardnumber,
                                             creditCardImage: this.returnCardImage(
@@ -3374,9 +3596,7 @@ export default class FinalOrder extends React.Component {
                                         keyboardType={'numeric'}
                                         value={this.state.cardnumber}
                                         onSubmitEditing={e => {
-                                          if (
-                                            this.cardyearRef !== undefined
-                                          ) {
+                                          if (this.cardyearRef !== undefined) {
                                             this.cardyearRef.current.focus();
                                           }
                                         }}
@@ -3431,10 +3651,7 @@ export default class FinalOrder extends React.Component {
                                     }}>
                                     <MaskedInput
                                       innerRef={this.cardcvvRef}
-                                      onChangeText={(
-                                        formatted,
-                                        extracted,
-                                      ) => {
+                                      onChangeText={(formatted, extracted) => {
                                         // console.log(formatted);
                                         this.setState({
                                           cardcvv: formatted,
@@ -3468,10 +3685,7 @@ export default class FinalOrder extends React.Component {
                                     <View style={{flex: 0.18}} />
                                     <MaskedInput
                                       innerRef={this.cardyearRef}
-                                      onChangeText={(
-                                        formatted,
-                                        extracted,
-                                      ) => {
+                                      onChangeText={(formatted, extracted) => {
                                         let formyear = formatted.replace(
                                           '/',
                                           '',

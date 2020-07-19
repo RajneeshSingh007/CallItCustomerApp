@@ -114,6 +114,7 @@ export default class ProfilePage extends React.Component {
         token,
         result => {
           var details = JSON.parse(JSON.stringify(result));
+          Pref.setVal(Pref.CustData, details);
           const fullName = result.firstname + ' ' + result.lastname;
           const {address} = result;
           let addressx = '';

@@ -86,29 +86,7 @@ class AppIos extends React.Component {
       }
     });
 
-    Pref.getVal(Pref.CustData, rel => {
-      if (rel !== undefined && rel !== null && rel !== '') {
-        const vo = JSON.parse(rel);
-        const {idcustomer} = vo;
-        if (idcustomer !== undefined || idcustomer !== null) {
-          Helper.networkHelperTokenPost(
-            Pref.RefreshToken,
-            JSON.stringify({
-              idcustomer: idcustomer,
-            }),
-            Pref.methodPost,
-            Pref.LASTTOKEN,
-            res => {
-              const token = res['token'];
-              if (token !== '') {
-                Pref.setVal(Pref.bearerToken, token);
-              }
-            },
-            error => {},
-          );
-        }
-      }
-    });
+    this.onrefreshtoken();
   }
 
   registerForPushNotificationsAsync = async () => {
@@ -122,6 +100,33 @@ class AppIos extends React.Component {
     }
   };
 
+  onrefreshtoken = () => {
+    Pref.getVal(Pref.CustData, rel => {
+      const vo = JSON.parse(rel);
+      if (rel !== undefined && rel !== null && rel !== '' && vo !== null) {
+        const {idcustomer} = vo;
+        if (idcustomer !== undefined && idcustomer !== null) {
+          Helper.networkHelperTokenPost(
+            Pref.RefreshToken,
+            JSON.stringify({
+              idcustomer: idcustomer,
+            }),
+            Pref.methodPost,
+            Pref.LASTTOKEN,
+            res => {
+              const token = res['token'];
+              //console.log(new Date(), token);
+              if (token !== undefined && token !== '') {
+                Pref.setVal(Pref.bearerToken, token);
+              }
+            },
+            error => {},
+          );
+        }
+      }
+    });
+  };
+
   refreshToken(fcmToken) {
     Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
@@ -132,6 +137,7 @@ class AppIos extends React.Component {
           token,
           result => {
             var details = JSON.parse(JSON.stringify(result));
+            Pref.setVal(Pref.CustData, details);
             const idcustomer = details.idcustomer;
             const tt = JSON.stringify({
               value: fcmToken,
@@ -144,7 +150,7 @@ class AppIos extends React.Component {
               Pref.LASTTOKEN,
               result => {
                 const token = result['token'];
-                if (token !== '') {
+                if (token !== undefined && token !== '') {
                   Pref.setVal(Pref.bearerToken, token);
                 }
               },
@@ -153,30 +159,6 @@ class AppIos extends React.Component {
           },
           error => {},
         );
-      } else {
-        Pref.getVal(Pref.CustData, rel => {
-          if (rel !== undefined && rel !== null && rel !== '') {
-            const vo = JSON.parse(rel);
-            const {idcustomer} = vo;
-            if (idcustomer !== undefined || idcustomer !== null) {
-              Helper.networkHelperTokenPost(
-                Pref.RefreshToken,
-                JSON.stringify({
-                  idcustomer: idcustomer,
-                }),
-                Pref.methodPost,
-                Pref.LASTTOKEN,
-                res => {
-                  const token = res['token'];
-                  if (token !== '') {
-                    Pref.setVal(Pref.bearerToken, token);
-                  }
-                },
-                error => {},
-              );
-            }
-          }
-        });
       }
     });
   }
