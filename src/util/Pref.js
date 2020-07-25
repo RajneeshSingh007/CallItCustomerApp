@@ -49,7 +49,7 @@ export const PRODUCTION_CODE_PUSH_IOS ='Ucc7FaxsZLffsSDQcbFWHy4uOcfbHfBe8Yv8j';
 /**
  * Customer Server url
  */
-export const BASEURL = "http://djangoman123-001-site1.btempurl.com/";
+export const BASEURL = 'http://djangoman123-001-site1.btempurl.com/';
 export const VisaCardImage = `${BASEURL}StaticFiles/Cards/`;
 export const SignUpUrl = `${BASEURL}api/CreateCustomer`;
 export const AllBusinessListUrl = `${BASEURL}api/getBusinessesForCustomer`;

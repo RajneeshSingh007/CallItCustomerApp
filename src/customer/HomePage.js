@@ -352,7 +352,11 @@ class HomePage extends React.Component {
       existing &&
       existingagain
     ) {
-      this.revertfilterBusiness();
+      if (this.state.catClicked === false) {
+        this.backrestore();
+      } else {
+        this.revertfilterBusiness();
+      }
       return true;
     } else if (
       isCatgegoryClicked === 1 &&
@@ -409,7 +413,7 @@ class HomePage extends React.Component {
           };
     GetLocation.getCurrentPosition(option)
       .then(location => {
-        console.log(`location`, location);
+        //console.log(`location`, location);
         const lat = location.latitude;
         const lon = location.longitude;
         this.setState({
@@ -464,6 +468,7 @@ class HomePage extends React.Component {
       backSearchshow: false,
       filterView: false,
       existing: false,
+      catClicked: false,
       restaurants: JSON.parse(JSON.stringify(this.state.cloneHomePageList)),
     });
   };
@@ -1117,6 +1122,9 @@ class HomePage extends React.Component {
     NavigationActions.navigate('NewBusinessPage', {item: item, mode: false});
   }
 
+  /**
+   * category from category list clicked
+   */
   homecatClick = item => {
     if (!this.state.locaDialog) {
       const itemsList = [];
@@ -1649,6 +1657,7 @@ class HomePage extends React.Component {
         filterView: false,
         categoryname: categoryname,
         existing: false,
+        catClicked:true,
       });
     } else {
       this.setState({progressView: true});
@@ -1675,6 +1684,7 @@ class HomePage extends React.Component {
           restaurants: itemsList,
           existing: false,
           existingagain: true,
+          catClicked: true,
         });
       }
     }
@@ -1927,34 +1937,6 @@ class HomePage extends React.Component {
             rightComponent={
               !this.state.backSearchshow ? (
                 <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
-                  {/* {this.state.showOrderNo ? 
-               <TouchableWithoutFeedback onPress={() => NavigationActions.navigate('FinalOrder', { orderData: this.state.cartDatas, })}>
-                <View style={{
-                  width: 36,
-                  height: 36,
-                  marginEnd: sizeWidth(2),
-                  alignContent: 'center',
-                  justifyContent: 'center',
-                  marginBottom:6,
-                  ...Platform.select({
-                    android: {
-                      elevation: 2,
-                    },
-                    default: {
-                      shadowColor: 'rgba(0,0,0, .2)',
-                      shadowOffset: { height: 0, width: 0 },
-                      shadowOpacity: 1,
-                      shadowRadius: 1,
-                    },
-                  }),
-                }}>
-                  <Image
-                   // styleName="large"
-                    source={require("./../res/images/cart.png")}
-                    style={{ width: 36, height: 36, alignSelf: 'center', alignContent: 'center',}} />
-                </View>
-               </TouchableWithoutFeedback> : null} */}
-
                   <TouchableOpacity
                     onPress={() =>
                       this.setState({
@@ -1977,30 +1959,10 @@ class HomePage extends React.Component {
                       }}
                     />
                   </TouchableOpacity>
-                  {/* <Image source={require('./../res/images/menu.png')}
-                style={{ width: 24, height: 24, alignSelf: 'center', justifyContent: 'center' }}
-               /> */}
                 </View>
               ) : (
                 <View style={{flexDirection: 'row', marginEnd: sizeWidth(1)}}>
-                  <TouchableWithoutFeedback
-                    onPress={() => {
-                      this.setState({
-                        filterView: false,
-                        backSearchshow: false,
-                        businessSuggestions: [],
-                        businessCatSuggestions: [],
-                        catmodsss: 0,
-                        isCatgegoryClicked: 0,
-                        filterView: false,
-                        filterOpenNow: false,
-                        filterDelivery: false,
-                        filterKusher: false,
-                        filterRating: 0,
-                        filterKM: 1,
-                        filterDistance: false,
-                      });
-                    }}>
+                  <TouchableWithoutFeedback onPress={() => this.backClick()}>
                     <Icon
                       name="close"
                       size={36}
@@ -2036,7 +1998,7 @@ class HomePage extends React.Component {
             leftComponent={
               <View style={{marginStart: 12}}>
                 {!this.state.backSearchshow ? (
-                  this.state.filterView ? (
+                  this.state.filterView || this.state.catClicked ? (
                     <TouchableWithoutFeedback
                       onPress={() => {
                         this.backClick();

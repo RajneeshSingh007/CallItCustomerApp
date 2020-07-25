@@ -85,8 +85,9 @@ export default class FavPage extends React.Component {
         tuu.serviceFreeservices = result.freeServices || [];
         NavigationActions.navigate('NewBusinessPage', {item: tuu, mode: false});
       },
-      () => {
+      (e) => {
         //error
+        console.log(e)
       },
     );
   }

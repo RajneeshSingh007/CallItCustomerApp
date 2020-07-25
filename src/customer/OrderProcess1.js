@@ -61,18 +61,6 @@ let currentCat = '';
 let expanded = false;
 
 export default class OrderProcess1 extends React.Component {
-  // static propTypes = {
-  //   branchid: PropType.any,
-  //   tabNames: PropType.array,
-  //   eachTabData: PropType.array,
-  //   orderInc: PropType.func,
-  //   deliveryPrice: PropType.string,
-  //   customerdt: PropType.string,
-  //   namexx: PropType.number,
-  //   currentNames: PropType.number,
-  //   hasDelivery: PropTypes.number,
-  //   checkerDate: PropTypes.Object,
-  // };
 
   constructor(props) {
     super(props);
@@ -114,7 +102,7 @@ export default class OrderProcess1 extends React.Component {
       cartItemCounter: 0,
       cartTotalAmount: 0,
       cartStatus: false,
-      cartExArray: [],
+      cartExtraArray: [],
       checkChip: false,
       multiArr: [],
       multiArrItems: [],
@@ -132,8 +120,8 @@ export default class OrderProcess1 extends React.Component {
       countercart: 0,
       showOrderNo: false,
       mode: false,
-      lol: null,
-      lessamtss: 0,
+      editData: null,
+      reduceAmount: 0,
       okkkk: false,
       showAlert: false,
       alertContent: i18n.t(k._4),
@@ -161,6 +149,7 @@ export default class OrderProcess1 extends React.Component {
       clickedItemPos: 0,
       clickedPos: 0,
       backClicked: false,
+      clonesvmode:0
     };
     Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
@@ -176,37 +165,37 @@ export default class OrderProcess1 extends React.Component {
     Pref.getVal(Pref.EditModeEnabled, value => {
       ////console.log('editmode', value);
       if (value !== undefined && value !== '' && value !== null) {
-        const {lol} = this.props;
+        const {editData} = this.props;
         let ooo = 0;
-        if (lol !== undefined && lol !== null) {
+        if (editData !== undefined && editData !== null) {
           const valuex = Helper.removeQuotes(value) === '1' ? true : false;
-          //console.log('lol', lol);
-          selectedCirclePos = lol.selectedCirclePos;
-          const circleTab = lol.circleTab;
-          freeList = lol.freeList;
-          finishedList = lol.finishedList;
+          //console.log('editData', editData);
+          selectedCirclePos = editData.selectedCirclePos;
+          const circleTab = editData.circleTab;
+          freeList = editData.freeList;
+          finishedList = editData.finishedList;
           this.setState(
             {
               mode: valuex,
               orderMore: true,
-              lessamtss: ooo,
-              lol: lol,
-              cartExArray: lol.extras,
-              message: lol.message,
-              totalAmount: lol.price,
-              servicemode: lol.serviceMode,
+              reduceAmount: ooo,
+              editData: editData,
+              cartExtraArray: editData.extras,
+              message: editData.message,
+              totalAmount: editData.price,
+              servicemode: editData.serviceMode,
               circleTab: circleTab,
-              showCircleExtraData: lol.showCircleExtraData,
-              extraImageItemList: lol.extraImageItemList,
-              extraImageItemList1: lol.extraImageItemList1,
-              extraImageItemList2: lol.extraImageItemList2,
-              extraImageItemList3: lol.extraImageItemList3,
-              extraImageItemList4: lol.extraImageItemList4,
-              extraImageItemList5: lol.extraImageItemList5,
-              extraImageItemList6: lol.extraImageItemList6,
+              showCircleExtraData: editData.showCircleExtraData,
+              extraImageItemList: editData.extraImageItemList,
+              extraImageItemList1: editData.extraImageItemList1,
+              extraImageItemList2: editData.extraImageItemList2,
+              extraImageItemList3: editData.extraImageItemList3,
+              extraImageItemList4: editData.extraImageItemList4,
+              extraImageItemList5: editData.extraImageItemList5,
+              extraImageItemList6: editData.extraImageItemList6,
             },
             () => {
-              this.onItemClicks(true, lol);
+              this.onItemClicks(true, editData);
             },
           );
         }
@@ -282,7 +271,7 @@ export default class OrderProcess1 extends React.Component {
         backClicked: true,
         visibility: 66,
         mode: false,
-        cartExArray: [],
+        cartExtraArray: [],
         servicemode: 20,
         showCircleExtraSelection: false,
         circleTab: 1,
@@ -324,7 +313,7 @@ export default class OrderProcess1 extends React.Component {
       } else {
         const itemTotal = this.state.totalAmount;
         //console.log('amt', itemTotal);
-        const totalx = itemTotal + this.state.cartTotalAmount;
+        const totalClone = itemTotal + this.state.cartTotalAmount;
 
         const repeats = this.state.mainBaseCount;
 
@@ -345,7 +334,7 @@ export default class OrderProcess1 extends React.Component {
             price: itemTotal,
             //quantity: this.state.mainBaseCount,
             quantity: 1,
-            extras: this.state.cartExArray,
+            extras: this.state.cartExtraArray,
             isdelivery: false,
             status: 1,
             geolat: this.props.currentLat,
@@ -370,6 +359,7 @@ export default class OrderProcess1 extends React.Component {
             showCircleExtraData: this.state.showCircleExtraData,
             freeList: freeList,
             finishedList: finishedList,
+            clonesvmode: this.state.clonesvmode,
           });
         }
         let tyy = this.state.cartDetails;
@@ -386,14 +376,14 @@ export default class OrderProcess1 extends React.Component {
                 carxxx.push(ele);
               });
               Pref.setVal(Pref.cartItem, carxxx);
-              this.props.orderInc();
+              this.props.orderChanged();
               //////console.log('firstSave', carxxx);
             } else {
               if (this.state.mode) {
                 const iit = Lodash.findLastIndex(cartData, {
-                  cartTime: this.state.lol.cartTime,
+                  cartTime: this.state.editData.cartTime,
                 });
-                //console.log("modexxx", tyy[0].cartTime, this.state.lol.cartTime, iit);
+                //console.log("modexxx", tyy[0].cartTime, this.state.editData.cartTime, iit);
                 if (iit !== -1) {
                   cartData[iit] = tyy[0];
                 }
@@ -406,19 +396,19 @@ export default class OrderProcess1 extends React.Component {
                 //////console.log('cartData', cartData);
               }
               Pref.setVal(Pref.cartItem, cartData);
-              this.props.orderInc();
+              this.props.orderChanged();
             }
           } else {
             Pref.setVal(Pref.cartItem, tyy);
-            this.props.orderInc();
+            this.props.orderChanged();
           }
         });
         this.setState({
-          cartTotalAmount: totalx,
+          cartTotalAmount: totalClone,
           totalAmount: 0,
           mainBaseAmount: 0,
           mainBaseCount: 1,
-          cartExArray: [],
+          cartExtraArray: [],
           cartDetails: [],
           visibility: 3,
           orderMore: false,
@@ -442,32 +432,34 @@ export default class OrderProcess1 extends React.Component {
    */
   onItemClicks(mode, val) {
     //this.props.isVis(true);
-    const {currentNames, namexx, businessclosedornot, hasDelivery} = this.props;
-    //console.log('businessclosedornot', businessclosedornot);
+    const {currentNames, cartBranchId, businessclosedornot, hasDelivery} = this.props;
+    //console.log('businessclosedornot', val.serviceMode);
     if (businessclosedornot === true) {
-      if (Number(currentNames) === Number(namexx) || Number(namexx) === 0) {
+      if (Number(currentNames) === Number(cartBranchId) || Number(cartBranchId) === 0) {
         if (hasDelivery === 0) {
           let kkk = [];
           let msg = '';
           if (mode) {
-            kkk = this.state.cartExArray;
+            kkk = this.state.cartExtraArray;
             msg = this.state.message;
           }
+          const sm = Number(val.serviceMode);
 
           this.setState(
             {
               message: mode ? msg : '',
               visibility: 1,
-              cartExArray: mode ? kkk : [],
+              cartExtraArray: mode ? kkk : [],
               mainBaseCount: !mode ? 1 : val.quantity,
               mainBaseAmount: 0,
               progressView: true,
               type: 'absolute',
               clickitem: val,
-              servicemode: val.serviceMode,
+              servicemode: sm === 2 ? 1 : sm,
+              clonesvmode: sm,
             },
             () => {
-              if (val.serviceMode === 1) {
+              if (sm === 1 || sm === 2) {
                 //http://djangoman123-001-site1.btempurl.com/api/GetImagesForPizza
                 Helper.networkHelperToken(
                   Pref.PizzImageUrl,
@@ -479,13 +471,13 @@ export default class OrderProcess1 extends React.Component {
                       //servicemode: 2,
                     });
                   },
-                  () => {},
+                  e => {},
                 );
               }
             },
           );
 
-          //////console.log('cartExtra', this.state.cartExArray);
+          //////console.log('cartExtra', this.state.cartExtraArray);
           this.fetchServiceDetail(mode, val);
         } else {
           this.setState({
@@ -498,7 +490,7 @@ export default class OrderProcess1 extends React.Component {
             flexChanged: true,
           });
         }
-      } else if (Number(currentNames) !== Number(namexx)) {
+      } else if (Number(currentNames) !== Number(cartBranchId)) {
         this.setState({
           alertTitle: i18n.t(k._29),
           alertContent: i18n.t(k._72),
@@ -525,7 +517,7 @@ export default class OrderProcess1 extends React.Component {
       Pref.methodGet,
       this.state.token,
       result => {
-        //console.log("servicesResult", result);
+        //console.log('servicesResult', result['service']);
         //console.log('serviceCat', JSON.stringify(result["extras"]));
         const parseService = result['service'];
         const parseExtra = result['extras'];
@@ -534,7 +526,7 @@ export default class OrderProcess1 extends React.Component {
           el.isselectedex = false;
           el.priceChanged = false;
           if (mode) {
-            const tuext = Lodash.findIndex(this.state.cartExArray, {
+            const tuext = Lodash.findIndex(this.state.cartExtraArray, {
               id: el.id,
             });
             el.isselectedex = tuext !== -1;
@@ -551,8 +543,8 @@ export default class OrderProcess1 extends React.Component {
           counter: 0,
         }));
 
-        let op = !mode ? parseService.price : val.price;
-        let opp = !mode ? parseService.price : val.price - this.state.lessamtss;
+        let totalAmounts = !mode ? parseService.price : val.price;
+        let amountCalculateagain = !mode ? parseService.price : val.price - this.state.reduceAmount;
 
         let extraFilteredData = [];
         //filter dough, sessam etc...
@@ -589,8 +581,8 @@ export default class OrderProcess1 extends React.Component {
           originalExtras: serviceCat,
           serviceDetail: parseService,
           serviceExtra: groupedExtra,
-          mainBaseAmount: opp,
-          totalAmount: op,
+          mainBaseAmount: amountCalculateagain,
+          totalAmount: totalAmounts,
         });
         //alert(JSON.stringify(this.state.serviceExtra));
       },
@@ -620,11 +612,11 @@ export default class OrderProcess1 extends React.Component {
     );
     let singless = false;
     let total = 0;
-    const kkk = Lodash.findIndex(this.state.cartExArray, {
+    const kkk = Lodash.findIndex(this.state.cartExtraArray, {
       id: serviceExtrax.id,
     });
     if (kkk !== -1) {
-      this.state.cartExArray.splice(kkk, 1);
+      this.state.cartExtraArray.splice(kkk, 1);
       total = this.state.totalAmount - freeListItem.price;
       if (
         cloneExtrass.finished !== undefined &&
@@ -642,12 +634,12 @@ export default class OrderProcess1 extends React.Component {
       }
     } else {
       total = this.state.totalAmount + freeListItem.price;
-      const isfind = Lodash.findIndex(this.state.cartExArray, {
+      const isfind = Lodash.findIndex(this.state.cartExtraArray, {
         category: serviceExtrax.category_name,
       });
       if (serviceExtrax.multipliable === 0) {
         if (isfind === -1) {
-          this.state.cartExArray.push(pushObject);
+          this.state.cartExtraArray.push(pushObject);
           if (serviceExtrax.isFree === 1) {
             const checkexistence = Lodash.find(
               freeList,
@@ -662,7 +654,7 @@ export default class OrderProcess1 extends React.Component {
         }
       } else {
         if (serviceExtrax.multipliable > 1) {
-          const countExtra = Lodash.filter(this.state.cartExArray, {
+          const countExtra = Lodash.filter(this.state.cartExtraArray, {
             category: serviceExtrax.category_name,
           }).length;
           if (countExtra === serviceExtrax.multipliable) {
@@ -674,7 +666,7 @@ export default class OrderProcess1 extends React.Component {
             return false;
           }
         }
-        this.state.cartExArray.push(pushObject);
+        this.state.cartExtraArray.push(pushObject);
         if (serviceExtrax.isFree === 1) {
           const checkexistence = Lodash.find(
             freeList,
@@ -688,21 +680,21 @@ export default class OrderProcess1 extends React.Component {
     }
     if (singless) {
       //console.log(`singless`, singless);
-      const isfindxx = Lodash.findLastIndex(this.state.cartExArray, {
+      const isfindxx = Lodash.findLastIndex(this.state.cartExtraArray, {
         category: serviceExtrax.category_name,
       });
       //console.log(`isfind`, isfindxx);
       if (isfindxx !== -1) {
-        const find = Lodash.find(this.state.cartExArray, {
+        const find = Lodash.find(this.state.cartExtraArray, {
           category: serviceExtrax.category_name,
         });
         //console.log(`find`, find);
-        let totalx = total;
-        total = totalx - find.price;
+        let totalClone = total;
+        total = totalClone - find.price;
 
-        this.state.cartExArray.splice(isfindxx, 1);
-        this.state.cartExArray.push(pushObject);
-        //console.log(this.state.cartExArray);
+        this.state.cartExtraArray.splice(isfindxx, 1);
+        this.state.cartExtraArray.push(pushObject);
+        //console.log(this.state.cartExtraArray);
       }
       // this.setState({
       //   alertTitle: i18n.t(k._30),
@@ -716,23 +708,23 @@ export default class OrderProcess1 extends React.Component {
     //console.log(serviceMode)
     const untouched = JSON.parse(JSON.stringify(this.state.originalExtras));
     //console.log('untouched', untouched)
-    const catcat = this.state.serviceCat;
+    const serviceCategories = this.state.serviceCat;
     //this.getActiveExtrasList();
-    const findcatindex = Lodash.findIndex(catcat, {
+    const findcatindex = Lodash.findIndex(serviceCategories, {
       title: serviceExtrax.category_name,
     });
     const findcatindexuntouched = Lodash.findIndex(untouched, {
       title: cloneExtrass.category_name,
     });
 
-    const {data} = catcat[findcatindex];
+    const {data} = serviceCategories[findcatindex];
     const ogmin = untouched[findcatindexuntouched].minselect;
     //console.log("ogmin", ogmin);
-    let minselect = catcat[findcatindex].minselect;
-    let counter = catcat[findcatindex].counter;
+    let minselect = serviceCategories[findcatindex].minselect;
+    let counter = serviceCategories[findcatindex].counter;
     //console.log("minselect", minselect, cloneExtrass.isselectedex);
-    const hh = data[index];
-    if (serviceMode === 0 || serviceMode === 1) {
+    const findposition = data[index];
+    if (serviceMode === 0 || serviceMode === 1 || serviceMode === 2) {
       //selected chip
       if (!cloneExtrass.isselectedex) {
         if (minselect > 0) {
@@ -749,18 +741,18 @@ export default class OrderProcess1 extends React.Component {
       }
     }
     //console.log("minselectchanged", minselect, counter);
-    const {isselectedex} = hh;
-    hh.isselectedex = !isselectedex;
-    data[index] = hh;
-    catcat[findcatindex].minselect = minselect;
-    catcat[findcatindex].counter = counter;
-    //catcat.data = data;
+    const {isselectedex} = findposition;
+    findposition.isselectedex = !isselectedex;
+    data[index] = findposition;
+    serviceCategories[findcatindex].minselect = minselect;
+    serviceCategories[findcatindex].counter = counter;
+    //serviceCategories.data = data;
     //console.log(`total`, total);
     //console.log(`freeList`, freeList);
-    //console.log(`catcat`, catcat)
+    //console.log(`serviceCategories`, serviceCategories)
     this.setState({
       totalAmount: total,
-      serviceCat: catcat,
+      serviceCat: serviceCategories,
     });
     //}
   };
@@ -775,11 +767,11 @@ export default class OrderProcess1 extends React.Component {
   }
 
   /**
-   *
+   * check extra min selection selected or not
    */
   checkMinSelectedExtras() {
-    const catcatx = this.state.serviceCat;
-    const filter = Lodash.filter(catcatx, item => {
+    const serviceCategoryObj = this.state.serviceCat;
+    const filter = Lodash.filter(serviceCategoryObj, item => {
       const data = item.data;
       const firstPos = data[0];
       if (firstPos.catType === selectedCirclePos) {
@@ -812,7 +804,7 @@ export default class OrderProcess1 extends React.Component {
    * selected chip color
    */
   selectedColors = serviceExtrax => {
-    const values = Lodash.findIndex(this.state.cartExArray, {
+    const values = Lodash.findIndex(this.state.cartExtraArray, {
       id: serviceExtrax.id,
     });
 
@@ -827,7 +819,7 @@ export default class OrderProcess1 extends React.Component {
    * isSelected chip
    */
   isSelected = serviceExtrax => {
-    const values = Lodash.find(this.state.cartExArray, {
+    const values = Lodash.find(this.state.cartExtraArray, {
       id: serviceExtrax.id,
     });
     if (values !== undefined) {
@@ -1099,6 +1091,10 @@ export default class OrderProcess1 extends React.Component {
     );
   }
 
+  /**
+   * tab click
+   * @param {f} tabno for product service mode 1 or 2 i.e. pizza
+   */
   circleTabClick(tabno) {
     if (this.state.circleTab === tabno) {
       return false;
@@ -1112,9 +1108,8 @@ export default class OrderProcess1 extends React.Component {
     }
 
     const currentTab = this.state.circleTab;
-    //console.log(`tabno`, currentTab, prevCircleTab, tabno);
 
-    const {cartExArray} = this.state;
+    const {cartExtraArray} = this.state;
     const check1 = currentTab === 3 && prevCircleTab === 0;
     const check2 = currentTab === 3 && prevCircleTab === 1;
     const check3 = currentTab === 2 && prevCircleTab === 0;
@@ -1136,24 +1131,12 @@ export default class OrderProcess1 extends React.Component {
             {
               text: `${i18n.t(k.YES)}`,
               onPress: () => {
-                const result = Lodash.filter(this.state.cartExArray, ele => {
+                const result = Lodash.filter(this.state.cartExtraArray, ele => {
                   return !Lodash.find(
                     filterFull,
                     element => element.catType === ele.catType,
                   );
                 });
-                // const result = Lodash.filter(this.state.cartExArray, ele => {
-                //   return (
-                //     ele.catType !== 0 ||
-                //     ele.catType !== 1 ||
-                //     ele.catType !== 2 ||
-                //     ele.catType !== 3 ||
-                //     ele.catType !== 4 ||
-                //     ele.catType !== 5 ||
-                //     ele.catType !== 6
-                //   );
-                // });
-                //console.log(`result`, result)
                 const og = JSON.parse(
                   JSON.stringify(this.state.originalExtras),
                 );
@@ -1170,7 +1153,7 @@ export default class OrderProcess1 extends React.Component {
                   extraImageItemList6: [],
                   serviceCat: og,
                   circleTab: tabno,
-                  cartExArray: result,
+                  cartExtraArray: result,
                   circleExtras: [],
                   extraReset: true,
                   showCircleExtraData: [],
@@ -1188,12 +1171,12 @@ export default class OrderProcess1 extends React.Component {
     }
 
     if (prevCircleTab === 1 && tabno === 2) {
-      if (cartExArray.length > 0) {
+      if (cartExtraArray.length > 0) {
         let filterFull = [];
         const serviceCatName = JSON.parse(
           JSON.stringify(this.state.untouchedExtras),
         );
-        Lodash.map(cartExArray, item => {
+        Lodash.map(cartExtraArray, item => {
           const {catType} = item;
           let element = JSON.parse(JSON.stringify(item));
           let element1 = JSON.parse(JSON.stringify(item));
@@ -1227,21 +1210,20 @@ export default class OrderProcess1 extends React.Component {
             extraImageItemList2.push(element);
           }
         }
-        console.log(`filterFull`, filterFull);
         this.setState({
-          cartExArray: filterFull,
+          cartExtraArray: filterFull,
           extraImageItemList: [],
           extraImageItemList1: extraImageItemList1,
           extraImageItemList2: extraImageItemList2,
         });
       }
     } else if (prevCircleTab === 2 && currentTab === 2) {
-      if (cartExArray.length > 0) {
+      if (cartExtraArray.length > 0) {
         const serviceCatName = JSON.parse(
           JSON.stringify(this.state.untouchedExtras),
         );
         let filterFull = [];
-        Lodash.map(cartExArray, item => {
+        Lodash.map(cartExtraArray, item => {
           const {catType} = item;
           let element = JSON.parse(JSON.stringify(item));
           let element1 = JSON.parse(JSON.stringify(item));
@@ -1289,9 +1271,8 @@ export default class OrderProcess1 extends React.Component {
             extraImageItemList6.push(element);
           }
         }
-        console.log(`filterFullconv`, filterFull);
         this.setState({
-          cartExArray: filterFull,
+          cartExtraArray: filterFull,
           extraImageItemList1: [],
           extraImageItemList2: [],
           extraImageItemList3: extraImageItemList3,
@@ -1301,9 +1282,9 @@ export default class OrderProcess1 extends React.Component {
         });
       }
     } else if (prevCircleTab === 2 && tabno === 3) {
-      if (cartExArray.length > 0) {
+      if (cartExtraArray.length > 0) {
         let filterFull = [];
-        Lodash.map(cartExArray, item => {
+        Lodash.map(cartExtraArray, item => {
           const {catType} = item;
           let element = JSON.parse(JSON.stringify(item));
           let element1 = JSON.parse(JSON.stringify(item));
@@ -1322,7 +1303,7 @@ export default class OrderProcess1 extends React.Component {
             filterFull.push(element);
           }
         });
-        this.setState({cartExArray: filterFull});
+        this.setState({cartExtraArray: filterFull});
       }
     }
     this.setState({circleTab: tabno}, () => {
@@ -1331,9 +1312,11 @@ export default class OrderProcess1 extends React.Component {
         showCircleExtraData: showExtraData,
       });
     });
-    //console.log(`cartExArray`, this.state.cartExArray);
   }
 
+  /**
+   * hide alert
+   */
   hideAlert() {
     this.setState({
       showAlert: false,
@@ -1341,12 +1324,18 @@ export default class OrderProcess1 extends React.Component {
     });
   }
 
+  /**
+   * each circle part click
+   * @param {} value 
+   */
   eachCirclePartClick(value) {
     selectedCirclePos = value;
     this.filterExtraServiceCircle();
-    console.log(`,totalAmount`, this.state.totalAmount);
   }
 
+  /**
+   * render design circle
+   */
   renderdesignCircle() {
     return (
       <View
@@ -1377,7 +1366,8 @@ export default class OrderProcess1 extends React.Component {
               height: sizeHeight(6),
               flexWrap: 'wrap',
             }}>
-            <TouchableWithoutFeedback onPress={() => this.circleTabClick(1)}>
+            <TouchableWithoutFeedback
+              onPress={() => this.circleTabClick(1)}>
               <View
                 style={{
                   flex: 0.5,
@@ -1415,7 +1405,8 @@ export default class OrderProcess1 extends React.Component {
               }}
             />
 
-            <TouchableWithoutFeedback onPress={() => this.circleTabClick(2)}>
+            <TouchableWithoutFeedback
+              onPress={() => this.circleTabClick(2)}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -1442,6 +1433,7 @@ export default class OrderProcess1 extends React.Component {
                 </Title>
               </View>
             </TouchableWithoutFeedback>
+            {this.state.clonesvmode !== 2 ?
             <View
               style={{
                 width: 1,
@@ -1451,9 +1443,10 @@ export default class OrderProcess1 extends React.Component {
                 alignSelf: 'center',
                 height: '100%',
               }}
-            />
-
-            <TouchableWithoutFeedback onPress={() => this.circleTabClick(3)}>
+            /> : null}
+            {this.state.clonesvmode !== 2 ?
+            <TouchableWithoutFeedback
+              onPress={() => this.circleTabClick(3)}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -1480,6 +1473,7 @@ export default class OrderProcess1 extends React.Component {
                 </Title>
               </View>
             </TouchableWithoutFeedback>
+            : null}
           </View>
         </View>
         <View
@@ -2183,7 +2177,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList2[5]
+                                            this.state
+                                              .extraImageItemList2[5]
                                           }`,
                                         }}
                                       />
@@ -2197,7 +2192,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList2[6]
+                                            this.state
+                                              .extraImageItemList2[6]
                                           }`,
                                         }}
                                       />
@@ -2407,7 +2403,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList1[5]
+                                            this.state
+                                              .extraImageItemList1[5]
                                           }`,
                                         }}
                                       />
@@ -2421,7 +2418,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList1[6]
+                                            this.state
+                                              .extraImageItemList1[6]
                                           }`,
                                         }}
                                       />
@@ -2580,7 +2578,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList6[0]
+                                            this.state
+                                              .extraImageItemList6[0]
                                           }`,
                                         }}
                                       />
@@ -2600,7 +2599,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList6[1]
+                                            this.state
+                                              .extraImageItemList6[1]
                                           }`,
                                         }}
                                       />
@@ -2647,7 +2647,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList6[2]
+                                            this.state
+                                              .extraImageItemList6[2]
                                           }`,
                                         }}
                                       />
@@ -2661,7 +2662,8 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state.extraImageItemList6[3]
+                                              this.state
+                                                .extraImageItemList6[3]
                                             }`,
                                           }}
                                         />
@@ -2745,7 +2747,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList3[0]
+                                            this.state
+                                              .extraImageItemList3[0]
                                           }`,
                                         }}
                                       />
@@ -2766,7 +2769,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList3[1]
+                                            this.state
+                                              .extraImageItemList3[1]
                                           }`,
                                         }}
                                       />
@@ -2813,7 +2817,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList3[2]
+                                            this.state
+                                              .extraImageItemList3[2]
                                           }`,
                                         }}
                                       />
@@ -2827,7 +2832,8 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state.extraImageItemList3[3]
+                                              this.state
+                                                .extraImageItemList3[3]
                                             }`,
                                           }}
                                         />
@@ -2908,7 +2914,8 @@ export default class OrderProcess1 extends React.Component {
                                       <Animated.Image
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList5[0]
+                                            this.state
+                                              .extraImageItemList5[0]
                                           }`,
                                         }}
                                         style={{
@@ -2928,7 +2935,8 @@ export default class OrderProcess1 extends React.Component {
                                       <Animated.Image
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList5[1]
+                                            this.state
+                                              .extraImageItemList5[1]
                                           }`,
                                         }}
                                         style={{
@@ -2989,7 +2997,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList5[2]
+                                            this.state
+                                              .extraImageItemList5[2]
                                           }`,
                                         }}
                                       />
@@ -3003,7 +3012,8 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state.extraImageItemList5[3]
+                                              this.state
+                                                .extraImageItemList5[3]
                                             }`,
                                           }}
                                         />
@@ -3086,7 +3096,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList4[0]
+                                            this.state
+                                              .extraImageItemList4[0]
                                           }`,
                                         }}
                                       />
@@ -3108,7 +3119,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList4[1]
+                                            this.state
+                                              .extraImageItemList4[1]
                                           }`,
                                         }}
                                       />
@@ -3155,7 +3167,8 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state.extraImageItemList4[2]
+                                            this.state
+                                              .extraImageItemList4[2]
                                           }`,
                                         }}
                                       />
@@ -3163,7 +3176,8 @@ export default class OrderProcess1 extends React.Component {
                                         <Image
                                           source={{
                                             uri: `${
-                                              this.state.extraImageItemList4[3]
+                                              this.state
+                                                .extraImageItemList4[3]
                                             }`,
                                           }}
                                           style={{
@@ -3214,6 +3228,9 @@ export default class OrderProcess1 extends React.Component {
     );
   }
 
+  /**
+   * render circle view
+   */
   renderCircleView() {
     return (
       <Portal>
@@ -3223,7 +3240,7 @@ export default class OrderProcess1 extends React.Component {
             this.setState({
               visibility: 66,
               mode: false,
-              cartExArray: [],
+              cartExtraArray: [],
             })
           }
           visible={this.state.visibility === 1}
@@ -3237,10 +3254,10 @@ export default class OrderProcess1 extends React.Component {
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : ''}
               style={{flex: 1}}>
-              <TouchableWithoutFeedback
+              {/* <TouchableWithoutFeedback
                 onPress={() => {
                   Keyboard.dismiss();
-                }}>
+                }}> */}
                 <View
                   style={{
                     flex: 1,
@@ -3552,7 +3569,7 @@ export default class OrderProcess1 extends React.Component {
                     </View>
                   </View>
                 </View>
-              </TouchableWithoutFeedback>
+              {/* </TouchableWithoutFeedback> */}
             </KeyboardAvoidingView>
           </View>
         </Modal>
@@ -3560,9 +3577,12 @@ export default class OrderProcess1 extends React.Component {
     );
   }
 
+  /**
+   * filter extra service circle
+   */
   filterExtraServiceCircle() {
     this.setState({circleProgressView: true});
-    const cartArray = JSON.parse(JSON.stringify(this.state.cartExArray));
+    const cartArray = JSON.parse(JSON.stringify(this.state.cartExtraArray));
     const gotDatas = Lodash.map(this.state.serviceCat, item => {
       const filterData = Lodash.filter(item.data, ele => {
         if (this.state.extraReset) {
@@ -3592,13 +3612,13 @@ export default class OrderProcess1 extends React.Component {
         }
       }
       //console.log(`freeList`, freeList);
-      const mmm = JSON.parse(JSON.stringify(freeList));
+      const freelistcloneobj = JSON.parse(JSON.stringify(freeList));
       const filterExtras = Lodash.filter(gotDatas, item => {
         if (item !== undefined) {
           const data = Lodash.filter(item.data, oop => {
             if (oop.isFree === 1) {
               const findcarts = Lodash.find(
-                mmm,
+                freelistcloneobj,
                 freeAdded => freeAdded.name === oop.name,
               );
               if (findcarts !== undefined) {
@@ -3622,7 +3642,7 @@ export default class OrderProcess1 extends React.Component {
                     cartArray,
                     freeAdded => freeAdded.id === oop.id,
                   );
-                  this.state.cartExArray[findcasin] = findcas;
+                  this.state.cartExtraArray[findcasin] = findcas;
                 } else {
                   oop.price = findexistencex.price;
                 }
@@ -3649,14 +3669,14 @@ export default class OrderProcess1 extends React.Component {
 
   returnCircleSelecionColor(pos) {
     const findpos = Lodash.filter(
-      this.state.cartExArray,
+      this.state.cartExtraArray,
       item => item.catType === pos,
     );
     return findpos.length === 0 ? false : true;
   }
 
   returnCircleData(pos) {
-    const cartArray = JSON.parse(JSON.stringify(this.state.cartExArray));
+    const cartArray = JSON.parse(JSON.stringify(this.state.cartExtraArray));
     const filterData = Lodash.filter(
       cartArray,
       item => item.catType === pos && item.finished === true,
@@ -3683,7 +3703,7 @@ export default class OrderProcess1 extends React.Component {
     if (!this.showalertmin()) {
       const price = this.state.totalAmount;
       //console.log(price)
-      //console.log(this.state.cartExArray)
+      //console.log(this.state.cartExtraArray)
       this.setState({
         servicemode: 2,
         serviceCat: JSON.parse(JSON.stringify(this.state.originalExtras)),
@@ -3724,18 +3744,18 @@ export default class OrderProcess1 extends React.Component {
 
   returnCircleBasedData() {
     const currentTab = this.state.circleTab;
-    const {cartExArray} = this.state;
+    const {cartExtraArray} = this.state;
     let filterFull = [];
     if (currentTab === 1) {
-      filterFull = Lodash.filter(cartExArray, item => item.catType === 0);
+      filterFull = Lodash.filter(cartExtraArray, item => item.catType === 0);
     } else if (currentTab === 2) {
       filterFull = Lodash.filter(
-        cartExArray,
+        cartExtraArray,
         item => item.catType === 1 || item.catType === 2,
       );
     } else if (currentTab === 3) {
       filterFull = Lodash.filter(
-        cartExArray,
+        cartExtraArray,
         item =>
           item.catType === 3 ||
           item.catType === 4 ||
@@ -3916,13 +3936,13 @@ export default class OrderProcess1 extends React.Component {
           }
         }
       }
-      const cartttt = JSON.parse(JSON.stringify(this.state.cartExArray));
+      const cartttt = JSON.parse(JSON.stringify(this.state.cartExtraArray));
       const st = JSON.parse(JSON.stringify(this.state.serviceCat));
-      let cartExArray = Lodash.map(cartttt, ok => {
+      let cartExtraArray = Lodash.map(cartttt, ok => {
         ok.finished = true;
         return ok;
       });
-      let catcat = Lodash.map(st, ok => {
+      let serviceCategories = Lodash.map(st, ok => {
         let data = Lodash.map(ok.data, kkk => {
           if (kkk.isselectedex) {
             kkk.finished = true;
@@ -3932,7 +3952,7 @@ export default class OrderProcess1 extends React.Component {
         ok.data = data;
         return ok;
       });
-      //console.log('cartExArray', cartExArray)
+      //console.log('cartExtraArray', cartExtraArray)
       this.setState(
         {
           extraImageItemList: extraImageItemList,
@@ -3943,8 +3963,8 @@ export default class OrderProcess1 extends React.Component {
           extraImageItemList5: extraImageItemList5,
           extraImageItemList6: extraImageItemList6,
           showCircleExtraSelection: false,
-          cartExArray: cartExArray,
-          serviceCat: catcat,
+          cartExtraArray: cartExtraArray,
+          serviceCat: serviceCategories,
         },
         () => {
           let showExtraData = this.returncircletext(circleTab);
@@ -3965,7 +3985,7 @@ export default class OrderProcess1 extends React.Component {
     const st = JSON.parse(JSON.stringify(this.state.serviceCat));
     //console.log('unooo', unooo)
 
-    const cartttt = JSON.parse(JSON.stringify(this.state.cartExArray));
+    const cartttt = JSON.parse(JSON.stringify(this.state.cartExtraArray));
 
     //console.log('finishedList', finishedList)
 
@@ -3975,7 +3995,7 @@ export default class OrderProcess1 extends React.Component {
     //console.log('filterFull2', filterFull2)
 
     const againFill = JSON.parse(JSON.stringify(filterFull2));
-    const catcat = Lodash.map(st, ok => {
+    const serviceCategories = Lodash.map(st, ok => {
       //let minSelect = 0;
       const data = Lodash.map(ok.data, fool => {
         if (fool.finished === undefined) {
@@ -4021,7 +4041,7 @@ export default class OrderProcess1 extends React.Component {
       ok.data = data;
       return ok;
     });
-    //console.log('catcat', catcat)
+    //console.log('serviceCategories', serviceCategories)
 
     //let filterFull3 = Lodash.filter(showExtraData, io => io.finished !== undefined);
     this.setState(
@@ -4029,8 +4049,8 @@ export default class OrderProcess1 extends React.Component {
         extraReset: false,
         showCircleExtraSelection: false,
         circleExtras: [],
-        serviceCat: catcat,
-        cartExArray: filterFull2,
+        serviceCat: serviceCategories,
+        cartExtraArray: filterFull2,
       },
       () => {
         let showExtraData = this.returncircletext(this.state.circleTab);
@@ -4194,7 +4214,7 @@ export default class OrderProcess1 extends React.Component {
                 this.setState({
                   visibility: 66,
                   mode: false,
-                  cartExArray: [],
+                  cartExtraArray: [],
                 })
               }
               visible={this.state.visibility === 1}
@@ -4204,10 +4224,10 @@ export default class OrderProcess1 extends React.Component {
               <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : ''}
                 style={{flex: 1}}>
-                <TouchableWithoutFeedback
+                {/* <TouchableWithoutFeedback
                   onPress={() => {
                     Keyboard.dismiss();
-                  }}>
+                  }}> */}
                   <View
                     style={{
                       flex: 1,
@@ -4361,7 +4381,7 @@ export default class OrderProcess1 extends React.Component {
                     </View>
                     <View style={{flex: 0.15}} />
                   </View>
-                </TouchableWithoutFeedback>
+                {/* </TouchableWithoutFeedback> */}
               </KeyboardAvoidingView>
             </Modal>
           </Portal>
@@ -4608,7 +4628,7 @@ export default class OrderProcess1 extends React.Component {
                   this.setState({
                     visibility: 66,
                     mode: false,
-                    cartExArray: [],
+                    cartExtraArray: [],
                   })
                 }
                 visible={this.state.visibility === 1}
@@ -4622,10 +4642,10 @@ export default class OrderProcess1 extends React.Component {
                   <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : ''}
                     style={{flex: 1}}>
-                    <TouchableWithoutFeedback
+                    {/* <TouchableWithoutFeedback
                       onPress={() => {
                         Keyboard.dismiss();
-                      }}>
+                      }}> */}
                       <View
                         style={{
                           flex: 1,
@@ -4976,7 +4996,7 @@ export default class OrderProcess1 extends React.Component {
                           </View>
                         </View>
                       </View>
-                    </TouchableWithoutFeedback>
+                    {/* </TouchableWithoutFeedback> */}
                   </KeyboardAvoidingView>
                 </View>
               </Modal>

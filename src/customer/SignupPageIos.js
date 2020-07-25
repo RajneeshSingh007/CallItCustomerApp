@@ -99,7 +99,9 @@ export default class SignupPageIos extends React.Component {
       messaging()
         .getToken()
         .then(token => {
-          this.setState({fcmToken: token});
+          if (token !== null && token !== '') {
+            this.setState({fcmToken: token});
+          }
         });
     });
     this.registerForPushNotificationsAsync();
@@ -250,10 +252,10 @@ export default class SignupPageIos extends React.Component {
       const fullAddress =
         this.state.add1 + ' ' + this.state.add3 + ' ' + this.state.add4;
       let token = this.state.fcmToken;
-      if (token == '' || token == null) {
-        token = NativeModules.Workaround.getToken();
-      }
-      if (token) {
+      // if (token == '' || token == null) {
+      //   token = NativeModules.Workaround.getToken();
+      // }
+      if (token !== null && token !== '') {
         const data = JSON.stringify({
           phone: this.state.mobileNo,
           firstname: this.state.firstName,

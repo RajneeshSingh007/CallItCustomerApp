@@ -37,7 +37,9 @@ class AppIos extends React.Component {
       messaging()
         .getToken()
         .then(token => {
-          this.setState({fcmToken: token});
+          if (token !== null && token !== '') {
+            this.setState({fcmToken: token});
+          }
         });
     });
     this.registerForPushNotificationsAsync();
@@ -61,11 +63,18 @@ class AppIos extends React.Component {
     this.onTokenRefreshListener = firebase
       .messaging()
       .onTokenRefresh(fcmToken => {
-        if (fcmToken) {
+        if (fcmToken !== null) {
           Pref.getVal(Pref.userDeviceID, userDeviceID => {
-            const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
-            if (trimuserDeviceID !== '' && trimuserDeviceID !== fcmToken) {
-              this.refreshToken(fcmToken);
+            if(userDeviceID !== undefined && userDeviceID !== null){
+              const trimuserDeviceID = Helper.removeQuotes(
+                userDeviceID,
+              );
+              if (
+                trimuserDeviceID !== '' &&
+                trimuserDeviceID !== fcmToken
+              ) {
+                this.refreshToken(fcmToken);
+              }
             }
           });
         }
@@ -74,9 +83,9 @@ class AppIos extends React.Component {
     Pref.getVal(Pref.userDeviceID, userDeviceID => {
       const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
       let tokenx = this.state.fcmToken;
-      if (tokenx == '' || tokenx == null) {
-        tokenx = NativeModules.Workaround.getToken();
-      }
+      // if (tokenx == '' || tokenx == null) {
+      //   tokenx = NativeModules.Workaround.getToken();
+      // }
       if (trimuserDeviceID === '') {
         this.refreshToken(tokenx);
       } else {
@@ -139,23 +148,25 @@ class AppIos extends React.Component {
             var details = JSON.parse(JSON.stringify(result));
             Pref.setVal(Pref.CustData, details);
             const idcustomer = details.idcustomer;
-            const tt = JSON.stringify({
-              value: fcmToken,
-            });
-            Pref.setVal(Pref.userDeviceID, fcmToken);
-            Helper.networkHelperTokenPost(
-              Pref.UpdateTokenUrl + idcustomer,
-              tt,
-              Pref.methodPost,
-              Pref.LASTTOKEN,
-              result => {
-                const token = result['token'];
-                if (token !== undefined && token !== '') {
-                  Pref.setVal(Pref.bearerToken, token);
-                }
-              },
-              error => {},
-            );
+            if(fcmToken !== null && fcmToken !== ''){
+              const tt = JSON.stringify({
+                value: fcmToken,
+              });
+              Pref.setVal(Pref.userDeviceID, fcmToken);
+              Helper.networkHelperTokenPost(
+                Pref.UpdateTokenUrl + idcustomer,
+                tt,
+                Pref.methodPost,
+                Pref.LASTTOKEN,
+                result => {
+                  const token = result['token'];
+                  if (token !== undefined && token !== '') {
+                    Pref.setVal(Pref.bearerToken, token);
+                  }
+                },
+                error => {},
+              );
+            }
           },
           error => {},
         );

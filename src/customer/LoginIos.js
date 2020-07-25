@@ -64,7 +64,9 @@ export default class LoginIos extends React.Component {
       messaging()
         .getToken()
         .then(token => {
-          this.setState({fcmToken: token});
+          if(token !== null && token !== ''){
+           this.setState({fcmToken: token});
+          }
         });
     });
     this.registerForPushNotificationsAsync();
@@ -92,13 +94,13 @@ export default class LoginIos extends React.Component {
             //////console.log(result);
             if (Helper.checkJson(result)) {
               const ty = result.idcustomer;
-              let tokenx = this.state.fcmToken;
-              if (tokenx == '' || tokenx == null) {
-                tokenx = NativeModules.Workaround.getToken();
-              }
-              //   messaging()
-              //     .getToken()
-              //     .then(fcmToken => {
+               let tokenx = this.state.fcmToken;
+              // if (tokenx == '' || tokenx == null) {
+              //   tokenx = NativeModules.Workaround.getToken();
+              // }
+                // messaging()
+                //   .getToken()
+                //   .then(fcmToken => {
               if (tokenx !== '') {
                 const tt = JSON.stringify({
                   value: tokenx,
@@ -242,13 +244,13 @@ export default class LoginIos extends React.Component {
                 Pref.methodPost,
                 Pref.LASTTOKEN,
                 result => {
-                  console.log('checkuserExists', result);
+                  //console.log('checkuserExists', result);
                   if (Helper.checkJson(result)) {
                     const ty = result.idcustomer;
                     let tokenx = this.state.fcmToken;
-                    if (tokenx == '' || tokenx == null) {
-                      tokenx = NativeModules.Workaround.getToken();
-                    }
+                    // if (tokenx == '' || tokenx == null) {
+                    //   tokenx = NativeModules.Workaround.getToken();
+                    // }
                     // messaging()
                     //   .getToken()
                     //   .then(fcmToken => {

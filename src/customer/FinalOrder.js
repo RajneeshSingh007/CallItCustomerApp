@@ -218,7 +218,7 @@ export default class FinalOrder extends React.Component {
         // if (res == 'granted') {
         //   this.getLoc();
         // } else {
-        // this.setState({noLocationEnabled: true});
+        //   this.setState({noLocationEnabled: true});
         // }
       });
     } else {
@@ -2642,7 +2642,7 @@ export default class FinalOrder extends React.Component {
 
   saveCardsData = () => {
     const {cardnumber, cardcvv, cardyear, cardList} = this.state;
-    console.log(`cardDetails`, cardnumber, cardcvv, cardyear);
+    //console.log(`cardDetails`, cardnumber, cardcvv, cardyear);
     if (cardnumber === '' || cardcvv === '' || cardyear === '') {
       alert(`${i18n.t(k.carddetailsEmpty)}`);
     } else {
@@ -2744,7 +2744,7 @@ export default class FinalOrder extends React.Component {
   returnCardImage = cardnumber => {
     let creditCardImage = `${Pref.VisaCardImage}card.png`;
     if (cardnumber.length > 0) {
-      if (cardnumber.length === 8) {
+      if (cardnumber.length === 8 || cardnumber.length === 9) {
         creditCardImage = `${Pref.VisaCardImage}isracart.png`;
       } else {
         const sp = cardnumber.substr(0, 2);
@@ -3657,7 +3657,7 @@ export default class FinalOrder extends React.Component {
                                           cardcvv: formatted,
                                         });
                                       }}
-                                      mask={'000'}
+                                      mask={'0000'}
                                       style={{
                                         flex: 0.75,
                                         height: 36,

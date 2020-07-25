@@ -84,8 +84,8 @@ export default class NewBusinessPage extends React.Component {
       deliveryPrice: i18n.t(k._4),
       customerdt: i18n.t(k._4),
       isMode: false,
-      lol: null,
-      namexx: 0,
+      editData: null,
+      cartBranchId: 0,
       isTimeExpanded: false,
       businessHoursx: '',
       splittedDates: [],
@@ -143,11 +143,12 @@ export default class NewBusinessPage extends React.Component {
     Pref.getVal(Pref.EditModeEnabled, value => {
       //////console.log('editmode', value);
       if (value !== undefined && value !== '' && value !== null) {
-        const loll = state.params.lol;
+        const editData = state.params.editData;
         const valuex = Helper.removeQuotes(value) === '1' ? true : false;
         this.setState({
           mode: valuex,
-          lol: Helper.removeQuotes(value) === '1' ? loll : null,
+          editData:
+            Helper.removeQuotes(value) === '1' ? editData : null,
         });
       }
     });
@@ -268,15 +269,15 @@ export default class NewBusinessPage extends React.Component {
       //////console.log('cartData', cartData);
       if (cartData !== undefined && cartData !== null && cartData.length > 0) {
         const firstItem = cartData[0];
-        const namexx = firstItem.branchData.idbranch;
+        const cartBranchId = firstItem.branchData.idbranch;
         this.setState({
-          namexx: namexx,
+          cartBranchId: cartBranchId,
           cartDatas: cartData,
           counter: cartData.length,
           showOrderNo: true,
         });
       } else {
-        this.setState({namexx: 0, showOrderNo: false});
+        this.setState({cartBranchId: 0, showOrderNo: false});
       }
     });
   }
@@ -861,15 +862,15 @@ export default class NewBusinessPage extends React.Component {
                     eachTabData={this.state.eachTabData}
                     deliveryPrice={this.state.deliveryPrice}
                     customerdt={this.state.customerdt}
-                    orderInc={() => {
+                    orderChanged={() => {
                       //////console.log('k');
                       this.getOrderCounter();
                     }}
                     hasDelivery={this.state.hasDelivery}
                     mode={this.state.mode}
                     item={this.state.item}
-                    lol={this.state.lol}
-                    namexx={this.state.namexx}
+                    editData={this.state.editData}
+                    cartBranchId={this.state.cartBranchId}
                     currentNames={this.state.item.idbranch}
                     businessclosedornot={
                       this.state.isOpen === 'open' ? true : false
