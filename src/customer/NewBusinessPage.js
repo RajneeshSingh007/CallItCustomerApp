@@ -141,12 +141,12 @@ export default class NewBusinessPage extends React.Component {
       hasDelivery: data.hasDelivery === null ? 0 : data.hasDelivery,
     });
     Pref.getVal(Pref.EditModeEnabled, value => {
-      //////console.log('editmode', value);
+      //console.log('editmode', value);
       if (value !== undefined && value !== '' && value !== null) {
         const editData = state.params.editData;
-        const valuex = Helper.removeQuotes(value) === '1' ? true : false;
+        const mode = Helper.removeQuotes(value) === '1' ? true : false;
         this.setState({
-          mode: valuex,
+          mode: mode,
           editData:
             Helper.removeQuotes(value) === '1' ? editData : null,
         });

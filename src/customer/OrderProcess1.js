@@ -166,6 +166,7 @@ export default class OrderProcess1 extends React.Component {
       ////console.log('editmode', value);
       if (value !== undefined && value !== '' && value !== null) {
         const {editData} = this.props;
+        console.log(`editData`,editData)
         let ooo = 0;
         if (editData !== undefined && editData !== null) {
           const valuex = Helper.removeQuotes(value) === '1' ? true : false;
@@ -225,6 +226,9 @@ export default class OrderProcess1 extends React.Component {
     }
   }
 
+  /**
+   * menu sevices setup
+   */
   menuServicesSetup = () => {
     const serviceList = this.props.tabNames;
     if (serviceList !== null && serviceList.length > 0) {
@@ -236,6 +240,7 @@ export default class OrderProcess1 extends React.Component {
         } else {
           item.expanded = false;
         }
+        //string component
         const dataparse = (
           <AccordationItem
             index={index}
@@ -250,6 +255,7 @@ export default class OrderProcess1 extends React.Component {
         );
         list.push(dataparse);
       });
+      //array to display
       this.setState({selectionData: list});
     }
   };
@@ -259,6 +265,9 @@ export default class OrderProcess1 extends React.Component {
     return true;
   };
 
+  /**
+   * back click
+   */
   backk() {
     this.props.backClicked();
     this.menuServicesSetup();
@@ -295,6 +304,10 @@ export default class OrderProcess1 extends React.Component {
     NavigationActions.goBack();
   }
 
+  /**
+   * order
+   * @param {} isOrderMore 
+   */
   finalorders(isOrderMore) {
     if (
       this.state.message.includes(':') ||
@@ -1131,6 +1144,7 @@ export default class OrderProcess1 extends React.Component {
             {
               text: `${i18n.t(k.YES)}`,
               onPress: () => {
+                //reset & restore dough extra, amount if going reverse eg. quarter->halve->full for pizza service 
                 const result = Lodash.filter(this.state.cartExtraArray, ele => {
                   return !Lodash.find(
                     filterFull,
@@ -1170,10 +1184,12 @@ export default class OrderProcess1 extends React.Component {
       return false;
     }
 
+    //moving extra from one tab to another tab ie. full-> halve -> quarter
+    // prevCicrcleTab older tab position, tabno is latest position
     if (prevCircleTab === 1 && tabno === 2) {
       if (cartExtraArray.length > 0) {
         let filterFull = [];
-        const serviceCatName = JSON.parse(
+        const orignalcopyofExtra = JSON.parse(
           JSON.stringify(this.state.untouchedExtras),
         );
         Lodash.map(cartExtraArray, item => {
@@ -1182,13 +1198,13 @@ export default class OrderProcess1 extends React.Component {
           let element1 = JSON.parse(JSON.stringify(item));
           if (catType === 0) {
             const findcatName = Lodash.find(
-              serviceCatName,
+              orignalcopyofExtra,
               findname => findname.catType === 1,
             );
             element.catType = 1;
             element.category = findcatName.category_name;
             const findcatName1 = Lodash.find(
-              serviceCatName,
+              orignalcopyofExtra,
               findname => findname.catType === 2,
             );
             element1.catType = 2;
@@ -1199,6 +1215,7 @@ export default class OrderProcess1 extends React.Component {
             filterFull.push(element);
           }
         });
+        //for image moving i.e. toppings
         const {extraImageItemList} = this.state;
         const extraImageItemList1 = [];
         const extraImageItemList2 = [];
@@ -1219,7 +1236,7 @@ export default class OrderProcess1 extends React.Component {
       }
     } else if (prevCircleTab === 2 && currentTab === 2) {
       if (cartExtraArray.length > 0) {
-        const serviceCatName = JSON.parse(
+        const orignalcopyofExtra = JSON.parse(
           JSON.stringify(this.state.untouchedExtras),
         );
         let filterFull = [];
@@ -1230,17 +1247,21 @@ export default class OrderProcess1 extends React.Component {
           if (catType === 1 || catType === 2) {
             //element.catType = item.catType === 2 ? 5 : 3;
             //element1.catType = item.catType === 2 ? 6 : 4;
-            const findcatName = Lodash.find(serviceCatName, findname =>
-              item.catType === 1
-                ? findname.catType === 3
-                : findname.catType === 6,
+            const findcatName = Lodash.find(
+              orignalcopyofExtra,
+              findname =>
+                item.catType === 1
+                  ? findname.catType === 3
+                  : findname.catType === 6,
             );
             element.catType = item.catType === 1 ? 3 : 6;
             element.category = findcatName.category_name;
-            const findcatName1 = Lodash.find(serviceCatName, findname =>
-              item.catType === 2
-                ? findname.catType === 5
-                : findname.catType === 4,
+            const findcatName1 = Lodash.find(
+              orignalcopyofExtra,
+              findname =>
+                item.catType === 2
+                  ? findname.catType === 5
+                  : findname.catType === 4,
             );
             element1.catType = item.catType === 2 ? 5 : 4;
             element1.category = findcatName1.category_name;
@@ -1282,6 +1303,7 @@ export default class OrderProcess1 extends React.Component {
         });
       }
     } else if (prevCircleTab === 2 && tabno === 3) {
+      //this is not using...to do later incase
       if (cartExtraArray.length > 0) {
         let filterFull = [];
         Lodash.map(cartExtraArray, item => {
@@ -3596,11 +3618,11 @@ export default class OrderProcess1 extends React.Component {
       }
     });
     if (gotDatas && gotDatas.length > 0) {
-      const unooo = JSON.parse(JSON.stringify(this.state.untouchedExtras));
+      const ogextrasuntouched = JSON.parse(JSON.stringify(this.state.untouchedExtras));
       freeList = [];
       for (let index = 0; index < cartArray.length; index++) {
         const uui = cartArray[index];
-        const find = Lodash.find(unooo, xx => xx.id === uui.id);
+        const find = Lodash.find(ogextrasuntouched, xx => xx.id === uui.id);
         if (find !== undefined && find.isFree === 1) {
           const checkexistence = Lodash.find(
             freeList,
@@ -3628,7 +3650,7 @@ export default class OrderProcess1 extends React.Component {
                 }
               } else {
                 const findexistencex = Lodash.find(
-                  unooo,
+                  ogextrasuntouched,
                   freeAdded => freeAdded.id === oop.id,
                 );
                 const findcas = Lodash.find(
@@ -3766,11 +3788,14 @@ export default class OrderProcess1 extends React.Component {
     return filterFull;
   }
 
+  /**
+   * after selecting extra and finish
+   * images add, text,
+   */
   finishCirclePos() {
     if (!this.showalertmin()) {
       const {circleTab, pizzaImageList} = this.state;
       const imagelist = JSON.parse(JSON.stringify(pizzaImageList));
-      console.log(`imagelist`, imagelist);
       backTrackCounter = 0;
       let extraImageItemList = [];
       let extraImageItemList1 = [];
@@ -3978,12 +4003,16 @@ export default class OrderProcess1 extends React.Component {
     }
   }
 
+
+  /**
+   * back button clicked after selecting circle part 
+   */
   circlextrapickerBack() {
     backTrackCounter = 0;
     //if (!this.state.mode) {
-    const unooo = JSON.parse(JSON.stringify(this.state.untouchedExtras));
+    const ogextrasuntouched = JSON.parse(JSON.stringify(this.state.untouchedExtras));
     const st = JSON.parse(JSON.stringify(this.state.serviceCat));
-    //console.log('unooo', unooo)
+    //console.log('ogextrasuntouched', ogextrasuntouched)
 
     const cartttt = JSON.parse(JSON.stringify(this.state.cartExtraArray));
 
@@ -4015,7 +4044,7 @@ export default class OrderProcess1 extends React.Component {
       });
       const filterxx = Lodash.filter(againFill, i => i.category === ok.title);
       const find = Lodash.find(
-        unooo,
+        ogextrasuntouched,
         iiooo => iiooo.category_name === ok.title,
       );
       const findSelect = find.minimumSelect;

@@ -1750,7 +1750,7 @@ export default class FinalOrder extends React.Component {
     Pref.setVal(Pref.EditModeEnabled, '1');
     NavigationActions.navigate('NewBusinessPage', {
       mode: true,
-      lol: item,
+      editData: item,
       item: item.branchData,
     });
   };
