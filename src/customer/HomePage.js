@@ -45,8 +45,8 @@ import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import {sizeHeight, sizeWidth} from './../util/Size';
 import {SafeAreaView} from 'react-navigation';
-//import Geolocation from '@react-native-community/geolocation';
-//import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import Geolocation from '@react-native-community/geolocation';
+import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 var now = new Date().getDay();
 
@@ -208,7 +208,7 @@ class HomePage extends React.Component {
   callapi = () => {
     if (Platform.OS === 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
-        console.log(`res`, res);
+        //console.log(`res`, res);
         switch (res) {
           case RESULTS.UNAVAILABLE:
             this.setState({
@@ -322,15 +322,15 @@ class HomePage extends React.Component {
       existing,
       existingagain,
     } = this.state;
-    console.log(
-      'back',
-      isCatgegoryClicked,
-      navFromBusiness,
-      locaDialog,
-      filterView,
-      existing,
-      existingagain,
-    );
+    // console.log(
+    //   'back',
+    //   isCatgegoryClicked,
+    //   navFromBusiness,
+    //   locaDialog,
+    //   filterView,
+    //   existing,
+    //   existingagain,
+    // );
     if (
       isCatgegoryClicked === 0 &&
       !navFromBusiness &&

@@ -61,7 +61,6 @@ let currentCat = '';
 let expanded = false;
 
 export default class OrderProcess1 extends React.Component {
-
   constructor(props) {
     super(props);
     if (Platform.OS === 'android') {
@@ -149,7 +148,14 @@ export default class OrderProcess1 extends React.Component {
       clickedItemPos: 0,
       clickedPos: 0,
       backClicked: false,
-      clonesvmode:0
+      clonesvmode: 0,
+      extrafreeFull: [],
+      extrafreeHalve1: [],
+      extrafreeHalve2: [],
+      extrafreeQuarter1: [],
+      extrafreeQuarter2: [],
+      extrafreeQuarter3: [],
+      extrafreeQuarter4: [],
     };
     Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
@@ -166,7 +172,7 @@ export default class OrderProcess1 extends React.Component {
       ////console.log('editmode', value);
       if (value !== undefined && value !== '' && value !== null) {
         const {editData} = this.props;
-        console.log(`editData`,editData)
+        //console.log(`editData`,editData)
         let ooo = 0;
         if (editData !== undefined && editData !== null) {
           const valuex = Helper.removeQuotes(value) === '1' ? true : false;
@@ -194,6 +200,8 @@ export default class OrderProcess1 extends React.Component {
               extraImageItemList4: editData.extraImageItemList4,
               extraImageItemList5: editData.extraImageItemList5,
               extraImageItemList6: editData.extraImageItemList6,
+              tillDoughPrice: editData.tillDoughPrice,
+              clonesvmode: editData.clonesvmode,
             },
             () => {
               this.onItemClicks(true, editData);
@@ -306,7 +314,7 @@ export default class OrderProcess1 extends React.Component {
 
   /**
    * order
-   * @param {} isOrderMore 
+   * @param {} isOrderMore
    */
   finalorders(isOrderMore) {
     if (
@@ -373,6 +381,7 @@ export default class OrderProcess1 extends React.Component {
             freeList: freeList,
             finishedList: finishedList,
             clonesvmode: this.state.clonesvmode,
+            tillDoughPrice: this.state.tillDoughPrice,
           });
         }
         let tyy = this.state.cartDetails;
@@ -445,10 +454,18 @@ export default class OrderProcess1 extends React.Component {
    */
   onItemClicks(mode, val) {
     //this.props.isVis(true);
-    const {currentNames, cartBranchId, businessclosedornot, hasDelivery} = this.props;
+    const {
+      currentNames,
+      cartBranchId,
+      businessclosedornot,
+      hasDelivery,
+    } = this.props;
     //console.log('businessclosedornot', val.serviceMode);
     if (businessclosedornot === true) {
-      if (Number(currentNames) === Number(cartBranchId) || Number(cartBranchId) === 0) {
+      if (
+        Number(currentNames) === Number(cartBranchId) ||
+        Number(cartBranchId) === 0
+      ) {
         if (hasDelivery === 0) {
           let kkk = [];
           let msg = '';
@@ -521,6 +538,8 @@ export default class OrderProcess1 extends React.Component {
 
   /**
    * Fetch service
+   * mode editmode true or false
+   * val -> service object
    */
   fetchServiceDetail(mode, val) {
     //const { state } = this.props.navigation;
@@ -557,7 +576,9 @@ export default class OrderProcess1 extends React.Component {
         }));
 
         let totalAmounts = !mode ? parseService.price : val.price;
-        let amountCalculateagain = !mode ? parseService.price : val.price - this.state.reduceAmount;
+        let amountCalculateagain = !mode
+          ? parseService.price
+          : val.price - this.state.reduceAmount;
 
         let extraFilteredData = [];
         //filter dough, sessam etc...
@@ -584,6 +605,36 @@ export default class OrderProcess1 extends React.Component {
           extraFilteredData = serviceCat;
         }
         //console.log(`extraFilteredData`, extraFilteredData);
+        const extrafreeFull = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 0 && eff.isFree === 1,
+        );
+        const extrafreeHalve1 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 1 && eff.isFree === 1,
+        );
+        const extrafreeHalve2 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 2 && eff.isFree === 1,
+        );
+        const extrafreeQuarter1 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 3 && eff.isFree === 1,
+        );
+        const extrafreeQuarter2 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 4 && eff.isFree === 1,
+        );
+        const extrafreeQuarter3 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 5 && eff.isFree === 1,
+        );
+
+        const extrafreeQuarter4 = Lodash.filter(
+          untouchedEx,
+          eff => eff.catType === 6 && eff.isFree === 1,
+        );
+        //console.log(extrafreeHalve1, extrafreeHalve2)
         this.setState({
           progressView: false,
           untouchedExtras: untouchedEx,
@@ -596,6 +647,13 @@ export default class OrderProcess1 extends React.Component {
           serviceExtra: groupedExtra,
           mainBaseAmount: amountCalculateagain,
           totalAmount: totalAmounts,
+          extrafreeFull: extrafreeFull || [],
+          extrafreeHalve1: extrafreeHalve1 || [],
+          extrafreeHalve2: extrafreeHalve2 || [],
+          extrafreeQuarter1: extrafreeQuarter1 || [],
+          extrafreeQuarter2: extrafreeQuarter2 || [],
+          extrafreeQuarter3: extrafreeQuarter3 || [],
+          extrafreeQuarter4: extrafreeQuarter4 || [],
         });
         //alert(JSON.stringify(this.state.serviceExtra));
       },
@@ -1105,6 +1163,91 @@ export default class OrderProcess1 extends React.Component {
   }
 
   /**
+   * reset & restore dough extra, amount if going reverse eg. quarter->halve->full for pizza service
+   * @param {} filterFull
+   */
+  resetpizza(filterFull, tabno) {
+    const result = Lodash.filter(this.state.cartExtraArray, ele => ele.catType === 7);
+    const og = JSON.parse(JSON.stringify(this.state.originalExtras));
+    freeList = [];
+    const servicePrice = this.state.tillDoughPrice;
+    //console.log(`servicePrice`, servicePrice)
+    this.setState({
+      extraImageItemList: [],
+      extraImageItemList1: [],
+      extraImageItemList2: [],
+      extraImageItemList3: [],
+      extraImageItemList4: [],
+      extraImageItemList5: [],
+      extraImageItemList6: [],
+      serviceCat: og,
+      circleTab: tabno,
+      cartExtraArray: result,
+      circleExtras: [],
+      extraReset: true,
+      showCircleExtraData: [],
+      totalAmount: servicePrice,
+    });
+  }
+
+  /***
+   * based on category, name and type
+   */
+  movingtabreturnfreeSelectedItem(category, name, arrays, typecheck) {
+    let split = [];
+    if (category.includes('-')) {
+      split = category.split('-');
+    } else {
+      split = [category];
+    }
+    let findfree = undefined;
+    for (let index = 0; index < arrays.length; index++) {
+      const xm = arrays[index];
+      let innersplit = [];
+      const category = xm.category_name;
+      if (category.includes('-')) {
+        innersplit = category.split('-');
+      } else {
+        innersplit = [category];
+      }
+      if (
+        xm.catType === typecheck &&
+        xm.name === name &&
+        (innersplit[0].trim() === split[0].trim() ||
+          innersplit[1].trim() === split[1].trim() ||
+          innersplit[1].trim() === split[0].trim() ||
+          innersplit[0].trim() === split[1].trim())
+      ) {
+        findfree = xm;
+        break;
+      }
+    }
+    return findfree;
+  }
+
+  /**
+   * delete unwanted extra key and fix category
+   * @param {} obj
+   */
+  extraobjectCreateWhenMoved(obj, setprice = false,changetype = false, type) {
+    const catname1 = obj.category_name;
+    delete obj.extraAvailable;
+    delete obj.fkcategory;
+    delete obj.isFree;
+    delete obj.minimumSelect;
+    delete obj.multipliable;
+    obj.category = catname1;
+    obj.finished = true;
+    if (setprice) {
+      obj.price = 0;
+    }
+    if(changetype){
+      obj.catType = type;
+    }
+    return obj;
+  }
+
+  /**
    * tab click
    * @param {f} tabno for product service mode 1 or 2 i.e. pizza
    */
@@ -1144,35 +1287,7 @@ export default class OrderProcess1 extends React.Component {
             {
               text: `${i18n.t(k.YES)}`,
               onPress: () => {
-                //reset & restore dough extra, amount if going reverse eg. quarter->halve->full for pizza service 
-                const result = Lodash.filter(this.state.cartExtraArray, ele => {
-                  return !Lodash.find(
-                    filterFull,
-                    element => element.catType === ele.catType,
-                  );
-                });
-                const og = JSON.parse(
-                  JSON.stringify(this.state.originalExtras),
-                );
-                freeList = [];
-                const servicePrice = this.state.tillDoughPrice;
-                //console.log(`servicePrice`, servicePrice)
-                this.setState({
-                  extraImageItemList: [],
-                  extraImageItemList1: [],
-                  extraImageItemList2: [],
-                  extraImageItemList3: [],
-                  extraImageItemList4: [],
-                  extraImageItemList5: [],
-                  extraImageItemList6: [],
-                  serviceCat: og,
-                  circleTab: tabno,
-                  cartExtraArray: result,
-                  circleExtras: [],
-                  extraReset: true,
-                  showCircleExtraData: [],
-                  totalAmount: servicePrice,
-                });
+                this.resetpizza(filterFull, tabno);
               },
             },
           ],
@@ -1192,47 +1307,69 @@ export default class OrderProcess1 extends React.Component {
         const orignalcopyofExtra = JSON.parse(
           JSON.stringify(this.state.untouchedExtras),
         );
+        //console.log(`orignalcopyofExtra`, orignalcopyofExtra);
+        const {extrafreeHalve1, extrafreeHalve2} = this.state;
+        var doughprice = this.state.tillDoughPrice;
         Lodash.map(cartExtraArray, item => {
-          const {catType} = item;
-          let element = JSON.parse(JSON.stringify(item));
-          let element1 = JSON.parse(JSON.stringify(item));
+          const {catType, category, name} = item;
           if (catType === 0) {
-            const findcatName = Lodash.find(
-              orignalcopyofExtra,
-              findname => findname.catType === 1,
+            let findfree = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeHalve1,
+              1,
             );
-            element.catType = 1;
-            element.category = findcatName.category_name;
-            const findcatName1 = Lodash.find(
-              orignalcopyofExtra,
-              findname => findname.catType === 2,
+            let findfree1 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeHalve2,
+              2,
             );
-            element1.catType = 2;
-            element1.category = findcatName1.category_name;
-            filterFull.push(element);
-            filterFull.push(element1);
+
+            if (findfree !== undefined && findfree1 !== undefined) {
+              filterFull.push(this.extraobjectCreateWhenMoved(findfree, false, true, 1));
+              filterFull.push(
+                this.extraobjectCreateWhenMoved(
+                  findfree1,
+                  true,
+                  false,
+                  2,
+                ),
+              );
+              doughprice += findfree.price;
+            } else {
+              let findNotfree = this.movingtabreturnfreeSelectedItem(
+                category,
+                name,
+                orignalcopyofExtra,
+                1,
+              );
+              let findNotfree1 = this.movingtabreturnfreeSelectedItem(
+                category,
+                name,
+                orignalcopyofExtra,
+                2,
+              );
+              if (findNotfree !== undefined && findNotfree1 !== undefined) {
+                filterFull.push(this.extraobjectCreateWhenMoved(findNotfree, false, true,1));
+                filterFull.push(this.extraobjectCreateWhenMoved(findNotfree1, false, true, 2));
+                doughprice += findNotfree.price;
+                doughprice += findNotfree1.price;
+              }
+            }
           } else {
-            filterFull.push(element);
+            filterFull.push(item);
           }
         });
-        //for image moving i.e. toppings
-        const {extraImageItemList} = this.state;
-        const extraImageItemList1 = [];
-        const extraImageItemList2 = [];
-        for (let index = 0; index < extraImageItemList.length; index++) {
-          const element = extraImageItemList[index];
-          if (index < 8) {
-            extraImageItemList1.push(element);
-          } else {
-            extraImageItemList2.push(element);
-          }
-        }
-        this.setState({
-          cartExtraArray: filterFull,
-          extraImageItemList: [],
-          extraImageItemList1: extraImageItemList1,
-          extraImageItemList2: extraImageItemList2,
-        });
+        this.setState(
+          {
+            cartExtraArray: filterFull,
+            totalAmount: doughprice,
+          },
+          () => {
+            this.pizaImageSetupandfill();
+          },
+        );
       }
     } else if (prevCircleTab === 2 && currentTab === 2) {
       if (cartExtraArray.length > 0) {
@@ -1240,93 +1377,185 @@ export default class OrderProcess1 extends React.Component {
           JSON.stringify(this.state.untouchedExtras),
         );
         let filterFull = [];
+        const {
+          extrafreeQuarter1,
+          extrafreeQuarter2,
+          extrafreeQuarter3,
+          extrafreeQuarter4,
+        } = this.state;
+        var doughprice = this.state.tillDoughPrice;
         Lodash.map(cartExtraArray, item => {
-          const {catType} = item;
-          let element = JSON.parse(JSON.stringify(item));
-          let element1 = JSON.parse(JSON.stringify(item));
+          const {catType, category, name} = item;
           if (catType === 1 || catType === 2) {
-            //element.catType = item.catType === 2 ? 5 : 3;
-            //element1.catType = item.catType === 2 ? 6 : 4;
-            const findcatName = Lodash.find(
-              orignalcopyofExtra,
-              findname =>
-                item.catType === 1
-                  ? findname.catType === 3
-                  : findname.catType === 6,
+            let findfree = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeQuarter1,
+              3,
             );
-            element.catType = item.catType === 1 ? 3 : 6;
-            element.category = findcatName.category_name;
-            const findcatName1 = Lodash.find(
-              orignalcopyofExtra,
-              findname =>
-                item.catType === 2
-                  ? findname.catType === 5
-                  : findname.catType === 4,
+            let findfree1 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeQuarter2,
+              4,
             );
-            element1.catType = item.catType === 2 ? 5 : 4;
-            element1.category = findcatName1.category_name;
-            filterFull.push(element);
-            filterFull.push(element1);
+            let findfree2 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeQuarter3,
+              5,
+            );
+            let findfree3 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              extrafreeQuarter4,
+              6,
+            );
+
+            let findNotfree = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              orignalcopyofExtra,
+              3,
+            );
+            let findNotfree1 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              orignalcopyofExtra,
+              4,
+            );
+            let findNotfree2 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              orignalcopyofExtra,
+              5,
+            );
+            let findNotfree3 = this.movingtabreturnfreeSelectedItem(
+              category,
+              name,
+              orignalcopyofExtra,
+              6,
+            );
+            if (
+              findfree !== undefined &&
+              findfree1 !== undefined &&
+              findfree2 !== undefined &&
+              findfree3 !== undefined
+            ) {
+              filterFull.push(
+                this.extraobjectCreateWhenMoved(
+                  item.catType === 1 ? findfree : findfree3,
+                  false,true, item.catType === 1 ? 3 : 5
+                ),
+              );
+              doughprice += findfree.price;
+              filterFull.push(
+                this.extraobjectCreateWhenMoved(
+                  item.catType === 2 ? findfree1 : findfree2,
+                  true,true, item.catType === 2 ? 4 : 6
+                ),
+              );
+            } else {
+              if (
+                findNotfree !== undefined &&
+                findNotfree1 !== undefined &&
+                findNotfree2 !== undefined &&
+                findNotfree3 !== undefined
+              ) {
+                filterFull.push(
+                  this.extraobjectCreateWhenMoved(
+                    item.catType === 1 ? findNotfree : findNotfree2,
+                    false, true, item.catType === 1 ? 3 : 5
+                  ),
+                );
+                filterFull.push(
+                  this.extraobjectCreateWhenMoved(
+                    item.catType === 2 ? findNotfree1 : findNotfree3,
+                    false,true,item.catType === 2 ? 4 : 6
+                  ),
+                );
+                doughprice += findNotfree;
+                doughprice += findNotfree1;
+                doughprice += findNotfree2;
+                doughprice += findNotfree3;
+              }
+            }
           } else {
-            filterFull.push(element);
+            filterFull.push(item);
           }
         });
-        const {extraImageItemList1, extraImageItemList2} = this.state;
-        const extraImageItemList3 = [];
-        const extraImageItemList4 = [];
-        const extraImageItemList5 = [];
-        const extraImageItemList6 = [];
-        for (let index = 0; index < extraImageItemList1.length; index++) {
-          const element = extraImageItemList1[index];
-          if (index < 4) {
-            extraImageItemList3.push(element);
-          } else {
-            extraImageItemList4.push(element);
-          }
-        }
-        for (let index = 0; index < extraImageItemList2.length; index++) {
-          const element = extraImageItemList2[index];
-          if (index < 4) {
-            extraImageItemList5.push(element);
-          } else {
-            extraImageItemList6.push(element);
-          }
-        }
-        this.setState({
-          cartExtraArray: filterFull,
-          extraImageItemList1: [],
-          extraImageItemList2: [],
-          extraImageItemList3: extraImageItemList3,
-          extraImageItemList4: extraImageItemList4,
-          extraImageItemList5: extraImageItemList5,
-          extraImageItemList6: extraImageItemList6,
-        });
+        this.setState(
+          {
+            cartExtraArray: filterFull,
+            totalAmount: doughprice,
+          },
+          () => {
+            this.pizaImageSetupandfill();
+          },
+        );
       }
     } else if (prevCircleTab === 2 && tabno === 3) {
-      //this is not using...to do later incase
-      if (cartExtraArray.length > 0) {
-        let filterFull = [];
-        Lodash.map(cartExtraArray, item => {
-          const {catType} = item;
-          let element = JSON.parse(JSON.stringify(item));
-          let element1 = JSON.parse(JSON.stringify(item));
-          let element2 = JSON.parse(JSON.stringify(item));
-          let element3 = JSON.parse(JSON.stringify(item));
-          if (catType === 0) {
-            element.catType = 3;
-            element1.catType = 4;
-            element2.catType = 5;
-            element3.catType = 6;
-            filterFull.push(element);
-            filterFull.push(element1);
-            filterFull.push(element2);
-            filterFull.push(element3);
-          } else {
-            filterFull.push(element);
-          }
-        });
-        this.setState({cartExtraArray: filterFull});
-      }
+      //
+      // const orignalcopyofExtra = JSON.parse(
+      //   JSON.stringify(this.state.untouchedExtras),
+      // );
+      // if (cartExtraArray.length > 0) {
+      //   let filterFull = [];
+      //   Lodash.map(cartExtraArray, item => {
+      //     const {catType} = item;
+      //     let element = JSON.parse(JSON.stringify(item));
+      //     let element1 = JSON.parse(JSON.stringify(item));
+      //     let element2 = JSON.parse(JSON.stringify(item));
+      //     let element3 = JSON.parse(JSON.stringify(item));
+      //     const findcatName = Lodash.find(
+      //       orignalcopyofExtra,
+      //       findname => item.catType === 0,
+      //     );
+      //     if (catType === 0) {
+      //       catType = 3;
+      //       category = findcatName.category_name;
+      //       filterFull.push(element);
+      //       element1.catType = 4;
+      //       element1.category = findcatName.category_name;
+      //       filterFull.push(element1);
+      //       element2.catType = 5;
+      //       element2.category = findcatName.category_name;
+      //       filterFull.push(element2);
+      //       element3.catType = 6;
+      //       element3.category = findcatName.category_name;
+      //       filterFull.push(element3);
+      //     } else {
+      //       filterFull.push(element);
+      //     }
+      //   });
+      //   const {extraImageItemList} = this.state;
+      //   const extraImageItemList3 = [];
+      //   const extraImageItemList4 = [];
+      //   const extraImageItemList5 = [];
+      //   const extraImageItemList6 = [];
+      //   for (let index = 0; index < extraImageItemList.length; index++) {
+      //     const element = extraImageItemList[index];
+      //     if (index < 4) {
+      //       extraImageItemList3.push(element);
+      //     } else if (index > 4 && index < 9) {
+      //       extraImageItemList4.push(element);
+      //     } else if (index > 9 && index < 13) {
+      //       extraImageItemList5.push(element);
+      //     } else {
+      //       extraImageItemList6.push(element);
+      //     }
+      //   }
+      //   this.setState({
+      //     cartExtraArray: filterFull,
+      //     extraImageItemList: [],
+      //     extraImageItemList1: [],
+      //     extraImageItemList2: [],
+      //     extraImageItemList3: extraImageItemList3,
+      //     extraImageItemList4: extraImageItemList4,
+      //     extraImageItemList5: extraImageItemList5,
+      //     extraImageItemList6: extraImageItemList6,
+      //   });
+      //}
     }
     this.setState({circleTab: tabno}, () => {
       let showExtraData = this.returncircletext(this.state.circleTab);
@@ -1348,7 +1577,7 @@ export default class OrderProcess1 extends React.Component {
 
   /**
    * each circle part click
-   * @param {} value 
+   * @param {} value
    */
   eachCirclePartClick(value) {
     selectedCirclePos = value;
@@ -1388,8 +1617,7 @@ export default class OrderProcess1 extends React.Component {
               height: sizeHeight(6),
               flexWrap: 'wrap',
             }}>
-            <TouchableWithoutFeedback
-              onPress={() => this.circleTabClick(1)}>
+            <TouchableWithoutFeedback onPress={() => this.circleTabClick(1)}>
               <View
                 style={{
                   flex: 0.5,
@@ -1427,8 +1655,7 @@ export default class OrderProcess1 extends React.Component {
               }}
             />
 
-            <TouchableWithoutFeedback
-              onPress={() => this.circleTabClick(2)}>
+            <TouchableWithoutFeedback onPress={() => this.circleTabClick(2)}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -1455,47 +1682,47 @@ export default class OrderProcess1 extends React.Component {
                 </Title>
               </View>
             </TouchableWithoutFeedback>
-            {this.state.clonesvmode !== 2 ?
-            <View
-              style={{
-                width: 1,
-                borderColor: '#dedede',
-                borderStyle: 'solid',
-                borderRightWidth: 1,
-                alignSelf: 'center',
-                height: '100%',
-              }}
-            /> : null}
-            {this.state.clonesvmode !== 2 ?
-            <TouchableWithoutFeedback
-              onPress={() => this.circleTabClick(3)}>
+            {this.state.clonesvmode !== 2 ? (
               <View
                 style={{
-                  flexDirection: 'row',
-                  flex: 0.5,
-                  height: '100%',
+                  width: 1,
+                  borderColor: '#dedede',
+                  borderStyle: 'solid',
+                  borderRightWidth: 1,
                   alignSelf: 'center',
-                  alignItems: 'center',
-                  alignContent: 'center',
-                  justifyContent: 'center',
-                  backgroundColor:
-                    this.state.circleTab === 3 ? '#3DACCF' : 'white',
-                }}>
-                <Title
-                  styleName="bold h-center v-center center"
+                  height: '100%',
+                }}
+              />
+            ) : null}
+            {this.state.clonesvmode !== 2 ? (
+              <TouchableWithoutFeedback onPress={() => this.circleTabClick(3)}>
+                <View
                   style={{
-                    color: this.state.circleTab === 3 ? 'white' : '#777777',
-                    fontFamily: 'Rubik',
-                    fontSize: 16,
+                    flexDirection: 'row',
+                    flex: 0.5,
+                    height: '100%',
                     alignSelf: 'center',
+                    alignItems: 'center',
+                    alignContent: 'center',
                     justifyContent: 'center',
-                    fontWeight: '400',
+                    backgroundColor:
+                      this.state.circleTab === 3 ? '#3DACCF' : 'white',
                   }}>
-                  {`${i18n.t(k.quarter)}`}
-                </Title>
-              </View>
-            </TouchableWithoutFeedback>
-            : null}
+                  <Title
+                    styleName="bold h-center v-center center"
+                    style={{
+                      color: this.state.circleTab === 3 ? 'white' : '#777777',
+                      fontFamily: 'Rubik',
+                      fontSize: 16,
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      fontWeight: '400',
+                    }}>
+                    {`${i18n.t(k.quarter)}`}
+                  </Title>
+                </View>
+              </TouchableWithoutFeedback>
+            ) : null}
           </View>
         </View>
         <View
@@ -2199,8 +2426,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList2[5]
+                                            this.state.extraImageItemList2[5]
                                           }`,
                                         }}
                                       />
@@ -2214,8 +2440,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList2[6]
+                                            this.state.extraImageItemList2[6]
                                           }`,
                                         }}
                                       />
@@ -2425,8 +2650,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList1[5]
+                                            this.state.extraImageItemList1[5]
                                           }`,
                                         }}
                                       />
@@ -2440,8 +2664,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList1[6]
+                                            this.state.extraImageItemList1[6]
                                           }`,
                                         }}
                                       />
@@ -2600,8 +2823,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList6[0]
+                                            this.state.extraImageItemList6[0]
                                           }`,
                                         }}
                                       />
@@ -2621,8 +2843,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList6[1]
+                                            this.state.extraImageItemList6[1]
                                           }`,
                                         }}
                                       />
@@ -2669,8 +2890,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList6[2]
+                                            this.state.extraImageItemList6[2]
                                           }`,
                                         }}
                                       />
@@ -2684,8 +2904,7 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state
-                                                .extraImageItemList6[3]
+                                              this.state.extraImageItemList6[3]
                                             }`,
                                           }}
                                         />
@@ -2769,8 +2988,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList3[0]
+                                            this.state.extraImageItemList3[0]
                                           }`,
                                         }}
                                       />
@@ -2791,8 +3009,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList3[1]
+                                            this.state.extraImageItemList3[1]
                                           }`,
                                         }}
                                       />
@@ -2839,8 +3056,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList3[2]
+                                            this.state.extraImageItemList3[2]
                                           }`,
                                         }}
                                       />
@@ -2854,8 +3070,7 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state
-                                                .extraImageItemList3[3]
+                                              this.state.extraImageItemList3[3]
                                             }`,
                                           }}
                                         />
@@ -2936,8 +3151,7 @@ export default class OrderProcess1 extends React.Component {
                                       <Animated.Image
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList5[0]
+                                            this.state.extraImageItemList5[0]
                                           }`,
                                         }}
                                         style={{
@@ -2957,8 +3171,7 @@ export default class OrderProcess1 extends React.Component {
                                       <Animated.Image
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList5[1]
+                                            this.state.extraImageItemList5[1]
                                           }`,
                                         }}
                                         style={{
@@ -3019,8 +3232,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList5[2]
+                                            this.state.extraImageItemList5[2]
                                           }`,
                                         }}
                                       />
@@ -3034,8 +3246,7 @@ export default class OrderProcess1 extends React.Component {
                                           }}
                                           source={{
                                             uri: `${
-                                              this.state
-                                                .extraImageItemList5[3]
+                                              this.state.extraImageItemList5[3]
                                             }`,
                                           }}
                                         />
@@ -3118,8 +3329,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList4[0]
+                                            this.state.extraImageItemList4[0]
                                           }`,
                                         }}
                                       />
@@ -3141,8 +3351,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList4[1]
+                                            this.state.extraImageItemList4[1]
                                           }`,
                                         }}
                                       />
@@ -3189,8 +3398,7 @@ export default class OrderProcess1 extends React.Component {
                                         }}
                                         source={{
                                           uri: `${
-                                            this.state
-                                              .extraImageItemList4[2]
+                                            this.state.extraImageItemList4[2]
                                           }`,
                                         }}
                                       />
@@ -3198,8 +3406,7 @@ export default class OrderProcess1 extends React.Component {
                                         <Image
                                           source={{
                                             uri: `${
-                                              this.state
-                                                .extraImageItemList4[3]
+                                              this.state.extraImageItemList4[3]
                                             }`,
                                           }}
                                           style={{
@@ -3280,164 +3487,164 @@ export default class OrderProcess1 extends React.Component {
                 onPress={() => {
                   Keyboard.dismiss();
                 }}> */}
+              <View
+                style={{
+                  flex: 1,
+                  marginTop: sizeHeight(4),
+                  marginBottom: sizeHeight(8),
+                  marginHorizontal: sizeWidth(4),
+                  backgroundColor: 'white',
+                  flexDirection: 'column',
+                  position: 'relative',
+                }}>
                 <View
                   style={{
-                    flex: 1,
-                    marginTop: sizeHeight(4),
-                    marginBottom: sizeHeight(8),
-                    marginHorizontal: sizeWidth(4),
+                    flex: 0.1,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
                     backgroundColor: 'white',
-                    flexDirection: 'column',
-                    position: 'relative',
+                    marginTop: 6,
                   }}>
                   <View
+                    styleName="horizontal space-between"
                     style={{
-                      flex: 0.1,
-                      flexDirection: 'row',
+                      marginStart: sizeWidth(3),
                       justifyContent: 'space-between',
-                      backgroundColor: 'white',
-                      marginTop: 6,
+                      flex: 1,
+                      flexDirection: 'row',
                     }}>
                     <View
                       styleName="horizontal space-between"
                       style={{
-                        marginStart: sizeWidth(3),
-                        justifyContent: 'space-between',
-                        flex: 1,
-                        flexDirection: 'row',
+                        marginBottom: 2,
+                        marginTop: 4,
                       }}>
-                      <View
-                        styleName="horizontal space-between"
+                      <TouchableOpacity onPress={() => this.backk()}>
+                        <Icon
+                          name="arrow-forward"
+                          size={36}
+                          color="#292929"
+                          style={{
+                            alignSelf: 'flex-start',
+                            backgroundColor: 'transparent',
+                          }}
+                        />
+                      </TouchableOpacity>
+
+                      <Title
+                        styleName="bold"
                         style={{
-                          marginBottom: 2,
-                          marginTop: 4,
+                          color: '#292929',
+                          fontFamily: 'Rubik',
+                          fontSize: 18,
+                          marginStart: 8,
+                          alignSelf: 'center',
+                          fontWeight: '700',
                         }}>
-                        <TouchableOpacity onPress={() => this.backk()}>
-                          <Icon
-                            name="arrow-forward"
-                            size={36}
-                            color="#292929"
+                        {Lodash.capitalize(this.state.serviceDetail.name)}
+                      </Title>
+                    </View>
+                    {!this.state.mode ? (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          alignContent: 'center',
+                          alignSelf: 'flex-end',
+                          marginTop: 8,
+                          marginEnd: 8,
+                        }}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            const moreItem = this.state.mainBaseCount + 1;
+                            this.setState({
+                              mainBaseCount: moreItem,
+                            });
+                          }}>
+                          <View
                             style={{
-                              alignSelf: 'flex-start',
-                              backgroundColor: 'transparent',
-                            }}
-                          />
+                              borderRadius: 24,
+                              width: 48,
+                              height: 48,
+                              borderColor: '#3daccf',
+                              borderWidth: 1,
+                              alignSelf: 'center',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              alignContent: 'center',
+                            }}>
+                            <Icon
+                              name="add"
+                              size={24}
+                              color="#75D75E"
+                              style={{
+                                alignContent: 'center',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                alignSelf: 'center',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </View>
                         </TouchableOpacity>
 
                         <Title
                           styleName="bold"
                           style={{
-                            color: '#292929',
+                            color: '#5EBBD7',
                             fontFamily: 'Rubik',
-                            fontSize: 18,
-                            marginStart: 8,
+                            fontSize: 22,
                             alignSelf: 'center',
-                            fontWeight: '700',
-                          }}>
-                          {Lodash.capitalize(this.state.serviceDetail.name)}
-                        </Title>
-                      </View>
-                      {!this.state.mode ? (
-                        <View
-                          style={{
-                            flexDirection: 'row',
                             justifyContent: 'center',
                             alignItems: 'center',
                             alignContent: 'center',
-                            alignSelf: 'flex-end',
-                            marginTop: 8,
-                            marginEnd: 8,
+                            fontWeight: '700',
+                            marginStart: 16,
+                            marginEnd: 16,
                           }}>
-                          <TouchableOpacity
-                            onPress={() => {
-                              const moreItem = this.state.mainBaseCount + 1;
-                              this.setState({
-                                mainBaseCount: moreItem,
-                              });
-                            }}>
-                            <View
-                              style={{
-                                borderRadius: 24,
-                                width: 48,
-                                height: 48,
-                                borderColor: '#3daccf',
-                                borderWidth: 1,
-                                alignSelf: 'center',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                alignContent: 'center',
-                              }}>
-                              <Icon
-                                name="add"
-                                size={24}
-                                color="#75D75E"
-                                style={{
-                                  alignContent: 'center',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  alignSelf: 'center',
-                                  backgroundColor: 'transparent',
-                                }}
-                              />
-                            </View>
-                          </TouchableOpacity>
+                          {this.state.mainBaseCount}
+                        </Title>
 
-                          <Title
-                            styleName="bold"
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (this.state.mainBaseCount > 1) {
+                              const lessItem = this.state.mainBaseCount - 1;
+                              this.setState({
+                                mainBaseCount: lessItem,
+                              });
+                            }
+                          }}>
+                          <View
                             style={{
-                              color: '#5EBBD7',
-                              fontFamily: 'Rubik',
-                              fontSize: 22,
+                              borderRadius: 24,
+                              width: 48,
+                              height: 48,
+                              borderColor: '#3daccf',
+                              borderWidth: 1,
                               alignSelf: 'center',
                               justifyContent: 'center',
                               alignItems: 'center',
                               alignContent: 'center',
-                              fontWeight: '700',
-                              marginStart: 16,
-                              marginEnd: 16,
                             }}>
-                            {this.state.mainBaseCount}
-                          </Title>
-
-                          <TouchableOpacity
-                            onPress={() => {
-                              if (this.state.mainBaseCount > 1) {
-                                const lessItem = this.state.mainBaseCount - 1;
-                                this.setState({
-                                  mainBaseCount: lessItem,
-                                });
-                              }
-                            }}>
-                            <View
+                            <Icon
+                              name="remove"
+                              size={24}
+                              color="#D75E5E"
                               style={{
-                                borderRadius: 24,
-                                width: 48,
-                                height: 48,
-                                borderColor: '#3daccf',
-                                borderWidth: 1,
-                                alignSelf: 'center',
+                                alignContent: 'center',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                alignContent: 'center',
-                              }}>
-                              <Icon
-                                name="remove"
-                                size={24}
-                                color="#D75E5E"
-                                style={{
-                                  alignContent: 'center',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  alignSelf: 'center',
-                                  backgroundColor: 'transparent',
-                                }}
-                              />
-                            </View>
-                          </TouchableOpacity>
-                        </View>
-                      ) : null}
-                    </View>
-                    {/* <Image
+                                alignSelf: 'center',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+                  </View>
+                  {/* <Image
 									source={{
 										uri: `${Pref.BASEURL}${this.state.clickitem.imageUrl}`,
 									}}
@@ -3457,140 +3664,138 @@ export default class OrderProcess1 extends React.Component {
 										borderBottomLeftRadius: 8,
 									}}
 								/> */}
-                  </View>
+                </View>
+                <View
+                  style={{
+                    flex: 0.59,
+                    backgroundColor: 'white',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    marginTop: 4,
+                  }}>
+                  <ScrollView
+                    contentContainerStyle={{
+                      flexGrow: 1,
+                    }}>
+                    <View styleName="vertical" style={{}}>
+                      {this.renderdesignCircle()}
+                      {this.state.showCircleExtraData.length > 0 ? (
+                        <FlatList
+                          extraData={this.state}
+                          nestedScrollEnabled={true}
+                          style={{
+                            marginVertical: 8,
+                            marginHorizontal: 12,
+                            flex: 1,
+                          }}
+                          showsHorizontalScrollIndicator={false}
+                          showsVerticalScrollIndicator={false}
+                          data={this.state.showCircleExtraData}
+                          keyExtractor={(item, index) => `${index}${item.name}`}
+                          renderItem={({item, index}) =>
+                            this.renderCircleSelectedData(item)
+                          }
+                        />
+                      ) : null}
+                    </View>
+                  </ScrollView>
+                </View>
+                <View
+                  style={{
+                    flex: 0.31,
+                    backgroundColor: 'white',
+                    flexDirection: 'column',
+                    marginTop: 4,
+                  }}>
                   <View
                     style={{
-                      flex: 0.59,
+                      position: 'absolute',
+                      width: '100%',
+                      bottom: 0,
                       backgroundColor: 'white',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      marginTop: 4,
                     }}>
-                    <ScrollView
-                      contentContainerStyle={{
-                        flexGrow: 1,
-                      }}>
-                      <View styleName="vertical" style={{}}>
-                        {this.renderdesignCircle()}
-                        {this.state.showCircleExtraData.length > 0 ? (
-                          <FlatList
-                            extraData={this.state}
-                            nestedScrollEnabled={true}
-                            style={{
-                              marginVertical: 8,
-                              marginHorizontal: 12,
-                              flex: 1,
-                            }}
-                            showsHorizontalScrollIndicator={false}
-                            showsVerticalScrollIndicator={false}
-                            data={this.state.showCircleExtraData}
-                            keyExtractor={(item, index) =>
-                              `${index}${item.name}`
-                            }
-                            renderItem={({item, index}) =>
-                              this.renderCircleSelectedData(item)
-                            }
-                          />
-                        ) : null}
-                      </View>
-                    </ScrollView>
-                  </View>
-                  <View
-                    style={{
-                      flex: 0.31,
-                      backgroundColor: 'white',
-                      flexDirection: 'column',
-                      marginTop: 4,
-                    }}>
-                    <View
+                    <Title
+                      styleName="bold v-center h-center"
                       style={{
-                        position: 'absolute',
-                        width: '100%',
-                        bottom: 0,
+                        color: '#292929',
+                        fontFamily: 'Rubik',
+                        alignSelf: 'flex-start',
+                        fontSize: 16,
+                        marginStart: sizeWidth(4.5),
+                        fontWeight: '700',
                         backgroundColor: 'white',
                       }}>
-                      <Title
-                        styleName="bold v-center h-center"
-                        style={{
-                          color: '#292929',
-                          fontFamily: 'Rubik',
-                          alignSelf: 'flex-start',
-                          fontSize: 16,
+                      {`${i18n.t(k._67)}`}
+                    </Title>
+                    <TextInput
+                      mode="flat"
+                      label={i18n.t(k._68)}
+                      underlineColor="transparent"
+                      underlineColorAndroid="transparent"
+                      style={[
+                        styles.inputStyle,
+                        {
                           marginStart: sizeWidth(4.5),
-                          fontWeight: '700',
-                          backgroundColor: 'white',
-                        }}>
-                        {`${i18n.t(k._67)}`}
-                      </Title>
-                      <TextInput
-                        mode="flat"
-                        label={i18n.t(k._68)}
-                        underlineColor="transparent"
-                        underlineColorAndroid="transparent"
-                        style={[
-                          styles.inputStyle,
-                          {
-                            marginStart: sizeWidth(4.5),
-                          },
-                        ]}
-                        placeholderTextColor={i18n.t(k.DEDEDE)}
-                        placeholder={i18n.t(k._68)}
-                        onChangeText={value =>
-                          this.setState({
-                            message: value,
-                          })
-                        }
-                        value={this.state.message}
-                      />
+                        },
+                      ]}
+                      placeholderTextColor={i18n.t(k.DEDEDE)}
+                      placeholder={i18n.t(k._68)}
+                      onChangeText={value =>
+                        this.setState({
+                          message: value,
+                        })
+                      }
+                      value={this.state.message}
+                    />
 
-                      {!this.state.mode ? (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            marginBottom: sizeHeight(1),
-                          }}>
-                          <TouchableWithoutFeedback
-                            onPress={() => this.finalorders(true)}>
-                            <Subtitle
-                              styleName="bold v-center h-center"
-                              style={{
-                                color: '#292929',
-                                fontFamily: 'Rubik',
-                                alignSelf: 'center',
-                                justifyContent: 'center',
-                                fontSize: 14,
-                                fontWeight: '700',
-                              }}>
-                              {`${i18n.t(k._69)}`}
-                            </Subtitle>
-                          </TouchableWithoutFeedback>
-                        </View>
-                      ) : null}
-                      <TouchableOpacity
-                        styleName="flexible"
-                        onPress={() => this.finalorders(false)}>
-                        <View
-                          style={styles.buttonStyle}
-                          // mode="contained"
-                          // dark={true}
-                          // onPress={() => this.finalorders(false)}
-                          loading={false}>
+                    {!this.state.mode ? (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'center',
+                          marginBottom: sizeHeight(1),
+                        }}>
+                        <TouchableWithoutFeedback
+                          onPress={() => this.finalorders(true)}>
                           <Subtitle
+                            styleName="bold v-center h-center"
                             style={{
-                              color: 'white',
+                              color: '#292929',
                               fontFamily: 'Rubik',
-                              fontSize: 18,
                               alignSelf: 'center',
                               justifyContent: 'center',
+                              fontSize: 14,
+                              fontWeight: '700',
                             }}>
-                            {this.state.mode ? i18n.t(k._70) : i18n.t(k._71)}
+                            {`${i18n.t(k._69)}`}
                           </Subtitle>
-                        </View>
-                      </TouchableOpacity>
-                    </View>
+                        </TouchableWithoutFeedback>
+                      </View>
+                    ) : null}
+                    <TouchableOpacity
+                      styleName="flexible"
+                      onPress={() => this.finalorders(false)}>
+                      <View
+                        style={styles.buttonStyle}
+                        // mode="contained"
+                        // dark={true}
+                        // onPress={() => this.finalorders(false)}
+                        loading={false}>
+                        <Subtitle
+                          style={{
+                            color: 'white',
+                            fontFamily: 'Rubik',
+                            fontSize: 18,
+                            alignSelf: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          {this.state.mode ? i18n.t(k._70) : i18n.t(k._71)}
+                        </Subtitle>
+                      </View>
+                    </TouchableOpacity>
                   </View>
                 </View>
+              </View>
               {/* </TouchableWithoutFeedback> */}
             </KeyboardAvoidingView>
           </View>
@@ -3618,7 +3823,9 @@ export default class OrderProcess1 extends React.Component {
       }
     });
     if (gotDatas && gotDatas.length > 0) {
-      const ogextrasuntouched = JSON.parse(JSON.stringify(this.state.untouchedExtras));
+      const ogextrasuntouched = JSON.parse(
+        JSON.stringify(this.state.untouchedExtras),
+      );
       freeList = [];
       for (let index = 0; index < cartArray.length; index++) {
         const uui = cartArray[index];
@@ -3679,6 +3886,7 @@ export default class OrderProcess1 extends React.Component {
           return item;
         }
       });
+
       this.setState({
         extraReset: false,
         circleExtras: filterExtras,
@@ -3689,14 +3897,10 @@ export default class OrderProcess1 extends React.Component {
     //console.log(this.state.totalAmount)
   }
 
-  returnCircleSelecionColor(pos) {
-    const findpos = Lodash.filter(
-      this.state.cartExtraArray,
-      item => item.catType === pos,
-    );
-    return findpos.length === 0 ? false : true;
-  }
-
+  /**
+   * circle data based on cattype
+   * @param {} pos
+   */
   returnCircleData(pos) {
     const cartArray = JSON.parse(JSON.stringify(this.state.cartExtraArray));
     const filterData = Lodash.filter(
@@ -3706,6 +3910,10 @@ export default class OrderProcess1 extends React.Component {
     return filterData.length === 0 ? 0 : filterData;
   }
 
+  /**
+   * circle extra name
+   * @param {} filterFull
+   */
   returnCircleExtraNameData(filterFull) {
     let mergeString = ``;
     const lastpos = filterFull.length - 1;
@@ -3721,17 +3929,31 @@ export default class OrderProcess1 extends React.Component {
     return mergeString;
   }
 
+  /**
+   * finish dough
+   */
   finishDough() {
     if (!this.showalertmin()) {
       const price = this.state.totalAmount;
       //console.log(price)
       //console.log(this.state.cartExtraArray)
-      this.setState({
-        servicemode: 2,
-        serviceCat: JSON.parse(JSON.stringify(this.state.originalExtras)),
-        tillDoughPrice: price,
-        //showCircleExtraData: [],
-      });
+      if(this.state.mode){
+        this.setState({
+          servicemode: 2,
+          serviceCat: JSON.parse(
+            JSON.stringify(this.state.originalExtras),
+          ),
+        });
+      }else{
+        this.setState({
+          servicemode: 2,
+          serviceCat: JSON.parse(
+            JSON.stringify(this.state.originalExtras),
+          ),
+          tillDoughPrice: price,
+          //showCircleExtraData: [],
+        });
+      }
     }
   }
 
@@ -3789,23 +4011,21 @@ export default class OrderProcess1 extends React.Component {
   }
 
   /**
-   * after selecting extra and finish
-   * images add, text,
+   * pizza image
    */
-  finishCirclePos() {
-    if (!this.showalertmin()) {
-      const {circleTab, pizzaImageList} = this.state;
-      const imagelist = JSON.parse(JSON.stringify(pizzaImageList));
-      backTrackCounter = 0;
-      let extraImageItemList = [];
-      let extraImageItemList1 = [];
-      let extraImageItemList2 = [];
-      let extraImageItemList3 = [];
-      let extraImageItemList4 = [];
-      let extraImageItemList5 = [];
-      let extraImageItemList6 = [];
-      let filterFulldata = this.returnCircleBasedData();
-
+  pizaImageSetupandfill() {
+    const {circleTab, pizzaImageList, cartExtraArray} = this.state;
+    const imagelist = JSON.parse(JSON.stringify(pizzaImageList));
+    let extraImageItemList = [];
+    let extraImageItemList1 = [];
+    let extraImageItemList2 = [];
+    let extraImageItemList3 = [];
+    let extraImageItemList4 = [];
+    let extraImageItemList5 = [];
+    let extraImageItemList6 = [];
+    let filterFulldata = this.returnCircleBasedData();
+    const find = Lodash.filter(cartExtraArray, xm => xm.catType !== 7);
+    if (find.length > 0) {
       Lodash.map(filterFulldata, ok => {
         const {imageNum, catType} = ok;
         const key = `${imageNum}`;
@@ -3961,9 +4181,32 @@ export default class OrderProcess1 extends React.Component {
           }
         }
       }
-      const cartttt = JSON.parse(JSON.stringify(this.state.cartExtraArray));
+      this.setState({
+        extraImageItemList: extraImageItemList,
+        extraImageItemList1: extraImageItemList1,
+        extraImageItemList2: extraImageItemList2,
+        extraImageItemList3: extraImageItemList3,
+        extraImageItemList4: extraImageItemList4,
+        extraImageItemList5: extraImageItemList5,
+        extraImageItemList6: extraImageItemList6,
+      });
+    }
+  }
+
+  /**
+   * after selecting extra and finish
+   * images add, text,
+   */
+  finishCirclePos() {
+    if (!this.showalertmin()) {
+      backTrackCounter = 0;
+      this.pizaImageSetupandfill();
+      const {circleTab} = this.state;
+      const cartextracloned = JSON.parse(
+        JSON.stringify(this.state.cartExtraArray),
+      );
       const st = JSON.parse(JSON.stringify(this.state.serviceCat));
-      let cartExtraArray = Lodash.map(cartttt, ok => {
+      let cartExtraArray = Lodash.map(cartextracloned, ok => {
         ok.finished = true;
         return ok;
       });
@@ -3980,13 +4223,6 @@ export default class OrderProcess1 extends React.Component {
       //console.log('cartExtraArray', cartExtraArray)
       this.setState(
         {
-          extraImageItemList: extraImageItemList,
-          extraImageItemList1: extraImageItemList1,
-          extraImageItemList2: extraImageItemList2,
-          extraImageItemList3: extraImageItemList3,
-          extraImageItemList4: extraImageItemList4,
-          extraImageItemList5: extraImageItemList5,
-          extraImageItemList6: extraImageItemList6,
           showCircleExtraSelection: false,
           cartExtraArray: cartExtraArray,
           serviceCat: serviceCategories,
@@ -4003,14 +4239,15 @@ export default class OrderProcess1 extends React.Component {
     }
   }
 
-
   /**
-   * back button clicked after selecting circle part 
+   * back button clicked after selecting circle part
    */
   circlextrapickerBack() {
     backTrackCounter = 0;
     //if (!this.state.mode) {
-    const ogextrasuntouched = JSON.parse(JSON.stringify(this.state.untouchedExtras));
+    const ogextrasuntouched = JSON.parse(
+      JSON.stringify(this.state.untouchedExtras),
+    );
     const st = JSON.parse(JSON.stringify(this.state.serviceCat));
     //console.log('ogextrasuntouched', ogextrasuntouched)
 
@@ -4257,159 +4494,159 @@ export default class OrderProcess1 extends React.Component {
                   onPress={() => {
                     Keyboard.dismiss();
                   }}> */}
+                <View
+                  style={{
+                    flex: 1,
+                  }}>
+                  {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
+                  <View style={{flex: 0.15}} />
                   <View
                     style={{
-                      flex: 1,
+                      flex: 0.7,
+                      marginTop: sizeHeight(4),
+                      marginBottom: sizeHeight(8),
+                      marginHorizontal: sizeWidth(4),
+                      backgroundColor: 'white',
+                      flexDirection: 'column',
+                      position: 'relative',
                     }}>
-                    {/* <ScrollView contentContainerStyle={{ flexGrow: 1}}> */}
-                    <View style={{flex: 0.15}} />
                     <View
                       style={{
-                        flex: 0.7,
-                        marginTop: sizeHeight(4),
-                        marginBottom: sizeHeight(8),
-                        marginHorizontal: sizeWidth(4),
+                        flex: 0.1,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        backgroundColor: 'white',
+                        marginTop: 6,
+                      }}>
+                      <View
+                        styleName="vertical"
+                        style={{
+                          marginStart: sizeWidth(3),
+                        }}>
+                        <TouchableOpacity onPress={() => this.backk()}>
+                          <Icon
+                            name="arrow-forward"
+                            size={36}
+                            color="#292929"
+                            style={{
+                              alignSelf: 'flex-start',
+                              backgroundColor: 'transparent',
+                            }}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View
+                      style={{
+                        flex: 0.8,
                         backgroundColor: 'white',
                         flexDirection: 'column',
-                        position: 'relative',
+                        marginTop: 4,
+                      }}>
+                      <DummyLoader
+                        visibilty={this.state.progressView}
+                        style={{
+                          width: '100%',
+                          flexBasis: 1,
+                        }}
+                        center={
+                          <SectionList
+                            extraData={this.state}
+                            //style={{ flex: 0.5 }}
+                            showsVerticalScrollIndicator={true}
+                            showsHorizontalScrollIndicator={false}
+                            sections={this.state.serviceCat}
+                            keyExtractor={item => item.name}
+                            renderSectionHeader={({section}) => (
+                              <View
+                                styleName="vertical space-between"
+                                style={{
+                                  backgroundColor: 'white',
+                                  marginStart: sizeWidth(3),
+                                  marginVertical: sizeHeight(1),
+                                }}>
+                                <Title
+                                  styleName="bold"
+                                  style={{
+                                    color: '#292929',
+                                    fontFamily: 'Rubik',
+                                    fontSize: 16,
+                                    alignSelf: 'flex-start',
+                                    fontWeight: '700',
+                                  }}>
+                                  {Lodash.capitalize(section.title)}
+                                </Title>
+                              </View>
+                            )}
+                            renderItem={({index: secindex, section}) =>
+                              secindex == 0 ? (
+                                <FlatList
+                                  numColumns={2}
+                                  extraData={this.state}
+                                  nestedScrollEnabled={true}
+                                  style={{
+                                    marginStart: sizeWidth(3),
+                                    backgroundColor: 'white',
+                                  }}
+                                  showsHorizontalScrollIndicator={false}
+                                  showsVerticalScrollIndicator={false}
+                                  data={section.data}
+                                  keyExtractor={item => item.name}
+                                  renderItem={({item: extraItem, index}) =>
+                                    this.renderExcatItemRow(
+                                      extraItem,
+                                      index,
+                                      section.title,
+                                      secindex,
+                                    )
+                                  }
+                                />
+                              ) : null
+                            }
+                          />
+                        }
+                      />
+                    </View>
+                    <View
+                      style={{
+                        flex: 0.1,
+                        backgroundColor: 'white',
+                        flexDirection: 'column',
+                        marginTop: 4,
                       }}>
                       <View
                         style={{
-                          flex: 0.1,
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
+                          position: 'absolute',
+                          width: '100%',
+                          bottom: 0,
                           backgroundColor: 'white',
-                          marginTop: 6,
                         }}>
-                        <View
-                          styleName="vertical"
-                          style={{
-                            marginStart: sizeWidth(3),
-                          }}>
-                          <TouchableOpacity onPress={() => this.backk()}>
-                            <Icon
-                              name="arrow-forward"
-                              size={36}
-                              color="#292929"
+                        <TouchableOpacity
+                          styleName="flexible"
+                          onPress={() => this.finishDough()}>
+                          <View
+                            style={styles.buttonStyle}
+                            // mode="contained"
+                            // dark={true}
+                            // onPress={() => this.finalorders(false)}
+                            loading={false}>
+                            <Subtitle
                               style={{
-                                alignSelf: 'flex-start',
-                                backgroundColor: 'transparent',
-                              }}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                      <View
-                        style={{
-                          flex: 0.8,
-                          backgroundColor: 'white',
-                          flexDirection: 'column',
-                          marginTop: 4,
-                        }}>
-                        <DummyLoader
-                          visibilty={this.state.progressView}
-                          style={{
-                            width: '100%',
-                            flexBasis: 1,
-                          }}
-                          center={
-                            <SectionList
-                              extraData={this.state}
-                              //style={{ flex: 0.5 }}
-                              showsVerticalScrollIndicator={true}
-                              showsHorizontalScrollIndicator={false}
-                              sections={this.state.serviceCat}
-                              keyExtractor={item => item.name}
-                              renderSectionHeader={({section}) => (
-                                <View
-                                  styleName="vertical space-between"
-                                  style={{
-                                    backgroundColor: 'white',
-                                    marginStart: sizeWidth(3),
-                                    marginVertical: sizeHeight(1),
-                                  }}>
-                                  <Title
-                                    styleName="bold"
-                                    style={{
-                                      color: '#292929',
-                                      fontFamily: 'Rubik',
-                                      fontSize: 16,
-                                      alignSelf: 'flex-start',
-                                      fontWeight: '700',
-                                    }}>
-                                    {Lodash.capitalize(section.title)}
-                                  </Title>
-                                </View>
-                              )}
-                              renderItem={({index: secindex, section}) =>
-                                secindex == 0 ? (
-                                  <FlatList
-                                    numColumns={2}
-                                    extraData={this.state}
-                                    nestedScrollEnabled={true}
-                                    style={{
-                                      marginStart: sizeWidth(3),
-                                      backgroundColor: 'white',
-                                    }}
-                                    showsHorizontalScrollIndicator={false}
-                                    showsVerticalScrollIndicator={false}
-                                    data={section.data}
-                                    keyExtractor={item => item.name}
-                                    renderItem={({item: extraItem, index}) =>
-                                      this.renderExcatItemRow(
-                                        extraItem,
-                                        index,
-                                        section.title,
-                                        secindex,
-                                      )
-                                    }
-                                  />
-                                ) : null
-                              }
-                            />
-                          }
-                        />
-                      </View>
-                      <View
-                        style={{
-                          flex: 0.1,
-                          backgroundColor: 'white',
-                          flexDirection: 'column',
-                          marginTop: 4,
-                        }}>
-                        <View
-                          style={{
-                            position: 'absolute',
-                            width: '100%',
-                            bottom: 0,
-                            backgroundColor: 'white',
-                          }}>
-                          <TouchableOpacity
-                            styleName="flexible"
-                            onPress={() => this.finishDough()}>
-                            <View
-                              style={styles.buttonStyle}
-                              // mode="contained"
-                              // dark={true}
-                              // onPress={() => this.finalorders(false)}
-                              loading={false}>
-                              <Subtitle
-                                style={{
-                                  color: 'white',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 18,
-                                  alignSelf: 'center',
-                                  justifyContent: 'center',
-                                }}>
-                                {`${i18n.t(k.cirfinish)}`}
-                              </Subtitle>
-                            </View>
-                          </TouchableOpacity>
-                        </View>
+                                color: 'white',
+                                fontFamily: 'Rubik',
+                                fontSize: 18,
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                              }}>
+                              {`${i18n.t(k.cirfinish)}`}
+                            </Subtitle>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
-                    <View style={{flex: 0.15}} />
                   </View>
+                  <View style={{flex: 0.15}} />
+                </View>
                 {/* </TouchableWithoutFeedback> */}
               </KeyboardAvoidingView>
             </Modal>
@@ -4495,6 +4732,7 @@ export default class OrderProcess1 extends React.Component {
                           backgroundColor: 'white',
                           flexDirection: 'column',
                           marginTop: 4,
+                          marginBottom: 4,
                         }}>
                         <Divider
                           styleName="line"
@@ -4675,356 +4913,353 @@ export default class OrderProcess1 extends React.Component {
                       onPress={() => {
                         Keyboard.dismiss();
                       }}> */}
+                    <View
+                      style={{
+                        flex: 1,
+                        marginTop: sizeHeight(4),
+                        marginBottom: sizeHeight(8),
+                        marginHorizontal: sizeWidth(4),
+                        backgroundColor: 'white',
+                        flexDirection: 'column',
+                        position: 'relative',
+                      }}>
                       <View
                         style={{
-                          flex: 1,
-                          marginTop: sizeHeight(4),
-                          marginBottom: sizeHeight(8),
-                          marginHorizontal: sizeWidth(4),
+                          flex: 0.23,
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
                           backgroundColor: 'white',
-                          flexDirection: 'column',
-                          position: 'relative',
+                          marginTop: 6,
                         }}>
                         <View
+                          styleName="vertical space-between"
                           style={{
-                            flex: 0.23,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            backgroundColor: 'white',
-                            marginTop: 6,
+                            marginStart: sizeWidth(3),
                           }}>
-                          <View
-                            styleName="vertical space-between"
-                            style={{
-                              marginStart: sizeWidth(3),
-                            }}>
-                            <TouchableOpacity onPress={() => this.backk()}>
-                              <Icon
-                                name="arrow-forward"
-                                size={36}
-                                color="#292929"
-                                style={{
-                                  alignSelf: 'flex-start',
-                                  backgroundColor: 'transparent',
-                                }}
-                              />
-                            </TouchableOpacity>
-                            <View
-                              styleName="horizontal space-between"
+                          <TouchableOpacity onPress={() => this.backk()}>
+                            <Icon
+                              name="arrow-forward"
+                              size={36}
+                              color="#292929"
                               style={{
-                                marginBottom: 2,
-                                marginTop: 4,
+                                alignSelf: 'flex-start',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          </TouchableOpacity>
+                          <View
+                            styleName="horizontal space-between"
+                            style={{
+                              marginBottom: 2,
+                              marginTop: 4,
+                            }}>
+                            <Title
+                              styleName="bold"
+                              style={{
+                                color: '#292929',
+                                fontFamily: 'Rubik',
+                                fontSize: 18,
+                                alignSelf: 'flex-start',
+                                fontWeight: '700',
                               }}>
-                              <Title
-                                styleName="bold"
-                                style={{
-                                  color: '#292929',
-                                  fontFamily: 'Rubik',
-                                  fontSize: 18,
-                                  alignSelf: 'flex-start',
-                                  fontWeight: '700',
+                              {Lodash.capitalize(this.state.serviceDetail.name)}
+                            </Title>
+                          </View>
+                          {!this.state.mode ? (
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                                marginTop: 8,
+                              }}>
+                              <TouchableOpacity
+                                onPress={() => {
+                                  const moreItem = this.state.mainBaseCount + 1;
+                                  this.setState({
+                                    mainBaseCount: moreItem,
+                                  });
                                 }}>
-                                {Lodash.capitalize(
-                                  this.state.serviceDetail.name,
-                                )}
-                              </Title>
-                            </View>
-                            {!this.state.mode ? (
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  alignContent: 'center',
-                                  marginTop: 8,
-                                }}>
-                                <TouchableOpacity
-                                  onPress={() => {
-                                    const moreItem =
-                                      this.state.mainBaseCount + 1;
-                                    this.setState({
-                                      mainBaseCount: moreItem,
-                                    });
-                                  }}>
-                                  <View
-                                    style={{
-                                      borderRadius: 24,
-                                      width: 48,
-                                      height: 48,
-                                      borderColor: '#3daccf',
-                                      borderWidth: 1,
-                                      alignSelf: 'center',
-                                      justifyContent: 'center',
-                                      alignItems: 'center',
-                                      alignContent: 'center',
-                                    }}>
-                                    <Icon
-                                      name="add"
-                                      size={24}
-                                      color="#75D75E"
-                                      style={{
-                                        alignContent: 'center',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        alignSelf: 'center',
-                                        backgroundColor: 'transparent',
-                                      }}
-                                    />
-                                  </View>
-                                </TouchableOpacity>
-
-                                <Title
-                                  styleName="bold"
+                                <View
                                   style={{
-                                    color: '#5EBBD7',
-                                    fontFamily: 'Rubik',
-                                    fontSize: 22,
+                                    borderRadius: 24,
+                                    width: 48,
+                                    height: 48,
+                                    borderColor: '#3daccf',
+                                    borderWidth: 1,
                                     alignSelf: 'center',
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     alignContent: 'center',
-                                    fontWeight: '700',
-                                    marginStart: 16,
-                                    marginEnd: 16,
                                   }}>
-                                  {this.state.mainBaseCount}
-                                </Title>
-
-                                <TouchableOpacity
-                                  onPress={() => {
-                                    if (this.state.mainBaseCount > 1) {
-                                      const lessItem =
-                                        this.state.mainBaseCount - 1;
-                                      this.setState({
-                                        mainBaseCount: lessItem,
-                                      });
-                                    }
-                                  }}>
-                                  <View
+                                  <Icon
+                                    name="add"
+                                    size={24}
+                                    color="#75D75E"
                                     style={{
-                                      borderRadius: 24,
-                                      width: 48,
-                                      height: 48,
-                                      borderColor: '#3daccf',
-                                      borderWidth: 1,
-                                      alignSelf: 'center',
+                                      alignContent: 'center',
                                       justifyContent: 'center',
                                       alignItems: 'center',
-                                      alignContent: 'center',
-                                    }}>
-                                    <Icon
-                                      name="remove"
-                                      size={24}
-                                      color="#D75E5E"
-                                      style={{
-                                        alignContent: 'center',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        alignSelf: 'center',
-                                        backgroundColor: 'transparent',
-                                      }}
-                                    />
-                                  </View>
-                                </TouchableOpacity>
-                              </View>
-                            ) : null}
-                          </View>
-                          <Image
-                            source={{
-                              uri: `${Pref.BASEURL}${
-                                this.state.clickitem.imageUrl
-                              }`,
-                            }}
-                            style={{
-                              width: 96,
-                              height: 96,
-                              marginTop: 4,
-                              marginStart: 8,
-                              marginEnd: 8,
-                              borderTopEndRadius: 8,
-                              borderTopLeftRadius: 8,
-                              borderTopRightRadius: 8,
-                              borderTopStartRadius: 8,
-                              borderBottomRightRadius: 8,
-                              borderBottomStartRadius: 8,
-                              borderBottomEndRadius: 8,
-                              borderBottomLeftRadius: 8,
-                            }}
-                          />
-                        </View>
+                                      alignSelf: 'center',
+                                      backgroundColor: 'transparent',
+                                    }}
+                                  />
+                                </View>
+                              </TouchableOpacity>
 
-                        <View
-                          style={{
-                            flex: 0.46,
-                            backgroundColor: 'white',
-                            flexDirection: 'column',
-                            marginTop: 4,
-                          }}>
-                          <Divider
-                            styleName="line"
-                            style={{
-                              marginTop: 4,
-                              marginBottom: 4,
-                            }}
-                          />
-                          <DummyLoader
-                            visibilty={this.state.progressView}
-                            center={
-                              <SectionList
-                                extraData={this.state}
-                                //style={{ flex: 0.5 }}
-                                showsVerticalScrollIndicator={true}
-                                showsHorizontalScrollIndicator={false}
-                                sections={this.state.serviceCat}
-                                keyExtractor={item => item.name}
-                                renderSectionHeader={({section}) => (
-                                  <View
-                                    styleName="vertical space-between"
-                                    style={{
-                                      backgroundColor: 'white',
-                                      marginStart: sizeWidth(3),
-                                      marginVertical: sizeHeight(1),
-                                    }}>
-                                    <Title
-                                      styleName="bold"
-                                      style={{
-                                        color: '#292929',
-                                        fontFamily: 'Rubik',
-                                        fontSize: 16,
-                                        alignSelf: 'flex-start',
-                                        fontWeight: '700',
-                                      }}>
-                                      {Lodash.capitalize(section.title)}
-                                    </Title>
-                                  </View>
-                                )}
-                                renderItem={({index: secindex, section}) =>
-                                  secindex == 0 ? (
-                                    <FlatList
-                                      numColumns={2}
-                                      extraData={this.state}
-                                      nestedScrollEnabled={true}
-                                      style={{
-                                        marginStart: sizeWidth(3),
-                                        backgroundColor: 'white',
-                                      }}
-                                      showsHorizontalScrollIndicator={false}
-                                      showsVerticalScrollIndicator={false}
-                                      data={section.data}
-                                      keyExtractor={item => item.name}
-                                      renderItem={({item: extraItem, index}) =>
-                                        this.renderExcatItemRow(
-                                          extraItem,
-                                          index,
-                                          section.title,
-                                          secindex,
-                                        )
-                                      }
-                                    />
-                                  ) : null
-                                }
-                              />
-                            }
-                          />
-                        </View>
-                        <View
-                          style={{
-                            flex: 0.31,
-                            backgroundColor: 'white',
-                            flexDirection: 'column',
-                            marginTop: 4,
-                          }}>
-                          <View
-                            style={{
-                              position: 'absolute',
-                              width: '100%',
-                              bottom: 0,
-                              backgroundColor: 'white',
-                            }}>
-                            <Title
-                              styleName="bold v-center h-center"
-                              style={{
-                                color: '#292929',
-                                fontFamily: 'Rubik',
-                                alignSelf: 'flex-start',
-                                fontSize: 16,
-                                marginStart: sizeWidth(4.5),
-                                fontWeight: '700',
-                                backgroundColor: 'white',
-                              }}>
-                              {`${i18n.t(k._67)}`}
-                            </Title>
-                            <TextInput
-                              mode="flat"
-                              label={i18n.t(k._68)}
-                              underlineColor="transparent"
-                              underlineColorAndroid="transparent"
-                              style={[
-                                styles.inputStyle,
-                                {
-                                  marginStart: sizeWidth(4.5),
-                                },
-                              ]}
-                              placeholderTextColor={i18n.t(k.DEDEDE)}
-                              placeholder={i18n.t(k._68)}
-                              onChangeText={value =>
-                                this.setState({
-                                  message: value,
-                                })
-                              }
-                              value={this.state.message}
-                            />
-
-                            {!this.state.mode ? (
-                              <View
+                              <Title
+                                styleName="bold"
                                 style={{
-                                  flexDirection: 'row',
+                                  color: '#5EBBD7',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 22,
+                                  alignSelf: 'center',
                                   justifyContent: 'center',
-                                  marginBottom: sizeHeight(1),
+                                  alignItems: 'center',
+                                  alignContent: 'center',
+                                  fontWeight: '700',
+                                  marginStart: 16,
+                                  marginEnd: 16,
                                 }}>
-                                <TouchableWithoutFeedback
-                                  onPress={() => this.finalorders(true)}>
-                                  <Subtitle
-                                    styleName="bold v-center h-center"
+                                {this.state.mainBaseCount}
+                              </Title>
+
+                              <TouchableOpacity
+                                onPress={() => {
+                                  if (this.state.mainBaseCount > 1) {
+                                    const lessItem =
+                                      this.state.mainBaseCount - 1;
+                                    this.setState({
+                                      mainBaseCount: lessItem,
+                                    });
+                                  }
+                                }}>
+                                <View
+                                  style={{
+                                    borderRadius: 24,
+                                    width: 48,
+                                    height: 48,
+                                    borderColor: '#3daccf',
+                                    borderWidth: 1,
+                                    alignSelf: 'center',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    alignContent: 'center',
+                                  }}>
+                                  <Icon
+                                    name="remove"
+                                    size={24}
+                                    color="#D75E5E"
+                                    style={{
+                                      alignContent: 'center',
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      alignSelf: 'center',
+                                      backgroundColor: 'transparent',
+                                    }}
+                                  />
+                                </View>
+                              </TouchableOpacity>
+                            </View>
+                          ) : null}
+                        </View>
+                        <Image
+                          source={{
+                            uri: `${Pref.BASEURL}${
+                              this.state.clickitem.imageUrl
+                            }`,
+                          }}
+                          style={{
+                            width: 96,
+                            height: 96,
+                            marginTop: 4,
+                            marginStart: 8,
+                            marginEnd: 8,
+                            borderTopEndRadius: 8,
+                            borderTopLeftRadius: 8,
+                            borderTopRightRadius: 8,
+                            borderTopStartRadius: 8,
+                            borderBottomRightRadius: 8,
+                            borderBottomStartRadius: 8,
+                            borderBottomEndRadius: 8,
+                            borderBottomLeftRadius: 8,
+                          }}
+                        />
+                      </View>
+
+                      <View
+                        style={{
+                          flex: 0.46,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
+                        <Divider
+                          styleName="line"
+                          style={{
+                            marginTop: 4,
+                            marginBottom: 4,
+                          }}
+                        />
+                        <DummyLoader
+                          visibilty={this.state.progressView}
+                          center={
+                            <SectionList
+                              extraData={this.state}
+                              //style={{ flex: 0.5 }}
+                              showsVerticalScrollIndicator={true}
+                              showsHorizontalScrollIndicator={false}
+                              sections={this.state.serviceCat}
+                              keyExtractor={item => item.name}
+                              renderSectionHeader={({section}) => (
+                                <View
+                                  styleName="vertical space-between"
+                                  style={{
+                                    backgroundColor: 'white',
+                                    marginStart: sizeWidth(3),
+                                    marginVertical: sizeHeight(1),
+                                  }}>
+                                  <Title
+                                    styleName="bold"
                                     style={{
                                       color: '#292929',
                                       fontFamily: 'Rubik',
-                                      alignSelf: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: 14,
+                                      fontSize: 16,
+                                      alignSelf: 'flex-start',
                                       fontWeight: '700',
                                     }}>
-                                    {`${i18n.t(k._69)}`}
-                                  </Subtitle>
-                                </TouchableWithoutFeedback>
-                              </View>
-                            ) : null}
-                            <TouchableOpacity
-                              styleName="flexible"
-                              onPress={() => this.finalorders(false)}>
-                              <View
-                                style={styles.buttonStyle}
-                                // mode="contained"
-                                // dark={true}
-                                // onPress={() => this.finalorders(false)}
-                                loading={false}>
+                                    {Lodash.capitalize(section.title)}
+                                  </Title>
+                                </View>
+                              )}
+                              renderItem={({index: secindex, section}) =>
+                                secindex == 0 ? (
+                                  <FlatList
+                                    numColumns={2}
+                                    extraData={this.state}
+                                    nestedScrollEnabled={true}
+                                    style={{
+                                      marginStart: sizeWidth(3),
+                                      backgroundColor: 'white',
+                                    }}
+                                    showsHorizontalScrollIndicator={false}
+                                    showsVerticalScrollIndicator={false}
+                                    data={section.data}
+                                    keyExtractor={item => item.name}
+                                    renderItem={({item: extraItem, index}) =>
+                                      this.renderExcatItemRow(
+                                        extraItem,
+                                        index,
+                                        section.title,
+                                        secindex,
+                                      )
+                                    }
+                                  />
+                                ) : null
+                              }
+                            />
+                          }
+                        />
+                      </View>
+                      <View
+                        style={{
+                          flex: 0.31,
+                          backgroundColor: 'white',
+                          flexDirection: 'column',
+                          marginTop: 4,
+                        }}>
+                        <View
+                          style={{
+                            position: 'absolute',
+                            width: '100%',
+                            bottom: 0,
+                            backgroundColor: 'white',
+                          }}>
+                          <Title
+                            styleName="bold v-center h-center"
+                            style={{
+                              color: '#292929',
+                              fontFamily: 'Rubik',
+                              alignSelf: 'flex-start',
+                              fontSize: 16,
+                              marginStart: sizeWidth(4.5),
+                              fontWeight: '700',
+                              backgroundColor: 'white',
+                            }}>
+                            {`${i18n.t(k._67)}`}
+                          </Title>
+                          <TextInput
+                            mode="flat"
+                            label={i18n.t(k._68)}
+                            underlineColor="transparent"
+                            underlineColorAndroid="transparent"
+                            style={[
+                              styles.inputStyle,
+                              {
+                                marginStart: sizeWidth(4.5),
+                              },
+                            ]}
+                            placeholderTextColor={i18n.t(k.DEDEDE)}
+                            placeholder={i18n.t(k._68)}
+                            onChangeText={value =>
+                              this.setState({
+                                message: value,
+                              })
+                            }
+                            value={this.state.message}
+                          />
+
+                          {!this.state.mode ? (
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                marginBottom: sizeHeight(1),
+                              }}>
+                              <TouchableWithoutFeedback
+                                onPress={() => this.finalorders(true)}>
                                 <Subtitle
+                                  styleName="bold v-center h-center"
                                   style={{
-                                    color: 'white',
+                                    color: '#292929',
                                     fontFamily: 'Rubik',
-                                    fontSize: 18,
                                     alignSelf: 'center',
                                     justifyContent: 'center',
+                                    fontSize: 14,
+                                    fontWeight: '700',
                                   }}>
-                                  {this.state.mode
-                                    ? i18n.t(k._70)
-                                    : i18n.t(k._71)}
+                                  {`${i18n.t(k._69)}`}
                                 </Subtitle>
-                              </View>
-                            </TouchableOpacity>
-                          </View>
+                              </TouchableWithoutFeedback>
+                            </View>
+                          ) : null}
+                          <TouchableOpacity
+                            styleName="flexible"
+                            onPress={() => this.finalorders(false)}>
+                            <View
+                              style={styles.buttonStyle}
+                              // mode="contained"
+                              // dark={true}
+                              // onPress={() => this.finalorders(false)}
+                              loading={false}>
+                              <Subtitle
+                                style={{
+                                  color: 'white',
+                                  fontFamily: 'Rubik',
+                                  fontSize: 18,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                {this.state.mode
+                                  ? i18n.t(k._70)
+                                  : i18n.t(k._71)}
+                              </Subtitle>
+                            </View>
+                          </TouchableOpacity>
                         </View>
                       </View>
+                    </View>
                     {/* </TouchableWithoutFeedback> */}
                   </KeyboardAvoidingView>
                 </View>
