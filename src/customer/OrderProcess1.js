@@ -384,7 +384,7 @@ export default class OrderProcess1 extends React.Component {
             tillDoughPrice: this.state.tillDoughPrice,
           });
         }
-        let tyy = this.state.cartDetails;
+        let cartDetailsObject = this.state.cartDetails;
         Pref.getVal(Pref.cartItem, value => {
           if (value !== undefined && value !== null) {
             let cartData = JSON.parse(value);
@@ -393,11 +393,11 @@ export default class OrderProcess1 extends React.Component {
               cartData === null ||
               cartData === ''
             ) {
-              let carxxx = [];
-              Lodash.map(tyy, ele => {
-                carxxx.push(ele);
+              let cartList = [];
+              Lodash.map(cartDetailsObject, ele => {
+                cartList.push(ele);
               });
-              Pref.setVal(Pref.cartItem, carxxx);
+              Pref.setVal(Pref.cartItem, cartList);
               this.props.orderChanged();
               //////console.log('firstSave', carxxx);
             } else {
@@ -405,14 +405,14 @@ export default class OrderProcess1 extends React.Component {
                 const iit = Lodash.findLastIndex(cartData, {
                   cartTime: this.state.editData.cartTime,
                 });
-                //console.log("modexxx", tyy[0].cartTime, this.state.editData.cartTime, iit);
+                //console.log("modexxx", cartDetailsObject[0].cartTime, this.state.editData.cartTime, iit);
                 if (iit !== -1) {
-                  cartData[iit] = tyy[0];
+                  cartData[iit] = cartDetailsObject[0];
                 }
-                //cartData.splice(iit, 1, tyy[0]);
+                //cartData.splice(iit, 1, cartDetailsObject[0]);
                 ////console.log('cartDatax', iit);
               } else {
-                Lodash.map(tyy, ele => {
+                Lodash.map(cartDetailsObject, ele => {
                   cartData.push(ele);
                 });
                 //////console.log('cartData', cartData);
@@ -421,7 +421,7 @@ export default class OrderProcess1 extends React.Component {
               this.props.orderChanged();
             }
           } else {
-            Pref.setVal(Pref.cartItem, tyy);
+            Pref.setVal(Pref.cartItem, cartDetailsObject);
             this.props.orderChanged();
           }
         });
@@ -512,10 +512,7 @@ export default class OrderProcess1 extends React.Component {
         } else {
           this.setState({
             alertTitle: i18n.t(k._4),
-            alertContent: `לקוחות יקרים, שימו לב:
-בעקבות עומס בהזמנות אצל בית העסק - כרגע לא ניתן לבצע הזמנות חדשות.
-נשמח שתנסו שוב בעוד כמה רגעים. 
-סליחה ותודה.`,
+            alertContent: i18n.t(k.deliverynotavailable),
             showAlert: true,
             flexChanged: true,
           });
@@ -731,7 +728,9 @@ export default class OrderProcess1 extends React.Component {
           if (countExtra === serviceExtrax.multipliable) {
             this.setState({
               alertTitle: i18n.t(k._30),
-              alertContent: `יש לבחור עד ${Number(serviceExtrax.multipliable)}`,
+              alertContent: `${i18n.t(
+                k.multipliablelimit,
+              )} ${Number(serviceExtrax.multipliable)}`,
               showAlert: true,
             });
             return false;
@@ -953,7 +952,7 @@ export default class OrderProcess1 extends React.Component {
               alignSelf: 'flex-start',
               fontWeight: '700',
             }}>
-            {`${i18n.t(k._64)}${serviceExtrax.price}${i18n.t(k._65)}`}{' '}
+            {`${i18n.t(k._64)}${serviceExtrax.price}${i18n.t(k._65)}`}
             <Subtitle
               styleName={
                 serviceExtrax.extraAvailable === 1 ? '' : i18n.t(k.LINE_THROUGH)
@@ -966,7 +965,7 @@ export default class OrderProcess1 extends React.Component {
                 fontWeight: '400',
               }}
               styleName="wrap">
-              {`${Lodash.capitalize(serviceExtrax.name)}`}{' '}
+              {`${Lodash.capitalize(serviceExtrax.name)}`}
             </Subtitle>
           </Subtitle>
         </View>

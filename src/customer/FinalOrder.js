@@ -56,8 +56,8 @@ import {AlertDialog} from './../util/AlertDialog';
 import MaskedInput from 'react-native-masked-input-text';
 import xml2js from 'xml2js';
 import {SafeAreaView} from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 let branchData = null;
 var now = new Date().getDay();
@@ -1120,7 +1120,8 @@ export default class FinalOrder extends React.Component {
   }
 
   /**
-   *
+   * order process from here onclick of btn ..
+   * if free available then show and add item..then follow order
    */
   checkout = () => {
     const {freeS, freeItemS} = this.state;
@@ -1170,6 +1171,9 @@ export default class FinalOrder extends React.Component {
     }
   };
 
+  /**
+   * order processed
+   */
   pressPayment() {
     const {
       data,
@@ -1286,6 +1290,7 @@ export default class FinalOrder extends React.Component {
                                   //   `findCardSelected`,
                                   //   findCardSelected,
                                   // );
+                                  //visa card xml api send data
                                   if (findCardSelected.cardId !== '') {
                                     sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
                                       findCardSelected.cardId
@@ -1688,6 +1693,13 @@ export default class FinalOrder extends React.Component {
     }
   };
 
+  /**
+   * cancel visa incase if processed order and guid found duplicate
+   * @param {c} newArr post data array
+   * @param {*} result from api
+   * @param {*} paymentmode
+   * @param {*} cardSessionID 
+   */
   cancelvisapayment = (newArr, result, paymentmode, cardSessionID) => {
     const terminalNumber = branchData.terminalNumber;
     if (terminalNumber !== '' && tempCguid !== '') {
@@ -1746,6 +1758,10 @@ export default class FinalOrder extends React.Component {
     );
   }
 
+  /**
+   * edit item
+   * @param {} item 
+   */
   editmode = item => {
     Pref.setVal(Pref.EditModeEnabled, '1');
     NavigationActions.navigate('NewBusinessPage', {
@@ -2034,6 +2050,9 @@ export default class FinalOrder extends React.Component {
     );
   }
 
+  /**
+   * location open
+   */
   locationOpen = () => {
     let last = this.state.gpsChecked;
     this.setState({gpsChecked: !last});
@@ -2053,7 +2072,7 @@ export default class FinalOrder extends React.Component {
     Linking.openURL(url);
   };
 
-  //card selecte
+  //card select
   cardSelect = (item, index) => {
     const {selected} = item;
     const filter = Lodash.map(this.state.cardList, ix => {
@@ -2741,6 +2760,10 @@ export default class FinalOrder extends React.Component {
     });
   };
 
+  /**
+   * card image show
+   * @param {} cardnumber 
+   */
   returnCardImage = cardnumber => {
     let creditCardImage = `${Pref.VisaCardImage}card.png`;
     if (cardnumber.length > 0) {
@@ -2909,7 +2932,7 @@ export default class FinalOrder extends React.Component {
                           justifyContent: 'center',
                           alignSelf: 'center',
                         }}>
-                        {`${i18n.t(k._9)}`}{' '}
+                        {`${i18n.t(k._9)}`}
                       </Title>
                     </View>
                   </TouchableWithoutFeedback>
@@ -2939,7 +2962,7 @@ export default class FinalOrder extends React.Component {
                         justifyContent: 'center',
                         alignSelf: 'center',
                       }}>
-                      {`${i18n.t(k._10)}`}{' '}
+                      {`${i18n.t(k._10)}`}
                     </Title>
                   </View>
                 )}

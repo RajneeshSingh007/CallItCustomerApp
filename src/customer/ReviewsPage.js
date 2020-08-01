@@ -109,7 +109,7 @@ export default class ReviewsPage extends React.Component {
         Pref.methodGet,
         token,
         result => {
-          console.log(result);
+          //console.log(result);
           this.setState({
             branches: result.branches,
             progressView: false,
@@ -221,55 +221,162 @@ export default class ReviewsPage extends React.Component {
 
   render() {
     return (
-                <SafeAreaView
+      <SafeAreaView
         style={{flex: 1, backgroundColor: 'white'}}
         forceInset={{top: 'never'}}>
-
-      <Screen
-        style={{
-          backgroundColor: 'white',
-        }}>
-        <StatusBar barStyle="dark-content" backgroundColor="white" />
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}>
-          {this.state.item !== null && this.state.item !== undefined ? (
-            <Image
-              styleName="large-wide"
-              style={{height: sizeHeight(24), resizeMode: 'contain'}}
-              source={{uri: `${Pref.BASEURL}${this.state.item.imageurl}`}}
-            />
-          ) : null}
-          <View style={{position: 'absolute', backgroundColor: 'transparent'}}>
-            <NavigationBar
-              styleName="inline no-border clear"
-              leftComponent={
-                <View
-                  styleName="horizontal space-between"
-                  style={{marginStart: 12}}>
-                  <TouchableOpacity onPress={() => NavigationActions.goBack()}>
-                    <Icon
-                      name="arrow-forward"
-                      size={36}
-                      color="#292929"
-                      style={{
-                        padding: 4,
-                        backgroundColor: 'transparent',
-                      }}
-                    />
-                  </TouchableOpacity>
-                </View>
-              }
-            />
-          </View>
-          <View>
+        <Screen
+          style={{
+            backgroundColor: 'white',
+          }}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}>
             {this.state.item !== null && this.state.item !== undefined ? (
+              <Image
+                styleName="large-wide"
+                style={{height: sizeHeight(24), resizeMode: 'contain'}}
+                source={{uri: `${Pref.BASEURL}${this.state.item.imageurl}`}}
+              />
+            ) : null}
+            <View
+              style={{
+                position: 'absolute',
+                backgroundColor: 'transparent',
+              }}>
+              <NavigationBar
+                styleName="inline no-border clear"
+                leftComponent={
+                  <View
+                    styleName="horizontal space-between"
+                    style={{marginStart: 12}}>
+                    <TouchableOpacity
+                      onPress={() => NavigationActions.goBack()}>
+                      <Icon
+                        name="arrow-forward"
+                        size={36}
+                        color="#292929"
+                        style={{
+                          padding: 4,
+                          backgroundColor: 'transparent',
+                        }}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                }
+              />
+            </View>
+            <View>
+              {this.state.item !== null && this.state.item !== undefined ? (
+                <View
+                  style={{
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    backgroundColor: 'white',
+                  }}>
+                  <Title
+                    styleName="bold"
+                    style={{
+                      color: '#292929',
+                      fontFamily: 'Rubik',
+                      fontSize: 20,
+                      alignSelf: 'flex-start',
+                      fontWeight: '700',
+                      marginStart: sizeWidth(4),
+                      paddingHorizontal: sizeWidth(1),
+                      paddingVertical: sizeHeight(1.5),
+                    }}>
+                    {this.state.item.name}
+                  </Title>
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: '#dedede',
+                      marginVertical: sizeHeight(0.5),
+                    }}
+                  />
+                </View>
+              ) : null}
+
               <View
                 style={{
                   flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  backgroundColor: 'white',
+                  paddingHorizontal: sizeWidth(1),
+                  paddingVertical: sizeHeight(2),
                 }}>
+                <Subtitle
+                  style={{
+                    color: '#777777',
+                    fontSize: 16,
+                    alignSelf: 'flex-start',
+                    marginStart: sizeWidth(4),
+                  }}>
+                  {i18n.t(k.ratingheading)}
+                </Subtitle>
+                <StarRating
+                  disabled={false}
+                  emptyStar={'ios-star-outline'}
+                  fullStar={'ios-star'}
+                  halfStar={'ios-star-half'}
+                  iconSet={'Ionicons'}
+                  maxStars={5}
+                  starSize={28}
+                  buttonStyle={{margin: 4}}
+                  halfStarEnabled={false}
+                  containerStyle={{
+                    justifyContent: i18n.t(k.FLEX_START),
+                    marginHorizontal: sizeWidth(4),
+                    marginVertical: sizeHeight(0.2),
+                  }}
+                  rating={this.state.rating}
+                  selectedStar={this.onStarRatingPress}
+                  fullStarColor={'#EFCE4A'}
+                  //reversed={true}
+                />
+                <Subtitle
+                  style={{
+                    color: '#777777',
+                    fontSize: 16,
+                    alignSelf: 'flex-start',
+                    marginStart: sizeWidth(4),
+                  }}>
+                  {i18n.t(k.ratingcontent)}
+                </Subtitle>
+                <TextInput
+                  mode="flat"
+                  underlineColor="transparent"
+                  underlineColorAndroid="transparent"
+                  style={[styles.inputStyle]}
+                  placeholderTextColor={'#DEDEDE'}
+                  multiline={true}
+                  onChangeText={value => this.setState({reviewinput: value})}
+                  value={this.state.reviewinput}
+                />
+
+                <Button
+                  styleName=" muted border"
+                  mode={'contained'}
+                  uppercase={true}
+                  dark={true}
+                  loading={false}
+                  style={[styles.loginButtonStyle]}
+                  onPress={this.submitReview}>
+                  <Subtitle
+                    style={{
+                      color: 'white',
+                    }}>
+                    {i18n.t(k.ratingsubmit)}
+                  </Subtitle>
+                </Button>
+                <View
+                  style={{
+                    height: 1,
+                    backgroundColor: '#dedede',
+                    marginTop: sizeHeight(3),
+                    marginBottom: sizeHeight(3),
+                  }}
+                />
+
                 <Title
                   styleName="bold"
                   style={{
@@ -280,150 +387,47 @@ export default class ReviewsPage extends React.Component {
                     fontWeight: '700',
                     marginStart: sizeWidth(4),
                     paddingHorizontal: sizeWidth(1),
-                    paddingVertical: sizeHeight(1.5),
                   }}>
-                  {this.state.item.name}
+                  {'ביקורות אחרונות'}
                 </Title>
-                <View
-                  style={{
-                    height: 1,
-                    backgroundColor: '#dedede',
-                    marginVertical: sizeHeight(0.5),
-                  }}
-                />
               </View>
-            ) : null}
-
-            <View
-              style={{
-                flexDirection: 'column',
-                paddingHorizontal: sizeWidth(1),
-                paddingVertical: sizeHeight(2),
-              }}>
-              <Subtitle
-                style={{
-                  color: '#777777',
-                  fontSize: 16,
-                  alignSelf: 'flex-start',
-                  marginStart: sizeWidth(4),
-                }}>
-                {'כמה כוכבים?'}
-              </Subtitle>
-              <StarRating
-                disabled={false}
-                emptyStar={'ios-star-outline'}
-                fullStar={'ios-star'}
-                halfStar={'ios-star-half'}
-                iconSet={'Ionicons'}
-                maxStars={5}
-                starSize={28}
-                buttonStyle={{margin: 4}}
-                halfStarEnabled={false}
-                containerStyle={{
-                  justifyContent: i18n.t(k.FLEX_START),
-                  marginHorizontal: sizeWidth(4),
-                  marginVertical: sizeHeight(0.2),
-                }}
-                rating={this.state.rating}
-                selectedStar={this.onStarRatingPress}
-                fullStarColor={'#EFCE4A'}
-                //reversed={true}
+              <DummyLoader
+                visibilty={this.state.progressView}
+                center={
+                  this.state.eachTabData.length > 0 ? (
+                    <FlatList
+                      extraData={this.state}
+                      nestedScrollEnabled={true}
+                      showsHorizontalScrollIndicator={false}
+                      showsVerticalScrollIndicator={false}
+                      data={this.state.eachTabData}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({item: item, index}) =>
+                        this.renderRow(item, index)
+                      }
+                    />
+                  ) : (
+                    <Subtitle
+                      style={{
+                        alignSelf: 'center',
+                      }}>
+                      {i18n.t(k._89)}
+                    </Subtitle>
+                  )
+                }
               />
-              <Subtitle
-                style={{
-                  color: '#777777',
-                  fontSize: 16,
-                  alignSelf: 'flex-start',
-                  marginStart: sizeWidth(4),
-                }}>
-                {'מה אתה חושב על העסק?'}
-              </Subtitle>
-              <TextInput
-                mode="flat"
-                underlineColor="transparent"
-                underlineColorAndroid="transparent"
-                style={[styles.inputStyle]}
-                placeholderTextColor={'#DEDEDE'}
-                multiline={true}
-                onChangeText={value => this.setState({reviewinput: value})}
-                value={this.state.reviewinput}
-              />
-
-              <Button
-                styleName=" muted border"
-                mode={'contained'}
-                uppercase={true}
-                dark={true}
-                loading={false}
-                style={[styles.loginButtonStyle]}
-                onPress={this.submitReview}>
-                <Subtitle
-                  style={{
-                    color: 'white',
-                  }}>
-                  {'שלח ביקורת'}
-                </Subtitle>
-              </Button>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#dedede',
-                  marginTop: sizeHeight(3),
-                  marginBottom: sizeHeight(3),
-                }}
-              />
-
-              <Title
-                styleName="bold"
-                style={{
-                  color: '#292929',
-                  fontFamily: 'Rubik',
-                  fontSize: 20,
-                  alignSelf: 'flex-start',
-                  fontWeight: '700',
-                  marginStart: sizeWidth(4),
-                  paddingHorizontal: sizeWidth(1),
-                }}>
-                {'ביקורות אחרונות'}
-              </Title>
             </View>
-            <DummyLoader
-              visibilty={this.state.progressView}
-              center={
-                this.state.eachTabData.length > 0 ? (
-                  <FlatList
-                    extraData={this.state}
-                    nestedScrollEnabled={true}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    data={this.state.eachTabData}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item: item, index}) =>
-                      this.renderRow(item, index)
-                    }
-                  />
-                ) : (
-                  <Subtitle
-                    style={{
-                      alignSelf: 'center',
-                    }}>
-                    {i18n.t(k._89)}
-                  </Subtitle>
-                )
-              }
+          </ScrollView>
+          {this.state.showAlert ? (
+            <AlertDialog
+              isShow={true}
+              title={i18n.t(k._30)}
+              content={this.state.alertContent}
+              callbacks={() => this.setState({showAlert: false})}
             />
-          </View>
-        </ScrollView>
-        {this.state.showAlert ? (
-          <AlertDialog
-            isShow={true}
-            title={i18n.t(k._30)}
-            content={this.state.alertContent}
-            callbacks={() => this.setState({showAlert: false})}
-          />
-        ) : null}
-        <Loader isShow={this.state.smp} />
-      </Screen>
+          ) : null}
+          <Loader isShow={this.state.smp} />
+        </Screen>
       </SafeAreaView>
     );
   }

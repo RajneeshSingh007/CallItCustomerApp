@@ -11,7 +11,7 @@ import {createMaterialBottomTabNavigator} from 'react-navigation-material-bottom
 import {Colors} from 'react-native-paper';
 import HomePage from './../customer/HomePage';
 import Login from './../customer/Login';
-import LoginIos from './../customer/LoginIos';
+//import LoginIos from './../customer/LoginIos';
 import AuthPage from './../customer/AuthPage';
 import Order from './../customer/OrdersPage';
 import Fav from './../customer/FavPage';
@@ -20,7 +20,7 @@ import NewBusinessPage from './../customer/NewBusinessPage';
 import ReviewsPage from './../customer/ReviewsPage';
 import TrackOrderPage from './../customer/TrackOrderPage';
 import SignupPage from './../customer/SignupPage';
-import SignupPageIos from './../customer/SignupPageIos';
+//import SignupPageIos from './../customer/SignupPageIos';
 import FinalOrder from './../customer/FinalOrder';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Image} from '@shoutem/ui';
@@ -140,7 +140,7 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           }
           defaultHandler();
         },
-        title: 'בית',
+        title: i18n.t(k.homeTab),
       },
     },
 
@@ -171,7 +171,7 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           //NavigationActions.navigate('Orders');
           defaultHandler();
         },
-        title: 'הזמנות',
+        title: i18n.t(k.ordersTab),
       },
     },
 
@@ -196,7 +196,7 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           //NavigationActions.navigate('Fav');
           defaultHandler();
         },
-        title: 'מועדפים',
+        title: i18n.t(k.favTab),
       },
     },
 
@@ -221,7 +221,7 @@ const customerBottomtab = createMaterialBottomTabNavigator(
           //NavigationActions.navigate('Profile');
           defaultHandler();
         },
-        title: 'פרופיל',
+        title: i18n.t(k.profileTab),
       },
     },
   },

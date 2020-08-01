@@ -382,6 +382,10 @@ export default class NewBusinessPage extends React.Component {
     }
   };
 
+  /**
+   * biz expand time parse
+   * @param {} time 
+   */
   parsetime = time => {
     if (time == undefined || time == null) {
       return '';

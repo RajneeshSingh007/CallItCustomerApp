@@ -24,7 +24,8 @@ export default class AuthPage extends React.Component {
         Helper.itemClick(this.props, 'Login');
       } else {
         if (mks === 'true') {
-          Helper.itemClick(this.props, 'Home');
+          //Home
+          Helper.itemClick(this.props, 'Login');
           //Helper.itemClick(this.props, 'Login');
         } else {
           Helper.itemClick(this.props, 'Login');

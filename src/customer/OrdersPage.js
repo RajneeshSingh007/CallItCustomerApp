@@ -27,7 +27,7 @@ import PushNotificationAndroid from 'react-native-push-android';
 import Lodash from 'lodash';
 import {EmptyMessage} from './EmptyMessage';
 import {SafeAreaView} from 'react-navigation';
-import {Notifications} from 'react-native-notifications';
+//import {Notifications} from 'react-native-notifications';
 
 export default class OrdersPage extends React.Component {
   constructor(props) {

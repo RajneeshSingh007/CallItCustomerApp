@@ -3,6 +3,10 @@ import {NavigationActions, StackActions} from 'react-navigation';
 import NavigationAction from './../util/NavigationActions';
 import Moment from 'moment';
 import Lodash from 'lodash';
+import i18next from 'i18next';
+import english from '../i18n/english';
+import hebrew from '../i18n/hebrew';
+import arabic from '../i18n/arabic';
 
 /**
  *
@@ -424,7 +428,7 @@ export const orderData = (arr, branches, isHistory) => {
           paid: io.paid,
           status: io.status,
           cartGuid: io.cartGuid,
-          idorder:io.idorder,
+          idorder: io.idorder,
           data: data,
           totalPrice: io.price,
           servicelist: [],
@@ -450,4 +454,27 @@ export const orderData = (arr, branches, isHistory) => {
   } else {
     return [];
   }
+};
+
+/**
+ *
+ * @param {*} langcode
+ */
+export const changeLanguage = langcode => {
+  i18next
+    .init({
+      lng: langcode || 'he',
+      debug: true,
+      resources: {
+        he: {translation: hebrew},
+        ar: {translation: arabic},
+        en: {translation: english},
+      },
+      initImmediate: true,
+      fallbackLng: 'he',
+    })
+    .then(function(t) {
+      // initialized and ready to go!
+      console.log(`initialized`, i18next.t('key'));
+    });
 };

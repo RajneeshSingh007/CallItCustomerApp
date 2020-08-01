@@ -45,8 +45,8 @@ import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import {sizeHeight, sizeWidth} from './../util/Size';
 import {SafeAreaView} from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+//import Geolocation from '@react-native-community/geolocation';
+//import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 var now = new Date().getDay();
 
@@ -73,6 +73,9 @@ class HomePage extends React.Component {
     }
   }
 
+  /**
+   * initial state
+   */
   initialState = () => {
     return {
       showtos: false,
@@ -205,6 +208,9 @@ class HomePage extends React.Component {
     });
   }
 
+  /**
+   * api call based on location
+   */
   callapi = () => {
     if (Platform.OS === 'ios') {
       request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE).then(res => {
@@ -278,6 +284,9 @@ class HomePage extends React.Component {
     );
   };
 
+  /**
+   * tos acceptance
+   */
   tosagreement = () => {
     const {token} = this.state;
     const body = JSON.stringify({
@@ -309,10 +318,16 @@ class HomePage extends React.Component {
     }
   }
 
+  /**
+   * business fetch
+   */
   fetchallbusinessss() {
     this.fetchAllBusinesss(true, this.state.token);
   }
 
+  /**
+   * back click
+   */
   backClick = () => {
     const {
       isCatgegoryClicked,
@@ -398,6 +413,9 @@ class HomePage extends React.Component {
     }
   };
 
+  /**
+   * location data 
+   */
   geodatass = () => {
     const ispresentData = true;
     const option =
@@ -458,6 +476,9 @@ class HomePage extends React.Component {
       });
   };
 
+  /**
+   * restore list i.e. no need to show loader
+   */
   backrestore = () => {
     this.setState({
       navFromBusiness: false,
@@ -699,6 +720,9 @@ class HomePage extends React.Component {
     }
   }
 
+  /**
+   * get order counter
+   */
   getOrderCounter() {
     Pref.getVal(Pref.cartItem, value => {
       if (value !== undefined && value !== null) {
@@ -885,6 +909,10 @@ class HomePage extends React.Component {
     );
   }
 
+  /**
+   * brach/biz time parse
+   * @param {} time 
+   */
   parsetime = time => {
     if (time == undefined || time == null) {
       return '';
@@ -2558,7 +2586,7 @@ class HomePage extends React.Component {
                         alignSelf: 'flex-start',
                         marginStart: sizeWidth(6),
                       }}>
-                      {`${i18n.t(k._40)}`}{' '}
+                      {`${i18n.t(k._40)}`}
                     </Subtitle>
                     <View
                       style={{
@@ -2574,7 +2602,7 @@ class HomePage extends React.Component {
                           alignSelf: 'center',
                           justifyContent: 'center',
                         }}>
-                        {`${this.state.filterKM.toFixed(0)} ${i18n.t(k._)}`}{' '}
+                        {`${this.state.filterKM.toFixed(0)} ${i18n.t(k._)}`}
                       </Subtitle>
                       <Slider
                         style={{flex: 0.8, alignSelf: 'center'}}

@@ -443,7 +443,6 @@ export default class LoginIos extends React.Component {
                     fontSize: 22,
                     alignSelf: 'center',
                   }}>
-                  {' '}
                   {`${i18n.t(k._93)}`}
                 </Heading>
               </View>

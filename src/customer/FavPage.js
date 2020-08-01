@@ -92,45 +92,19 @@ export default class FavPage extends React.Component {
     );
   }
 
-  myFunction() {
-    return new Promise(resolve => {
-      this.setState({progressView: true});
-      let fetches = [];
-      let arr = [];
-      const {fakelist} = this.state;
-      for (let i = 0; i < fakelist.length; i++) {
-        const item = fakelist[i];
-        fetches.push(
-          fetch(Pref.BusinessBranchDetailUrl + item.idbranch, {
-            method: Pref.methodGet,
-            headers: {
-              Authorization: 'Bearer ' + this.state.token,
-            },
-          })
-            .then(data => data.json())
-            .then(dataJson => {
-              let {branch} = dataJson;
-              const urlx = dataJson.imageUrl;
-              branch.description = item.description;
-              branch.imageurl = urlx;
-              arr[i] = branch;
-            }),
-        );
-      }
-      Promise.all(fetches).then(() => {
-        resolve(arr);
-      });
-    });
-  }
 
   /**
    * Fetch All fav Data
    */
   fetchFavData() {
     Pref.getVal(Pref.favData, value => {
-      const dx = JSON.parse(value);
-      const ret = Lodash.reverse(dx);
-      this.setState({progressView: false, favList: ret, clone: ret});
+      const parsjson = JSON.parse(value);
+      const reverseList = Lodash.reverse(parsjson);
+      this.setState({
+        progressView: false,
+        favList: reverseList,
+        clone: reverseList,
+      });
     });
   }
 
@@ -249,7 +223,7 @@ export default class FavPage extends React.Component {
                         fontFamily: 'Rubik',
                         fontSize: 14,
                       }}>
-                      {this.parsetime(item.businessHours)}{' '}
+                      {this.parsetime(item.businessHours)}
                     </Subtitle>
                   </View>
                 ) : null}
