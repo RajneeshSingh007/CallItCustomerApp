@@ -287,4 +287,10 @@ module.exports = {
   ratingsubmit: 'ratingsubmit',
   helang: 'helang',
   arlang: 'arlang',
+  confirmorder: 'confirmorder',
+  nodeliveryavailablepart1: 'nodeliveryavailablepart1',
+  nodeliveryavailablepart2: 'nodeliveryavailablepart2',
+  guiderrormsg: 'guiderrormsg',
+  orderpricemistmatchmsg: 'orderpricemistmatchmsg',
+  allreviewtext: 'allreviewtext',
 };

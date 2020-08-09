@@ -492,7 +492,7 @@ export default class TrackOrderPage extends React.Component {
                 Pref.methodPost,
                 token,
                 re => {
-                  console.log(`re`, re);
+                  //console.log(`re`, re);
                   this.setState({smp: false});
                   if (
                     re === `re cancel request sent` ||

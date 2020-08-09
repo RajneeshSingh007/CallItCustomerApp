@@ -349,7 +349,9 @@ export default class ReviewsPage extends React.Component {
                   style={[styles.inputStyle]}
                   placeholderTextColor={'#DEDEDE'}
                   multiline={true}
-                  onChangeText={value => this.setState({reviewinput: value})}
+                  onChangeText={value =>
+                    this.setState({reviewinput: value})
+                  }
                   value={this.state.reviewinput}
                 />
 
@@ -388,7 +390,7 @@ export default class ReviewsPage extends React.Component {
                     marginStart: sizeWidth(4),
                     paddingHorizontal: sizeWidth(1),
                   }}>
-                  {'ביקורות אחרונות'}
+                  {`${i18n.t(k.allreviewtext)}`}
                 </Title>
               </View>
               <DummyLoader

@@ -429,6 +429,8 @@ export default class FinalOrder extends React.Component {
               this.setState({
                 deliveryCitiesList: [],
                 fullcitiesInput: rowData.name,
+                currentLat: rowData.lat || 0,
+                currentLog: rowData.lon || 0,
               });
             }
           }}>
@@ -1236,228 +1238,305 @@ export default class FinalOrder extends React.Component {
                     this.checknogps(fullcitiesInput).then(value => {
                       //console.log("value", value);
                       if (value === 0) {
-                        Alert.alert('', 'האם אתה בטוח שברצונך להזמין?', [
-                          {
-                            text: 'לא',
-                            onPress: () => {
-                              const removeFreeService = Lodash.filter(
-                                data,
-                                i => i.firstservice === undefined,
-                              );
-                              this.setState({data: removeFreeService});
-                            },
-                          },
-                          {
-                            text: 'כן',
-                            onPress: () => {
-                              const geolat = this.state.currentLat;
-                              const geolng = this.state.currentLog;
-                              // const day = Moment(Date.now()).format(
-                              //   "YYYY/MM/DD HH:mm"
-                              // );
-                              //cgUid
-                              //let cgUid = ``;
-                              if (selectedMode) {
-                                const findCardSelected = Lodash.find(
-                                  this.state.cardList,
-                                  cardx => cardx.selected === true,
+                        Alert.alert(
+                          '',
+                          `${i18n.t(k.confirmorder)}`,
+                          [
+                            {
+                              text: 'לא',
+                              onPress: () => {
+                                const removeFreeService = Lodash.filter(
+                                  data,
+                                  i =>
+                                    i.firstservice ===
+                                    undefined,
                                 );
-                                //console.log(`findCardSelected`, findCardSelected)
-                                if (findCardSelected !== undefined) {
+                                this.setState({
+                                  data: removeFreeService,
+                                });
+                              },
+                            },
+                            {
+                              text: 'כן',
+                              onPress: () => {
+                                const geolat = this
+                                  .state.currentLat;
+                                const geolng = this
+                                  .state.currentLog;
+                                // const day = Moment(Date.now()).format(
+                                //   "YYYY/MM/DD HH:mm"
+                                // );
+                                //cgUid
+                                //let cgUid = ``;
+                                if (selectedMode) {
+                                  const findCardSelected = Lodash.find(
+                                    this.state.cardList,
+                                    cardx =>
+                                      cardx.selected ===
+                                      true,
+                                  );
+                                  //console.log(`findCardSelected`, findCardSelected)
+                                  if (
+                                    findCardSelected !==
+                                    undefined
+                                  ) {
+                                    this.setState({
+                                      smp: true,
+                                    });
+                                    const total = this
+                                      .state.totalAmt;
+                                    let parstotal = '';
+                                    if (
+                                      total
+                                        .toString()
+                                        .includes('.')
+                                    ) {
+                                      parstotal = total
+                                        .toString()
+                                        .replace(
+                                          '.',
+                                          '',
+                                        );
+                                    } else {
+                                      parstotal = `${total.toString()}00`;
+                                    }
+                                    const datetime = this
+                                      .state
+                                      .convertTime;
+                                    const terminalNumber =
+                                      branchData.terminalNumber;
+                                    //console.log(branchData);
+                                    const {
+                                      cardTempNumber,
+                                      cardTempcvv,
+                                      cardTempyear,
+                                    } = this.state;
+                                    let sendXml = '';
+                                    // console.log(
+                                    //   `findCardSelected`,
+                                    //   findCardSelected,
+                                    // );
+                                    //visa card xml api send data
+                                    if (
+                                      findCardSelected.cardId !==
+                                      ''
+                                    ) {
+                                      sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
+                                        findCardSelected.cardId
+                                      }</cardId><terminalNumber>${terminalNumber}</terminalNumber><cardNo></cardNo><cardExpiration>${
+                                        findCardSelected.cardyear
+                                      }</cardExpiration><cvv></cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
+                                    } else {
+                                      sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><terminalNumber>${terminalNumber}</terminalNumber><cardNo>${cardTempNumber}</cardNo><cardExpiration>${cardTempyear}</cardExpiration><cvv>${cardTempcvv}</cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
+                                    }
+                                    //console.log(`sendXml`, sendXml);
+                                    const cardurl = `${
+                                      Pref.CreditCardUrl
+                                    }?int_in=${sendXml}&sessionId=${
+                                      this.state
+                                        .cardSessionID
+                                    }`;
+                                    //console.log(`sendXml`, sendXml, cardurl);
+                                    fetch(cardurl, {
+                                      method:
+                                        Pref.methodPost,
+                                    })
+                                      .then(
+                                        response => {
+                                          return response.text();
+                                        },
+                                      )
+                                      .then(out => {
+                                        const parsexml = xml2js
+                                          .parseStringPromise(
+                                            out,
+                                            {
+                                              explicitArray: false,
+                                            },
+                                          )
+                                          .then(
+                                            result => {
+                                              // console.log(
+                                              //   `result`,
+                                              //   JSON.stringify(result),
+                                              // );
+                                              const {
+                                                ashrait,
+                                              } = result;
+                                              const {
+                                                response,
+                                              } = ashrait;
+                                              const {
+                                                message,
+                                                doDeal,
+                                                additionalInfo,
+                                              } = response;
+                                              const {
+                                                cardId,
+                                                cgUid,
+                                                fileNumber,
+                                                slaveTerminalNumber,
+                                                slaveTerminalSequence,
+                                              } = doDeal;
+                                              tempCguid = cgUid;
+                                              //update card
+                                              this.updateCardid(
+                                                cardTempNumber,
+                                                cardId,
+                                              );
+                                              let shovar = `${fileNumber}${slaveTerminalNumber}${slaveTerminalSequence}`;
+                                              //console.log(`shovar`, shovar);
+                                              //cgUid = findCardSelected.cgUid;
+                                              const guid = Helper.guid();
+                                              const newArr = Lodash.map(
+                                                data,
+                                                (
+                                                  o,
+                                                  index,
+                                                ) => {
+                                                  o.orderdate = this.state.convertTime;
+                                                  o.isdelivery = isDeliveryMode;
+                                                  o.paid = selectedMode;
+                                                  o.geolat = geolat;
+                                                  o.geolng = geolng;
+                                                  o.cgUid = cgUid;
+                                                  //if (this.state.insertGuid) {
+                                                  o.guid = guid;
+                                                  //}
+                                                  if (
+                                                    this
+                                                      .state
+                                                      .isDeliveryMode
+                                                  ) {
+                                                    if (
+                                                      index ==
+                                                      0
+                                                    ) {
+                                                      o.deliveryprice = Number(
+                                                        this
+                                                          .state
+                                                          .deliveryprices,
+                                                      );
+                                                    }
+                                                  }
+                                                  o.address =
+                                                    isDeliveryMode ===
+                                                    true
+                                                      ? this
+                                                          .state
+                                                          .fullAddressInput
+                                                      : '';
+                                                  o.shovar =
+                                                    shovar ||
+                                                    '';
+                                                  return o;
+                                                },
+                                              );
+                                              if (
+                                                additionalInfo
+                                                  .toString()
+                                                  .includes(
+                                                    `SUCCESS`,
+                                                  )
+                                              ) {
+                                                const datax = JSON.stringify(
+                                                  newArr,
+                                                );
+                                                this.orderapiCallback(
+                                                  datax,
+                                                  newArr,
+                                                  token,
+                                                  true,
+                                                );
+                                              } else {
+                                                this.setState(
+                                                  {
+                                                    smp: false,
+                                                    showAlert: true,
+                                                    alertContent: `${i18n.t(
+                                                      k.invalidCard,
+                                                    )}`,
+                                                  },
+                                                );
+                                              }
+                                            },
+                                          );
+                                      })
+                                      .catch(e => {
+                                        const removeFreeService = Lodash.filter(
+                                          data,
+                                          i =>
+                                            i.firstservice ===
+                                            undefined,
+                                        );
+                                        this.setState({
+                                          data: removeFreeService,
+                                          smp: false,
+                                        });
+                                      });
+                                  } else {
+                                    this.setState({
+                                      smp: false,
+                                      alertContent: `${i18n.t(
+                                        k.nocardselectedorder,
+                                      )}`,
+                                      showAlert: true,
+                                    });
+                                  }
+                                } else {
                                   this.setState({
                                     smp: true,
                                   });
-                                  const total = this.state.totalAmt;
-                                  let parstotal = '';
-                                  if (total.toString().includes('.')) {
-                                    parstotal = total
-                                      .toString()
-                                      .replace('.', '');
-                                  } else {
-                                    parstotal = `${total.toString()}00`;
-                                  }
-                                  const datetime = this.state.convertTime;
-                                  const terminalNumber =
-                                    branchData.terminalNumber;
-                                  //console.log(branchData);
-                                  const {
-                                    cardTempNumber,
-                                    cardTempcvv,
-                                    cardTempyear,
-                                  } = this.state;
-                                  let sendXml = '';
-                                  // console.log(
-                                  //   `findCardSelected`,
-                                  //   findCardSelected,
-                                  // );
-                                  //visa card xml api send data
-                                  if (findCardSelected.cardId !== '') {
-                                    sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><cardId>${
-                                      findCardSelected.cardId
-                                    }</cardId><terminalNumber>${terminalNumber}</terminalNumber><cardNo></cardNo><cardExpiration>${
-                                      findCardSelected.cardyear
-                                    }</cardExpiration><cvv></cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
-                                  } else {
-                                    sendXml = `<ashrait><request><version>2000</version><language>ENG</language><dateTime>${datetime}</dateTime><command>doDeal</command><requestId></requestId><doDeal><terminalNumber>${terminalNumber}</terminalNumber><cardNo>${cardTempNumber}</cardNo><cardExpiration>${cardTempyear}</cardExpiration><cvv>${cardTempcvv}</cvv><total>${parstotal}</total><transactionType>Debit</transactionType><creditType>RegularCredit</creditType><currency>ILS</currency><transactionCode>Phone</transactionCode><validation>AutoCommHold</validation><customerData/></doDeal></request></ashrait>`;
-                                  }
-                                  //console.log(`sendXml`, sendXml);
-                                  const cardurl = `${
-                                    Pref.CreditCardUrl
-                                  }?int_in=${sendXml}&sessionId=${
-                                    this.state.cardSessionID
-                                  }`;
-                                  //console.log(`sendXml`, sendXml, cardurl);
-                                  fetch(cardurl, {
-                                    method: Pref.methodPost,
-                                  })
-                                    .then(response => {
-                                      return response.text();
-                                    })
-                                    .then(out => {
-                                      const parsexml = xml2js
-                                        .parseStringPromise(out, {
-                                          explicitArray: false,
-                                        })
-                                        .then(result => {
-                                          // console.log(
-                                          //   `result`,
-                                          //   JSON.stringify(result),
-                                          // );
-                                          const {ashrait} = result;
-                                          const {response} = ashrait;
-                                          const {
-                                            message,
-                                            doDeal,
-                                            additionalInfo,
-                                          } = response;
-                                          const {
-                                            cardId,
-                                            cgUid,
-                                            fileNumber,
-                                            slaveTerminalNumber,
-                                            slaveTerminalSequence,
-                                          } = doDeal;
-                                          tempCguid = cgUid;
-                                          //update card
-                                          this.updateCardid(
-                                            cardTempNumber,
-                                            cardId,
+                                  const guid = Helper.guid();
+                                  const newArr = Lodash.map(
+                                    data,
+                                    (o, index) => {
+                                      o.orderdate = this.state.convertTime;
+                                      o.isdelivery = isDeliveryMode;
+                                      o.paid = selectedMode;
+                                      o.geolat = geolat;
+                                      o.geolng = geolng;
+                                      o.cgUid = '';
+                                      //if (this.state.insertGuid) {
+                                      o.guid = guid;
+                                      //}
+                                      if (
+                                        this.state
+                                          .isDeliveryMode
+                                      ) {
+                                        if (
+                                          index == 0
+                                        ) {
+                                          o.deliveryprice = Number(
+                                            this.state
+                                              .deliveryprices,
                                           );
-                                          let shovar = `${fileNumber}${slaveTerminalNumber}${slaveTerminalSequence}`;
-                                          //console.log(`shovar`, shovar);
-                                          //cgUid = findCardSelected.cgUid;
-                                          const guid = Helper.guid();
-                                          const newArr = Lodash.map(
-                                            data,
-                                            (o, index) => {
-                                              o.orderdate = this.state.convertTime;
-                                              o.isdelivery = isDeliveryMode;
-                                              o.paid = selectedMode;
-                                              o.geolat = geolat;
-                                              o.geolng = geolng;
-                                              o.cgUid = cgUid;
-                                              //if (this.state.insertGuid) {
-                                              o.guid = guid;
-                                              //}
-                                              if (this.state.isDeliveryMode) {
-                                                if (index == 0) {
-                                                  o.deliveryprice = Number(
-                                                    this.state.deliveryprices,
-                                                  );
-                                                }
-                                              }
-                                              o.address =
-                                                isDeliveryMode === true
-                                                  ? this.state.fullAddressInput
-                                                  : '';
-                                              o.shovar = shovar || '';
-                                              return o;
-                                            },
-                                          );
-                                          if (
-                                            additionalInfo
-                                              .toString()
-                                              .includes(`SUCCESS`)
-                                          ) {
-                                            const datax = JSON.stringify(
-                                              newArr,
-                                            );
-                                            this.orderapiCallback(
-                                              datax,
-                                              newArr,
-                                              token,
-                                              true,
-                                            );
-                                          } else {
-                                            this.setState({
-                                              smp: false,
-                                              showAlert: true,
-                                              alertContent: `${i18n.t(
-                                                k.invalidCard,
-                                              )}`,
-                                            });
-                                          }
-                                        });
-                                    })
-                                    .catch(e => {
-                                      const removeFreeService = Lodash.filter(
-                                        data,
-                                        i => i.firstservice === undefined,
-                                      );
-                                      this.setState({
-                                        data: removeFreeService,
-                                        smp: false,
-                                      });
-                                    });
-                                } else {
-                                  this.setState({
-                                    smp: false,
-                                    alertContent: `${i18n.t(
-                                      k.nocardselectedorder,
-                                    )}`,
-                                    showAlert: true,
-                                  });
+                                        }
+                                      }
+                                      o.address =
+                                        isDeliveryMode ===
+                                        true
+                                          ? this.state
+                                              .fullAddressInput
+                                          : '';
+                                      o.shovar = '';
+                                      return o;
+                                    },
+                                  );
+                                  const datax = JSON.stringify(
+                                    newArr,
+                                  );
+                                  this.orderapiCallback(
+                                    datax,
+                                    newArr,
+                                    token,
+                                    false,
+                                  );
                                 }
-                              } else {
-                                this.setState({
-                                  smp: true,
-                                });
-                                const guid = Helper.guid();
-                                const newArr = Lodash.map(data, (o, index) => {
-                                  o.orderdate = this.state.convertTime;
-                                  o.isdelivery = isDeliveryMode;
-                                  o.paid = selectedMode;
-                                  o.geolat = geolat;
-                                  o.geolng = geolng;
-                                  o.cgUid = '';
-                                  //if (this.state.insertGuid) {
-                                  o.guid = guid;
-                                  //}
-                                  if (this.state.isDeliveryMode) {
-                                    if (index == 0) {
-                                      o.deliveryprice = Number(
-                                        this.state.deliveryprices,
-                                      );
-                                    }
-                                  }
-                                  o.address =
-                                    isDeliveryMode === true
-                                      ? this.state.fullAddressInput
-                                      : '';
-                                  o.shovar = '';
-                                  return o;
-                                });
-                                const datax = JSON.stringify(newArr);
-                                this.orderapiCallback(
-                                  datax,
-                                  newArr,
-                                  token,
-                                  false,
-                                );
-                              }
+                              },
                             },
-                          },
-                        ]);
+                          ],
+                        );
                       } else if (value === 2) {
                         const removeFreeService = Lodash.filter(
                           data,
@@ -1492,7 +1571,11 @@ export default class FinalOrder extends React.Component {
                           data: removeFreeService,
                           alertTitle: i18n.t(k._4),
                           flexChanged: false,
-                          alertContent: `עלות משלוח היא ${value} שקל, האם אתה בטוח שאתה רוצה לסיים את ההזמנה?`,
+                          alertContent: `${i18n.t(
+                            k.nodeliveryavailablepart1,
+                          )} ${value} ${i18n.t(
+                            k.nodeliveryavailablepart2,
+                          )}`,
                           showAlert: true,
                         });
                       }
@@ -1628,7 +1711,7 @@ export default class FinalOrder extends React.Component {
     } else if (result === 'GUID was used by this user, ack not accepted?') {
       Alert.alert(
         ``,
-        `זוהתה ניסיון להזמין את אותו הזמנה פעמיים. האם להמשיך? ניתן לבדוק אם ההזמנה קיימת בהזמנות פעילות.`,
+        `${i18n.t(k.guiderrormsg)}`,
         [
           {
             text: 'לא',
@@ -1675,8 +1758,7 @@ export default class FinalOrder extends React.Component {
         data: [],
         smp: false,
         showAlert: true,
-        alertContent:
-          'מחיר ההזמנה לא תואם למחיר האמיתי של המוצרים, אנא נסה שוב',
+        alertContent: `${i18n.t(k.orderpricemistmatchmsg)}`,
         flexChanged: true,
         tempCguid: '',
       });
@@ -1698,7 +1780,7 @@ export default class FinalOrder extends React.Component {
    * @param {c} newArr post data array
    * @param {*} result from api
    * @param {*} paymentmode
-   * @param {*} cardSessionID 
+   * @param {*} cardSessionID
    */
   cancelvisapayment = (newArr, result, paymentmode, cardSessionID) => {
     const terminalNumber = branchData.terminalNumber;
@@ -1760,7 +1842,7 @@ export default class FinalOrder extends React.Component {
 
   /**
    * edit item
-   * @param {} item 
+   * @param {} item
    */
   editmode = item => {
     Pref.setVal(Pref.EditModeEnabled, '1');
@@ -2193,7 +2275,7 @@ export default class FinalOrder extends React.Component {
     });
   };
 
-  gettotalSelectedFreeitemCount = () =>{
+  gettotalSelectedFreeitemCount = () => {
     const {freeServiceList} = this.state;
     let maxqq = Lodash.sumBy(freeServiceList, xm => {
       if (xm.quantity !== -1) {
@@ -2201,7 +2283,7 @@ export default class FinalOrder extends React.Component {
       }
     });
     return maxqq;
-  }
+  };
 
   saveFreeData = () => {
     const {
@@ -2417,9 +2499,7 @@ export default class FinalOrder extends React.Component {
                   {this.gettotalSelectedFreeitemCount() <
                   Number(this.state.maxQuantity) ? (
                     <TouchableOpacity
-                      onPress={() =>
-                        this.freeserviceSelect(item, index, true)
-                      }>
+                      onPress={() => this.freeserviceSelect(item, index, true)}>
                       <View
                         style={{
                           borderRadius: circleButtonFreeRadius,
@@ -2762,7 +2842,7 @@ export default class FinalOrder extends React.Component {
 
   /**
    * card image show
-   * @param {} cardnumber 
+   * @param {} cardnumber
    */
   returnCardImage = cardnumber => {
     let creditCardImage = `${Pref.VisaCardImage}card.png`;

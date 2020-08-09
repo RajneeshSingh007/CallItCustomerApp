@@ -9,20 +9,23 @@ import {
   ScrollView,
   View,
   NativeModules,
+  FlatList
 } from 'react-native';
 import {Image, Screen, Subtitle, Heading} from '@shoutem/ui';
 import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
-import {Button, Snackbar, TextInput} from 'react-native-paper';
+import {Button, Snackbar, TextInput, Card} from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import {AlertDialog} from './../util/AlertDialog';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Loader} from './Loader';
-import {sizeHeight} from '../util/Size';
 import {SafeAreaView} from 'react-navigation';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import {requestNotifications} from 'react-native-permissions';
+import {sizeWidth, sizeHeight} from '../util/Size';
+import CodePush from 'react-native-code-push';
+import i18next from '../i18n/init';
 
 export default class LoginIos extends React.Component {
   constructor(props) {
@@ -46,6 +49,11 @@ export default class LoginIos extends React.Component {
       timerEnabled: 0,
       timercounter: 30,
       fcmToken: '',
+      languageList: [
+        {name: i18n.t(k.helang), code: 'he'},
+        {name: i18n.t(k.arlang), code: 'ar'},
+      ],
+      showlanguageList: false,
     };
   }
 
@@ -376,6 +384,42 @@ export default class LoginIos extends React.Component {
     }
   };
 
+  changelang = item => {
+    const {code} = item;
+    this.setState({showlanguageList:false});
+    i18next.changeLanguage(code);
+  };
+
+  renderRowLanugage(item) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          //alignContent: 'flex-start',
+          //alignSelf: 'flex-start',
+          //justifyContent: 'flex-start',
+          marginVertical: sizeHeight(1),
+          marginHorizontal: sizeWidth(6),
+          paddingVertical: 4,
+          width: '100%',
+        }}>
+        <TouchableWithoutFeedback onPress={() => this.changelang(item)}>
+          <Title
+            styleName="v-start h-start "
+            style={{
+              color: '#292929',
+              fontFamily: 'Rubik',
+              fontSize: 15,
+              fontWeight: '400',
+            }}>
+            {`${item.name}`}
+          </Title>
+        </TouchableWithoutFeedback>
+      </View>
+    );
+  }
+
   render() {
     const timer = this.state.timerEnabled;
     const textmiddle =
@@ -424,7 +468,20 @@ export default class LoginIos extends React.Component {
                       padding: 4,
                       marginTop: 8,
                     }}>
-                    <Icon
+                    <TouchableWithoutFeedback
+                      onPress={() =>
+                        this.setState({showlanguageList: true})
+                      }>
+                      <Subtitle
+                        styleName={i18n.t(k.V_CENTER_H_CENTER)}
+                        style={{
+                          marginTop: sizeHeight(1.8),
+                          fontSize: 16,
+                        }}>
+                        {`שינוי שפה`}
+                      </Subtitle>
+                    </TouchableWithoutFeedback>
+                    {/* <Icon
                       name=""
                       size={36}
                       color="#292929"
@@ -432,7 +489,7 @@ export default class LoginIos extends React.Component {
                         alignSelf: 'center',
                         backgroundColor: 'transparent',
                       }}
-                    />
+                    /> */}
                   </View>
                 )}
 
@@ -582,6 +639,35 @@ export default class LoginIos extends React.Component {
             }>
             {this.state.message}
           </Snackbar>
+          {this.state.showlanguageList === true ? (
+            <Card
+              elevation={3}
+              style={{
+                position: 'absolute',
+                top: 0,
+                marginTop: sizeHeight(8.5),
+                paddingEnd: 16,
+                marginStart: 16,
+                width: '40%',
+                minHeight: 106,
+              }}>
+              <FlatList
+                //extraData={this.state}
+                showsVerticalScrollIndicator={true}
+                showsHorizontalScrollIndicator={false}
+                data={this.state.languageList}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps={'handled'}
+                ItemSeparatorComponent={() => (
+                  <View style={styles.listservicedivider} />
+                )}
+                keyExtractor={(item, index) => `${index.toString()}`}
+                renderItem={({item: item, index}) =>
+                  this.renderRowLanugage(item)
+                }
+              />
+            </Card>
+          ) : null}
           <Loader isShow={this.state.smp} />
         </Screen>
       </SafeAreaView>
@@ -626,5 +712,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal: 24,
     fontWeight: i18n.t(k._58),
+  },
+  listservicedivider: {
+    height: 0.8,
+    backgroundColor: '#dedede',
+    width: '100%',
   },
 });

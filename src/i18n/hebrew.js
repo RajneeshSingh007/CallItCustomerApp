@@ -297,4 +297,10 @@ module.exports = {
   [k.ratingsubmit]: `שלח ביקורת`,
   [k.helang]: `עברית`,
   [k.arlang]: `العربية`,
+  [k.confirmorder]: `האם אתה בטוח שברצונך להזמין?`,
+  [k.nodeliveryavailablepart1]: `עלות משלוח היא `,
+  [k.nodeliveryavailablepart2]: `עלות משלוח היא `,
+  [k.guiderrormsg]: `זוהתה ניסיון להזמין את אותו הזמנה פעמיים. האם להמשיך? ניתן לבדוק אם ההזמנה קיימת בהזמנות פעילות.`,
+  [k.orderpricemistmatchmsg]: `מחיר ההזמנה לא תואם למחיר האמיתי של המוצרים, אנא נסה שוב`,
+  [k.allreviewtext]: `אחרונות`,
 };

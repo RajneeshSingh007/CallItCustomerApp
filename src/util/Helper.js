@@ -455,26 +455,3 @@ export const orderData = (arr, branches, isHistory) => {
     return [];
   }
 };
-
-/**
- *
- * @param {*} langcode
- */
-export const changeLanguage = langcode => {
-  i18next
-    .init({
-      lng: langcode || 'he',
-      debug: true,
-      resources: {
-        he: {translation: hebrew},
-        ar: {translation: arabic},
-        en: {translation: english},
-      },
-      initImmediate: true,
-      fallbackLng: 'he',
-    })
-    .then(function(t) {
-      // initialized and ready to go!
-      console.log(`initialized`, i18next.t('key'));
-    });
-};
