@@ -1243,7 +1243,7 @@ export default class FinalOrder extends React.Component {
                           `${i18n.t(k.confirmorder)}`,
                           [
                             {
-                              text: 'לא',
+                              text: `${i18n.t(k.NO)}`,
                               onPress: () => {
                                 const removeFreeService = Lodash.filter(
                                   data,
@@ -1257,7 +1257,7 @@ export default class FinalOrder extends React.Component {
                               },
                             },
                             {
-                              text: 'כן',
+                              text: `${i18n.t(k.YES)}`,
                               onPress: () => {
                                 const geolat = this
                                   .state.currentLat;
@@ -1714,7 +1714,7 @@ export default class FinalOrder extends React.Component {
         `${i18n.t(k.guiderrormsg)}`,
         [
           {
-            text: 'לא',
+            text: `${i18n.t(k.NO)}`,
             onPress: () => {
               const removeFreeService = Lodash.filter(
                 data,
@@ -1726,7 +1726,7 @@ export default class FinalOrder extends React.Component {
             },
           },
           {
-            text: 'כן',
+            text: `${i18n.t(k.YES)}`,
             onPress: () => {
               const removeFreeService = Lodash.filter(
                 this.state.data,
@@ -2015,7 +2015,7 @@ export default class FinalOrder extends React.Component {
                       fontSize: 14,
                       fontWeight: '400',
                     }}>
-                    {'מחיקה'}
+                    {`${i18n.t(k.removecartitem)}`}
                   </Subtitle>
                 </View>
               </TouchableWithoutFeedback>
@@ -2042,7 +2042,7 @@ export default class FinalOrder extends React.Component {
                       fontSize: 14,
                       fontWeight: '400',
                     }}>
-                    {'עריכה'}
+                    {`${i18n.t(k.editcartitem)}`}
                   </Subtitle>
                 </View>
               </TouchableWithoutFeedback>

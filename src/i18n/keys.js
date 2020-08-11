@@ -293,4 +293,6 @@ module.exports = {
   guiderrormsg: 'guiderrormsg',
   orderpricemistmatchmsg: 'orderpricemistmatchmsg',
   allreviewtext: 'allreviewtext',
+  editcartitem: 'editcartitem',
+  removecartitem: 'removecartitem',
 };

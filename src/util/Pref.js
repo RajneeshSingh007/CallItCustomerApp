@@ -29,6 +29,7 @@ export const TempLocOzranchData = "templocozranchdata";
 export const AskedLocationDailog = "AskedLocationDailog";
 export const HomeReload = 'HomeReload';
 export const TOS = 'tos';
+export const langCode = 'langCode';
 
 /**
  * Business Pref Key

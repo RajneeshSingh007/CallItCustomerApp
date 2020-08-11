@@ -67,6 +67,7 @@ export default class ProfilePage extends React.Component {
       showCards: false,
       cardList: [],
       showDelete: false,
+      langcode: 'HE',
     };
   }
 
@@ -144,6 +145,15 @@ export default class ProfilePage extends React.Component {
       );
     });
 
+    Pref.getVal(Pref.langCode, code => {
+      if (code !== undefined && code !== null && code !== '') {
+        const langcode = String(Helper.removeQuotes(code)).toUpperCase();
+        if (langcode !== '' && langcode.length > 0) {
+          this.setState({langcode: langcode});
+        }
+      }
+    });
+
     Pref.getVal(Pref.cardList, value => {
       const val = JSON.parse(value);
       if (
@@ -169,6 +179,7 @@ export default class ProfilePage extends React.Component {
         firstname: split[0],
         lastName: split[1],
         address: add,
+        lang: this.state.langcode,
       });
 
       Pref.setVal(Pref.citySave, this.state.city);
@@ -255,11 +266,8 @@ export default class ProfilePage extends React.Component {
       const {cardList} = this.state;
       //console.log(`itemDelete`, itemDelete)
       const find = Lodash.find(cardList, ix => ix.id === itemDelete.id);
-      if(find !== undefined){
-        const filter = Lodash.filter(
-          cardList,
-          io => io.id !== itemDelete.id,
-        );
+      if (find !== undefined) {
+        const filter = Lodash.filter(cardList, io => io.id !== itemDelete.id);
         //console.log(`filter`, filter)
         this.setState({showDelete: false, cardList: filter}, () => {
           Pref.setVal(Pref.cardList, filter);

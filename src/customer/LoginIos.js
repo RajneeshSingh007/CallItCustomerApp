@@ -9,7 +9,7 @@ import {
   ScrollView,
   View,
   NativeModules,
-  FlatList
+  FlatList,
 } from 'react-native';
 import {Image, Screen, Subtitle, Heading} from '@shoutem/ui';
 import * as Helper from './../util/Helper';
@@ -24,8 +24,6 @@ import {SafeAreaView} from 'react-navigation';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import {requestNotifications} from 'react-native-permissions';
 import {sizeWidth, sizeHeight} from '../util/Size';
-import CodePush from 'react-native-code-push';
-import i18next from '../i18n/init';
 
 export default class LoginIos extends React.Component {
   constructor(props) {
@@ -72,8 +70,8 @@ export default class LoginIos extends React.Component {
       messaging()
         .getToken()
         .then(token => {
-          if(token !== null && token !== ''){
-           this.setState({fcmToken: token});
+          if (token !== null && token !== '') {
+            this.setState({fcmToken: token});
           }
         });
     });
@@ -102,13 +100,13 @@ export default class LoginIos extends React.Component {
             //////console.log(result);
             if (Helper.checkJson(result)) {
               const ty = result.idcustomer;
-               let tokenx = this.state.fcmToken;
+              let tokenx = this.state.fcmToken;
               // if (tokenx == '' || tokenx == null) {
               //   tokenx = NativeModules.Workaround.getToken();
               // }
-                // messaging()
-                //   .getToken()
-                //   .then(fcmToken => {
+              // messaging()
+              //   .getToken()
+              //   .then(fcmToken => {
               if (tokenx !== '') {
                 const tt = JSON.stringify({
                   value: tokenx,
@@ -184,6 +182,10 @@ export default class LoginIos extends React.Component {
   }
 
   bindingBack() {
+    if (this.state.showlanguageList === true) {
+      this.setState({languageList: false});
+      return true;
+    }
     if (this.state.mode > 0) {
       this.setState({
         stylnn: 'bold v-center h-center',
@@ -386,8 +388,9 @@ export default class LoginIos extends React.Component {
 
   changelang = item => {
     const {code} = item;
-    this.setState({showlanguageList:false});
-    i18next.changeLanguage(code);
+    this.setState({showlanguageList: false});
+    Pref.setVal(Pref.langCode, code);
+    i18n.changeLanguage(code);
   };
 
   renderRowLanugage(item) {
@@ -469,9 +472,7 @@ export default class LoginIos extends React.Component {
                       marginTop: 8,
                     }}>
                     <TouchableWithoutFeedback
-                      onPress={() =>
-                        this.setState({showlanguageList: true})
-                      }>
+                      onPress={() => this.setState({showlanguageList: true})}>
                       <Subtitle
                         styleName={i18n.t(k.V_CENTER_H_CENTER)}
                         style={{

@@ -303,4 +303,6 @@ module.exports = {
   [k.guiderrormsg]: `זוהתה ניסיון להזמין את אותו הזמנה פעמיים. האם להמשיך? ניתן לבדוק אם ההזמנה קיימת בהזמנות פעילות.`,
   [k.orderpricemistmatchmsg]: `מחיר ההזמנה לא תואם למחיר האמיתי של המוצרים, אנא נסה שוב`,
   [k.allreviewtext]: `אחרונות`,
+  [k.editcartitem]: `עריכה`,
+  [k.removecartitem]: `מחיקה`,
 };

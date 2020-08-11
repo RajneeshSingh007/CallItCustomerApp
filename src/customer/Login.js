@@ -23,8 +23,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {Loader} from './Loader';
 import {SafeAreaView} from 'react-navigation';
 import {sizeWidth, sizeHeight} from '../util/Size';
-import CodePush from 'react-native-code-push';
-import i18next from '../i18n/init';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -150,6 +148,10 @@ export default class Login extends React.Component {
   }
 
   bindingBack() {
+    if (this.state.showlanguageList === true) {
+      this.setState({languageList: false});
+      return true;
+    }
     if (this.state.mode > 0) {
       this.setState({
         stylnn: 'bold v-center h-center',
@@ -347,8 +349,9 @@ export default class Login extends React.Component {
 
   changelang = item => {
     const {code} = item;
-    this.setState({showlanguageList:false});
-    i18next.changeLanguage(code);
+    this.setState({showlanguageList: false});
+    Pref.setVal(Pref.langCode, code);
+    i18n.changeLanguage(code);
   };
 
   renderRowLanugage(item) {
