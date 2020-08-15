@@ -12,6 +12,7 @@ import {Snackbar} from 'react-native-paper';
 import {CustomToast} from './src/util/CustomToast';
 import messaging from '@react-native-firebase/messaging';
 import firebase from '@react-native-firebase/app';
+import i18next from 'i18next';
 
 //@inject('navigationStore')
 //@observer
@@ -31,6 +32,14 @@ class App extends React.Component {
    * @returns {Promise<void>}
    */
   componentDidMount() {
+    Pref.getVal(Pref.langCode, code => {
+      if (code !== undefined && code !== null && code !== '') {
+        const lang = Helper.removeQuotes(code);
+        if (lang !== '' && lang.length > 0) {
+          i18next.changeLanguage(lang);
+        }
+      }
+    });
     Pref.setVal(Pref.TrackHomePageData, '');
     this._notificationEvent = PushNotificationAndroid.addEventListener(
       'notification',

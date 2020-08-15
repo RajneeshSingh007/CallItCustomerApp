@@ -54,6 +54,7 @@ export default class Login extends React.Component {
   }
 
   componentDidMount() {
+    Pref.setVal(Pref.langCode, 'he');
     try {
       Helper.requestPermissions();
     } catch (e) {

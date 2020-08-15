@@ -14,6 +14,7 @@ import {Snackbar} from 'react-native-paper';
 import messaging from '@react-native-firebase/messaging';
 import firebase from '@react-native-firebase/app';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import i18next from 'i18next';
 
 //@inject('navigationStore')
 //@observer
@@ -33,6 +34,14 @@ class AppIos extends React.Component {
    * @returns {Promise<void>}
    */
   componentDidMount() {
+    Pref.getVal(Pref.langCode, code => {
+      if (code !== undefined && code !== null && code !== '') {
+        const lang = Helper.removeQuotes(code);
+        if (lang !== '' && lang.length > 0) {
+          i18next.changeLanguage(lang);
+        }
+      }
+    });
     PushNotificationIOS.requestPermissions().then(op => {
       messaging()
         .getToken()
@@ -65,14 +74,9 @@ class AppIos extends React.Component {
       .onTokenRefresh(fcmToken => {
         if (fcmToken !== null) {
           Pref.getVal(Pref.userDeviceID, userDeviceID => {
-            if(userDeviceID !== undefined && userDeviceID !== null){
-              const trimuserDeviceID = Helper.removeQuotes(
-                userDeviceID,
-              );
-              if (
-                trimuserDeviceID !== '' &&
-                trimuserDeviceID !== fcmToken
-              ) {
+            if (userDeviceID !== undefined && userDeviceID !== null) {
+              const trimuserDeviceID = Helper.removeQuotes(userDeviceID);
+              if (trimuserDeviceID !== '' && trimuserDeviceID !== fcmToken) {
                 this.refreshToken(fcmToken);
               }
             }
@@ -148,7 +152,7 @@ class AppIos extends React.Component {
             var details = JSON.parse(JSON.stringify(result));
             Pref.setVal(Pref.CustData, details);
             const idcustomer = details.idcustomer;
-            if(fcmToken !== null && fcmToken !== ''){
+            if (fcmToken !== null && fcmToken !== '') {
               const tt = JSON.stringify({
                 value: fcmToken,
               });

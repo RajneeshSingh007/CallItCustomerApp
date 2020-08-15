@@ -1,16 +1,15 @@
 import i18next from 'i18next';
-import english from './english';
 import hebrew from './hebrew';
 import arabic from './arabic';
+import DeviceInfo from 'react-native-device-info';
 
 i18next
   .init({
-    lng: 'he',
+    lng: DeviceInfo.getDeviceLocale(),
     debug: true,
     resources: {
       he: {translation: hebrew},
       ar: {translation: arabic},
-      en: {translation: english},
     },
     initImmediate: true,
     fallbackLng: 'he',

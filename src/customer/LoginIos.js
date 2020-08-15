@@ -56,6 +56,7 @@ export default class LoginIos extends React.Component {
   }
 
   componentDidMount() {
+    Pref.setVal(Pref.langCode, 'he');
     try {
       Helper.requestPermissions();
     } catch (e) {

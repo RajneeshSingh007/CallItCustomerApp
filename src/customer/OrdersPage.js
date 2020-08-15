@@ -373,11 +373,11 @@ export default class OrdersPage extends React.Component {
             // }
             style={{
               rightComponent: {
-                flex: 0.4,
+                flex: 0.3,
               },
 
               leftComponent: {
-                flex: 0.4,
+                flex: 0.5,
               },
 
               centerComponent: {
