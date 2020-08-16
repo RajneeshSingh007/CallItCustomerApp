@@ -22,6 +22,7 @@ import {
   Button,
   Portal,
   Modal,
+  Card,
 } from 'react-native-paper';
 import {
   Divider,
@@ -68,6 +69,11 @@ export default class ProfilePage extends React.Component {
       cardList: [],
       showDelete: false,
       langcode: 'HE',
+      languageList: [
+        {name: i18n.t(k.helang), code: 'he'},
+        {name: i18n.t(k.arlang), code: 'ar'},
+      ],
+      showlanguageList: false,
     };
   }
 
@@ -88,6 +94,9 @@ export default class ProfilePage extends React.Component {
   backClick = () => {
     if (this.state.showCards) {
       this.setState({showCards: false, cardList: []});
+      return true;
+    } else if (this.state.showlanguageList) {
+      this.setState({showCards: false, showlanguageList: false});
       return true;
     }
     return false;
@@ -358,6 +367,48 @@ export default class ProfilePage extends React.Component {
     });
   };
 
+  changelang = item => {
+    const {code} = item;
+    this.setState(
+      {showlanguageList: false, langcode: String(code).toUpperCase()},
+      () => {
+        this.editClick();
+        Pref.setVal(Pref.langCode, code);
+        i18n.changeLanguage(code);
+      },
+    );
+  };
+
+  renderRowLanugage(item) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          //alignContent: 'flex-start',
+          //alignSelf: 'flex-start',
+          //justifyContent: 'flex-start',
+          marginVertical: sizeHeight(1),
+          marginHorizontal: sizeWidth(6),
+          paddingVertical: 4,
+          width: '100%',
+        }}>
+        <TouchableWithoutFeedback onPress={() => this.changelang(item)}>
+          <Title
+            styleName="v-start h-start "
+            style={{
+              color: '#292929',
+              fontFamily: 'Rubik',
+              fontSize: 15,
+              fontWeight: '400',
+            }}>
+            {`${item.name}`}
+          </Title>
+        </TouchableWithoutFeedback>
+      </View>
+    );
+  }
+
   render() {
     return (
       <SafeAreaView
@@ -387,6 +438,19 @@ export default class ProfilePage extends React.Component {
                 flex: 1,
               },
             }}
+            rightComponent={
+              <TouchableWithoutFeedback
+                onPress={() => this.setState({showlanguageList: true})}>
+                <Subtitle
+                  styleName={i18n.t(k.V_CENTER_H_CENTER)}
+                  style={{
+                    fontSize: 18,
+                    marginEnd: 16,
+                  }}>
+                  {`שינוי שפה`}
+                </Subtitle>
+              </TouchableWithoutFeedback>
+            }
             leftComponent={
               <View
                 styleName="horizontal space-between"
@@ -930,6 +994,38 @@ export default class ProfilePage extends React.Component {
             </Subtitle>
           </Button>
           <Loader isShow={this.state.smp} />
+          {this.state.showlanguageList === true ? (
+            <Card
+              elevation={3}
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                marginTop: sizeHeight(7),
+                paddingEnd: 16,
+                marginStart: 16,
+                marginEnd: 16,
+                width: '40%',
+                minHeight: 106,
+                justifyContent: 'flex-start',
+              }}>
+              <FlatList
+                //extraData={this.state}
+                showsVerticalScrollIndicator={true}
+                showsHorizontalScrollIndicator={false}
+                data={this.state.languageList}
+                nestedScrollEnabled={true}
+                keyboardShouldPersistTaps={'handled'}
+                ItemSeparatorComponent={() => (
+                  <View style={styles.listservicedivider} />
+                )}
+                keyExtractor={(item, index) => `${index.toString()}`}
+                renderItem={({item: item, index}) =>
+                  this.renderRowLanugage(item)
+                }
+              />
+            </Card>
+          ) : null}
         </Screen>
       </SafeAreaView>
     );
@@ -973,5 +1069,10 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     alignSelf: i18n.t(k.CENTER),
     justifyContent: i18n.t(k.CENTER),
+  },
+  listservicedivider: {
+    height: 0.8,
+    backgroundColor: '#dedede',
+    width: '100%',
   },
 });
