@@ -1,36 +1,24 @@
 import i18n from 'i18next';
 import k from './../i18n/keys';
 import React from 'react';
-import {
-  StyleSheet,
-} from 'react-native';
-import {
-  Card,
-} from 'react-native-paper';
-import {
-  View,
-  Image,
-  Row,
-  Subtitle,
-  Title,
-  TouchableOpacity,
-} from '@shoutem/ui';
+import {StyleSheet} from 'react-native';
+import {Card} from 'react-native-paper';
+import {View, Image, Row, Subtitle, Title, TouchableOpacity} from '@shoutem/ui';
 import * as Pref from './../util/Pref';
 import * as Lodash from 'lodash';
 import {sizeHeight, sizeWidth} from '../util/Size';
 
-
 const AccordItem = props => {
-  const {index, eachTabData, clickedItem = () => {},priceStyle} = props;
+  const {index = -1, eachTabData, clickedItem = () => {}, priceStyle} = props;
 
-  onPressItem = () => {
-    clickedItem(eachTabData, index);
-  };
+  // onPressItem = () => {
+  //   clickedItem(eachTabData, index);
+  // };
 
   return (
-    <View>
+    <View style={styles.mainitemcontainer}>
       {index === 0 ? <View style={styles.listserviceItemDivider} /> : null}
-      <TouchableOpacity styleName="flexible" onPress={onPressItem}>
+      <TouchableOpacity styleName="flexible" onPress={clickedItem}>
         <Row styleName="vertical">
           <Card elevation={0} style={styles.serviceImageCard}>
             <Image
@@ -45,9 +33,7 @@ const AccordItem = props => {
               <Title styleName="bold" style={styles.servicetitle}>
                 {Lodash.capitalize(eachTabData.name)}
               </Title>
-              <Title
-                styleName="bold"
-                style={priceStyle}>
+              <Title styleName="bold" style={priceStyle}>
                 {eachTabData.available === 1
                   ? `${i18n.t(k._6)}${eachTabData.price}`
                   : i18n.t(k._63)}
@@ -67,9 +53,10 @@ const AccordItem = props => {
 
 export default AccordItem;
 
-
-
 const styles = StyleSheet.create({
+  mainitemcontainer: {
+    height: 96,
+  },
   servicedesc: {
     color: '#292929',
     fontFamily: 'Rubik',

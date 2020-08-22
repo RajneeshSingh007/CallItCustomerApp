@@ -176,7 +176,7 @@ export default class OrderProcess1 extends React.Component {
         let ooo = 0;
         if (editData !== undefined && editData !== null) {
           const valuex = Helper.removeQuotes(value) === '1' ? true : false;
-          //console.log('editData', editData);
+          console.log('editData', editData.tillDoughPrice);
           selectedCirclePos = editData.selectedCirclePos;
           const circleTab = editData.circleTab;
           freeList = editData.freeList;
@@ -204,6 +204,20 @@ export default class OrderProcess1 extends React.Component {
               clonesvmode: editData.clonesvmode,
             },
             () => {
+              const doughPriceBeforePizza = this.returnDoughpriceEditMode(
+                this.state.servicemode,
+              );
+              const tabpos = this.returnSelectTabPositionEditMode(this.state.servicemode);
+              selectedCirclePos = tabpos;
+              let showExtraData = [];
+              if(this.state.servicemode === 1 || this.state.servicemode === 2){
+                showExtraData = this.returncircletext(tabpos);
+              }
+              this.setState({
+                tillDoughPrice: doughPriceBeforePizza,
+                circleTab: tabpos,
+                showCircleExtraData: showExtraData,
+              });
               this.onItemClicks(true, editData);
             },
           );
@@ -211,28 +225,64 @@ export default class OrderProcess1 extends React.Component {
       }
     });
 
-    this.menuServicesSetup();
+    //this.menuServicesSetup();
   }
+
+  /**
+   * return till dough price during editing pizza service
+   * this is useful when tab is reset and restore price till dough,
+   * @param {*} servicemode
+   */
+  returnDoughpriceEditMode = servicemode => {
+    if (servicemode === 1 || servicemode === 2) {
+      let doughList = this.returnCircleData(7);
+      const doughPrice = Lodash.sumBy(doughList, io => io.price);
+      return doughPrice || 0;
+    }
+    return 0;
+  };
+
+  /**
+   * return selected tab position during editing pizza service
+   * @param {*} servicemode
+   */
+  returnSelectTabPositionEditMode = servicemode => {
+    if (servicemode === 1 || servicemode === 2) {
+      let tabList = this.returnCircleData(0);
+      let tabList1 = this.returnCircleData(1);
+      let tabList2 = this.returnCircleData(3);
+      if (tabList.length > 0) {
+        return 1;
+      } else if (tabList1.length > 0) {
+        return 2;
+      } else if (tabList2.length > 0) {
+        return 3;
+      }
+    }
+    return 1;
+  };
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.backClick);
   }
 
-  componentDidUpdate(prevProp, nextState) {
-    const fkbranchS = prevProp.tabNames[0].data[0].fkbranchS;
-    const nextfkbranchS = this.props.tabNames[0].data[0].fkbranchS;
-    if (nextState.backClicked) {
-      this.setState({
-        clickedItemPos: nextState.clickedItemPos,
-        backClicked: false,
-        clickedPos: nextState.clickedPos,
-      });
-    } else {
-      if (fkbranchS !== nextfkbranchS) {
-        this.menuServicesSetup();
-      }
-    }
-  }
+  // componentDidUpdate(prevProp, nextState) {
+  //   if ( prevProp.tabName && prevProp.tabName.length > 0) {
+  //     const fkbranchS = prevProp.tabNames[0].data[0].fkbranchS;
+  //     const nextfkbranchS = this.props.tabNames[0].data[0].fkbranchS;
+  //     if (nextState.backClicked) {
+  //       this.setState({
+  //         clickedItemPos: nextState.clickedItemPos,
+  //         backClicked: false,
+  //         clickedPos: nextState.clickedPos,
+  //       });
+  //     } else {
+  //       if (fkbranchS !== nextfkbranchS) {
+  //         this.menuServicesSetup();
+  //       }
+  //     }
+  //   }
+  // }
 
   /**
    * menu sevices setup
@@ -277,8 +327,8 @@ export default class OrderProcess1 extends React.Component {
    * back click
    */
   backk() {
-    this.props.backClicked();
-    this.menuServicesSetup();
+    //this.props.backClicked();
+    //this.menuServicesSetup();
     if (
       this.state.visibility === 1 ||
       this.state.servicemode === 1 ||
@@ -440,9 +490,9 @@ export default class OrderProcess1 extends React.Component {
         if (this.state.mode || !isOrderMore) {
           NavigationActions.navigate('FinalOrder');
         } else {
-          if (this.state.servicemode === 0) {
-            this.props.backClicked();
-          }
+          // if (this.state.servicemode === 0) {
+          //   this.props.backClicked();
+          // }
         }
       }
     }
@@ -652,6 +702,9 @@ export default class OrderProcess1 extends React.Component {
           extrafreeQuarter3: extrafreeQuarter3 || [],
           extrafreeQuarter4: extrafreeQuarter4 || [],
         });
+        if (mode === true) {
+          this.pizaImageSetupandfill();
+        }
         //alert(JSON.stringify(this.state.serviceExtra));
       },
       () => {
@@ -728,9 +781,9 @@ export default class OrderProcess1 extends React.Component {
           if (countExtra === serviceExtrax.multipliable) {
             this.setState({
               alertTitle: i18n.t(k._30),
-              alertContent: `${i18n.t(
-                k.multipliablelimit,
-              )} ${Number(serviceExtrax.multipliable)}`,
+              alertContent: `${i18n.t(k.multipliablelimit)} ${Number(
+                serviceExtrax.multipliable,
+              )}`,
               showAlert: true,
             });
             return false;
@@ -1166,7 +1219,10 @@ export default class OrderProcess1 extends React.Component {
    * @param {} filterFull
    */
   resetpizza(filterFull, tabno) {
-    const result = Lodash.filter(this.state.cartExtraArray, ele => ele.catType === 7);
+    const result = Lodash.filter(
+      this.state.cartExtraArray,
+      ele => ele.catType === 7,
+    );
     const og = JSON.parse(JSON.stringify(this.state.originalExtras));
     freeList = [];
     const servicePrice = this.state.tillDoughPrice;
@@ -1228,7 +1284,7 @@ export default class OrderProcess1 extends React.Component {
    * delete unwanted extra key and fix category
    * @param {} obj
    */
-  extraobjectCreateWhenMoved(obj, setprice = false,changetype = false, type) {
+  extraobjectCreateWhenMoved(obj, setprice = false, changetype = false, type) {
     const catname1 = obj.category_name;
     delete obj.extraAvailable;
     delete obj.fkcategory;
@@ -1240,7 +1296,7 @@ export default class OrderProcess1 extends React.Component {
     if (setprice) {
       obj.price = 0;
     }
-    if(changetype){
+    if (changetype) {
       obj.catType = type;
     }
     return obj;
@@ -1326,14 +1382,11 @@ export default class OrderProcess1 extends React.Component {
             );
 
             if (findfree !== undefined && findfree1 !== undefined) {
-              filterFull.push(this.extraobjectCreateWhenMoved(findfree, false, true, 1));
               filterFull.push(
-                this.extraobjectCreateWhenMoved(
-                  findfree1,
-                  true,
-                  false,
-                  2,
-                ),
+                this.extraobjectCreateWhenMoved(findfree, false, true, 1),
+              );
+              filterFull.push(
+                this.extraobjectCreateWhenMoved(findfree1, true, false, 2),
               );
               doughprice += findfree.price;
             } else {
@@ -1350,8 +1403,12 @@ export default class OrderProcess1 extends React.Component {
                 2,
               );
               if (findNotfree !== undefined && findNotfree1 !== undefined) {
-                filterFull.push(this.extraobjectCreateWhenMoved(findNotfree, false, true,1));
-                filterFull.push(this.extraobjectCreateWhenMoved(findNotfree1, false, true, 2));
+                filterFull.push(
+                  this.extraobjectCreateWhenMoved(findNotfree, false, true, 1),
+                );
+                filterFull.push(
+                  this.extraobjectCreateWhenMoved(findNotfree1, false, true, 2),
+                );
                 doughprice += findNotfree.price;
                 doughprice += findNotfree1.price;
               }
@@ -1444,14 +1501,18 @@ export default class OrderProcess1 extends React.Component {
               filterFull.push(
                 this.extraobjectCreateWhenMoved(
                   item.catType === 1 ? findfree : findfree3,
-                  false,true, item.catType === 1 ? 3 : 5
+                  false,
+                  true,
+                  item.catType === 1 ? 3 : 5,
                 ),
               );
               doughprice += findfree.price;
               filterFull.push(
                 this.extraobjectCreateWhenMoved(
                   item.catType === 2 ? findfree1 : findfree2,
-                  true,true, item.catType === 2 ? 4 : 6
+                  true,
+                  true,
+                  item.catType === 2 ? 4 : 6,
                 ),
               );
             } else {
@@ -1464,13 +1525,17 @@ export default class OrderProcess1 extends React.Component {
                 filterFull.push(
                   this.extraobjectCreateWhenMoved(
                     item.catType === 1 ? findNotfree : findNotfree2,
-                    false, true, item.catType === 1 ? 3 : 5
+                    false,
+                    true,
+                    item.catType === 1 ? 3 : 5,
                   ),
                 );
                 filterFull.push(
                   this.extraobjectCreateWhenMoved(
                     item.catType === 2 ? findNotfree1 : findNotfree3,
-                    false,true,item.catType === 2 ? 4 : 6
+                    false,
+                    true,
+                    item.catType === 2 ? 4 : 6,
                   ),
                 );
                 doughprice += findNotfree;
@@ -3936,19 +4001,15 @@ export default class OrderProcess1 extends React.Component {
       const price = this.state.totalAmount;
       //console.log(price)
       //console.log(this.state.cartExtraArray)
-      if(this.state.mode){
+      if (this.state.mode) {
         this.setState({
           servicemode: 2,
-          serviceCat: JSON.parse(
-            JSON.stringify(this.state.originalExtras),
-          ),
+          serviceCat: JSON.parse(JSON.stringify(this.state.originalExtras)),
         });
-      }else{
+      } else {
         this.setState({
           servicemode: 2,
-          serviceCat: JSON.parse(
-            JSON.stringify(this.state.originalExtras),
-          ),
+          serviceCat: JSON.parse(JSON.stringify(this.state.originalExtras)),
           tillDoughPrice: price,
           //showCircleExtraData: [],
         });

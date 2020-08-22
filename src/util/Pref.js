@@ -84,6 +84,7 @@ export const CancelOrderUrl = `${BASEURL}api/CancelOrderForCustomer`;
 export const BranchStatusUrl = `${BASEURL}api/branchOpenStatus/`;
 export const TOSURL = `${BASEURL}api/postToSAgreement`;
 export const TOSWEBURL = 'http://callit.co.il/tos/';
+export const ReorderHistoryUrl = `${BASEURL}api/GetOrderForCustomerFromHistory`;
 
 /**
  * Business Server Url

@@ -1,155 +1,364 @@
 import React from 'react';
-import {View, TouchableOpacity, StyleSheet, Text, Image, ScrollView} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  Platform,
+  Dimensions,
+} from 'react-native';
 
-import * as Helper from './../util/Helper';
-import * as Pref from './../util/Pref';
-import * as Lodash from 'lodash';
-import {sizeHeight, sizeWidth} from './../util/Size';
+import {Title} from '@shoutem/ui';
+import AccordItem from './AccordItem';
+import {Animated} from 'react-native';
+import DummyLoader from './../util/DummyLoader';
 
-import SectionList from 'react-native-tabs-section-list';
+const windowHeight = Dimensions.get('window').height;
+//const TabBarHeight = 56;
+//let HeaderHeight = 456;
 
-export default class TabSectionList extends React.Component {
+export default class TabSectionList extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.sectionListRef = React.createRef();
+    this.flatListRef = React.createRef();
+    this.ontabClick = this.ontabClick.bind(this);
+    this.onChangeViewable = this.onChangeViewable.bind(this);
+    this.headerView = this.headerView.bind(this);
+    this.blockUpdateIndex = false;
     this.state = {
-      productList: [],
+      currentIndex: 0,
+      scrollY: new Animated.Value(0),
+      tabMove: new Animated.Value(0),
+      tabBarElevation: false,
+      HeaderHeight: 0,
+      TabBarHeight: 0,
     };
   }
 
-  componentDidMount() {
-    this.fetchAllProducts();
-  }
-
-  componentWillUnmount() {}
-
-  fetchAllProducts() {
-    const {branchId} = this.props;
-    this.setState({progressView: true});
-    Pref.getVal(Pref.bearerToken, value => {
-      const token = Helper.removeQuotes(value);
-      Helper.networkHelperToken(
-        Pref.BranchAllServiceUrl + 10,
-        Pref.methodGet,
-        token,
-        result => {
-          let groupedCategory = Lodash.groupBy(result, function(exData) {
-            if (exData.category !== '') {
-              return exData.category + ':' + exData.categoryDescription;
-            }
-          });
-          const serviceCat = Object.keys(groupedCategory).map(key => ({
-            title: key.split(':')[0],
-            description: key.split(':')[1],
-            data: groupedCategory[key],
-          }));
-          this.setState({
-            isCatgegoryClicked: 1,
-            progressView: false,
-            productList: serviceCat,
-            clone: result,
-            token: token,
-          });
-        },
-        error => {
-          this.setState({progressView: false});
-        },
-      );
-    });
-  }
-
-  renderItem = ({item, index, section}) => {
+  renderItem = ({item, index}) => {
+    const {clickedItem} = this.props;
     return (
-      <TouchableOpacity>
-        <View style={{flex: 1, backgroundColor: 'white'}}>
-          <View style={{flexDirection: 'row', margin: 10, flex: 1}}>
-            <Image
-              source={{uri: `${Pref.BASEURL}${item.imageUrl}`}}
-              style={styles.image}
-            />
-            <View style={{flex: 1, margin: sizeWidth(2)}}>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}>
-                <Text style={styles.itemTitle}> {item.name}</Text>
-                <Text style={styles.itemTitle}> ₪{item.price}</Text>
-              </View>
-              <Text style={styles.itemDescription}>{item.description}</Text>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
+      <AccordItem
+        eachTabData={item}
+        clickedItem={() => {
+          clickedItem(item, index);
+        }}
+        priceStyle={StyleSheet.flatten([
+          {
+            color: item.available === 1 ? '#292929' : 'red',
+            fontFamily: 'Rubik',
+            fontSize: 16,
+            fontWeight: '700',
+            lineHeight: 20,
+          },
+        ])}
+      />
     );
   };
 
-  renderSection = ({section}) => {
+  renderSection = ({section, item, index}) => {
     return (
-      <View style={{flex: 1, borderColor: '#DEDEDE', borderWidth: 1}}>
-        <View style={{flex: 1, margin: 10, borderRadius: 2}}>
-          <Text
-            style={{
-              fontFamily: 'Rubik',
-              fontSize: 16,
-              fontWeight: '700',
-              lineHeight: 25,
-              color: '#3daccf',
-            }}>
-            {section.title}
-          </Text>
-          <Text style={styles.itemDescription}>{section.description}</Text>
+      <View style={styles.sectioncontainer}>
+        <View style={styles.itemtitlecontainer}>
+          <Title style={styles.SectionText}>{section.title}</Title>
+          <Title style={styles.itemDescription}>{section.description}</Title>
         </View>
       </View>
     );
   };
 
-  render() {
-    const {myHeader} = this.props;
+  renderTab = (index, item) => {
     return (
-      <ScrollView>
-        <View style={{flex: 1}}>
-          {/* {myHeader} */}
-          <SectionList
-            ListHeaderComponent={() => {
-              return myHeader;
-            }}
-            sections={this.state.productList}
-            keyExtractor={item => item.title}
-            stickySectionHeadersEnabled={false}
-            nestedScrollEnabled={true}
-            scrollToLocationOffset={50}
-            tabBarStyle={styles.tabBar}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            renderTab={({title, isActive}) => (
-              <View
-                style={[
-                  styles.tabContainer,
-                  {
-                    borderBottomWidth: isActive ? 1 : 0,
-                    borderBottomColor: '#3daccf',
-                  },
-                ]}>
-                <Text
-                  style={[
-                    styles.tabText,
-                    {color: isActive ? '#3daccf' : '#9e9e9e'},
-                  ]}>
-                  {title}
-                </Text>
-              </View>
-            )}
-            renderSectionHeader={this.renderSection}
-            renderItem={this.renderItem}
-          />
+      <TouchableWithoutFeedback onPress={() => this.ontabClick(item, index)}>
+        <View
+          style={[
+            styles.tabContainer,
+            {
+              borderBottomWidth: this.state.currentIndex === index ? 1.5 : 0,
+              borderBottomColor: '#3daccf',
+            },
+          ]}>
+          <Text
+            style={[
+              styles.tabText,
+              {
+                color:
+                  this.state.currentIndex === index ? '#3daccf' : '#9e9e9e',
+              },
+            ]}>
+            {`${item.title}`}
+          </Text>
         </View>
-      </ScrollView>
+      </TouchableWithoutFeedback>
+    );
+  };
+
+  ontabClick = (item, index) => {
+    this.setState({
+      currentIndex: index,
+    });
+    this.blockUpdateIndex = true;
+    this.changeTopIndex(index);
+    this.changeSectionIndex(index);
+  };
+
+  onChangeViewable = vi => {
+    const viewableitems = vi.viewableItems;
+    if (viewableitems !== undefined && viewableitems.length > 0) {
+      const id = viewableitems[0].section.id;
+      let visiblepos = 0;
+      if (visiblepos === 1) {
+        visiblepos = 0;
+      } else {
+        visiblepos = id - 1;
+      }
+      if (!this.blockUpdateIndex && this.state.currentIndex !== visiblepos) {
+        this.changeTopIndex(visiblepos);
+        this.setState({
+          currentIndex: visiblepos,
+        });
+      }
+    }
+  };
+
+  changeTopIndex = index => {
+    const ref = this.flatListRef.current.getNode();
+    if (ref && ref.scrollToIndex) {
+      ref.scrollToIndex({
+        animated: true,
+        index: index,
+        //viewOffset:100
+      });
+    }
+  };
+
+  changeSectionIndex = index => {
+    const ref = this.sectionListRef.current.getNode();
+    if (ref && ref.scrollToLocation) {
+      ref.scrollToLocation({
+        animated: true,
+        itemIndex: 0,
+        sectionIndex: index,
+        //viewOffset: 100,
+        //viewPosition:1
+      });
+    }
+  };
+
+  componentDidMount() {
+    this.listerner = this.state.scrollY.addListener(data => {
+      const {value} = data;
+      const sum = this.state.HeaderHeight + this.state.TabBarHeight;
+      this.setState({
+        tabBarElevation: value >= sum && sum > 0 ? true : false,
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.state.scrollY) {
+      this.state.scrollY.removeAllListeners();
+    }
+  }
+
+  headerView = () => {
+    const {myHeader, productList = [], expanded} = this.props;
+    const {scrollY, HeaderHeight, TabBarHeight} = this.state;
+    const tabHeight = expanded ? HeaderHeight + TabBarHeight : HeaderHeight;
+
+    const tabY = scrollY.interpolate({
+      inputRange: [0, tabHeight],
+      outputRange: [tabHeight, 0],
+      extrapolate: 'clamp',
+    });
+
+    const headery = scrollY.interpolate({
+      inputRange: [0, HeaderHeight],
+      outputRange: [0, -HeaderHeight],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <>
+        <Animated.View
+          style={{
+            transform: [{translateY: headery}],
+            top: 0,
+            // height: HeaderHeight,
+            width: '100%',
+            backgroundColor: 'white',
+            position: 'absolute',
+            zIndex: 1,
+          }}
+          onLayout={e => {
+            const {height} = e.nativeEvent.layout;
+            this.setState({HeaderHeight: height});
+          }}>
+          {myHeader}
+        </Animated.View>
+        <Animated.View
+          style={{
+            top: 0,
+            zIndex: 1,
+            position: 'absolute',
+            transform: [{translateY: tabY}],
+            width: '100%',
+            backgroundColor: 'white',
+            ...Platform.select({
+              android: {
+                elevation: this.state.tabBarElevation === false ? 0 : 4,
+              },
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.23,
+                shadowRadius: 2.62,
+              },
+            }),
+          }}
+          onLayout={e => {
+            const {height} = e.nativeEvent.layout;
+            this.setState({TabBarHeight: height});
+          }}>
+          <Animated.FlatList
+            ref={this.flatListRef}
+            data={productList}
+            renderItem={({item, index}) => this.renderTab(index, item)}
+            keyExtractor={item => `${item.id}`}
+            horizontal
+            alwaysBounceHorizontal={false}
+            alwaysBounceVertical={false}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            onScrollToIndexFailed={() => {}}
+            // getItemLayout={(data, index) => ({
+            //   length: 56,
+            //   offset: 56*index,
+            //   index:index,
+            // })}
+          />
+        </Animated.View>
+      </>
+    );
+  };
+
+  render() {
+    const {productList = [], visibility} = this.props;
+    const {tabBarElevation, scrollY, HeaderHeight, TabBarHeight} = this.state;
+    return (
+      <>
+        {this.headerView()}
+        <DummyLoader
+          visibilty={visibility}
+          center={
+            productList && productList.length > 0 ? (
+              <Animated.SectionList
+                ref={this.sectionListRef}
+                sections={productList}
+                keyExtractor={item => `${item.id}`}
+                initialNumToRender={10}
+                bounces={false}
+                alwaysBounceVertical={false}
+                alwaysBounceHorizontal={false}
+                ItemSeparatorComponent={() => (
+                  <View style={styles.separator} />
+                )}
+                // style={{
+                //   //marginTop: tabBarElevation ? 56 : 0,
+                //   transform: [
+                //     {
+                //       translateY: tabBarElevation ? TabBarHeight : 0,
+                //     },
+                //   ],
+                // }}
+                initialScrollIndex={this.state.currentIndex}
+                renderSectionHeader={this.renderSection}
+                renderItem={this.renderItem}
+                onViewableItemsChanged={this.onChangeViewable}
+                onMomentumScrollEnd={e => (this.blockUpdateIndex = false)}
+                scrollEventThrottle={16}
+                decelerationRate="fast"
+                //stickySectionHeadersEnabled={true}
+                //stickyHeaderIndices={[this.state.currentIndex]}
+                viewabilityConfig={{
+                  minimumViewTime: 10,
+                  itemVisiblePercentThreshold: 10,
+                }}
+                onScrollToIndexFailed={() => {}}
+                getItemLayout={(data, index) => ({
+                  length: 96,
+                  offset: 96 * index,
+                  index,
+                })}
+                scrollToOverflowEnabled={true}
+                onScroll={Animated.event(
+                  [
+                    {
+                      nativeEvent: {
+                        contentOffset: {
+                          y: this.state.scrollY,
+                        },
+                      },
+                    },
+                  ],
+                  {useNativeDriver: true},
+                )}
+                contentContainerStyle={{
+                  paddingTop: HeaderHeight + TabBarHeight,
+                  minHeight: windowHeight - TabBarHeight,
+                }}
+              />
+            ) : null
+          }
+        />
+      </>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  sectioncontainer: {
+    flex: 1,
+    borderColor: '#DEDEDE',
+    borderWidth: 1,
+    backgroundColor: 'white',
+  },
+  itemtitlecontainer: {
+    flex: 1,
+    margin: 10,
+    borderRadius: 2,
+  },
+  topabsoluteview: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    backgroundColor: 'white',
+    ...Platform.select({
+      android: {
+        elevation: 6,
+      },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.23,
+        shadowRadius: 2.62,
+      },
+    }),
+  },
+  SectionText: {
+    fontFamily: 'Rubik',
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 25,
+    color: '#3daccf',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f6f6f6',
@@ -161,6 +370,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     borderBottomColor: '#090909',
+    height: 56,
   },
   tabText: {
     padding: 15,

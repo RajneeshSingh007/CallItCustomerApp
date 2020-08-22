@@ -432,6 +432,7 @@ export const orderData = (arr, branches, isHistory) => {
           data: data,
           totalPrice: io.price,
           servicelist: [],
+          branchData:branchFind || null
         });
       } else {
         const indx = Lodash.findLastIndex(

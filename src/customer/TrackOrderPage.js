@@ -31,6 +31,7 @@ import DummyLoader from '../util/DummyLoader';
 import * as Lodash from 'lodash';
 import Moment from 'moment';
 import {Loader} from './Loader';
+import {AlertDialog} from './../util/AlertDialog';
 import {SafeAreaView} from 'react-navigation';
 //import {Notifications} from 'react-native-notifications';
 
@@ -38,6 +39,7 @@ export default class TrackOrderPage extends React.Component {
   constructor(props) {
     super(props);
     this.cancelOrderClick = this.cancelOrderClick.bind(this);
+    this.reOrderClick = this.reOrderClick.bind(this);
     this.backClick = this.backClick.bind(this);
     this.renderRow = this.renderRow.bind(this);
     this._handleAppStateChange = this._handleAppStateChange.bind(this);
@@ -68,6 +70,10 @@ export default class TrackOrderPage extends React.Component {
       allDatasOg: [],
       fkbranchO: 0,
       cartGuid: '',
+      showAlertDialog: false,
+      alertTitle: '',
+      alertContent: '',
+      flexChanged: false,
     };
   }
 
@@ -81,6 +87,7 @@ export default class TrackOrderPage extends React.Component {
       if (so === false) {
         this.setState({progressView: true});
       }
+
       Pref.getVal(Pref.bearerToken, value => {
         const tn = Helper.removeQuotes(value);
         this.setState({token: tn}, () => {
@@ -195,7 +202,7 @@ export default class TrackOrderPage extends React.Component {
           const fii = Lodash.find(opFinalOrders, xm => xm.idorder === idorder);
           //console.log(`fii`, fii);
           if (fii !== undefined) {
-            const {data,status} = fii;
+            const {data, status} = fii;
             const firstpos = data[0];
             this.setState(
               {
@@ -270,6 +277,7 @@ export default class TrackOrderPage extends React.Component {
           totalPrice: firstData.totalPrice,
           orderdate: allDatas[0].orderdate,
           paid: firstData.paid,
+          //status: 4,
           status: firstData.status,
           item: allDatas,
           datas: finalDisplayData,
@@ -282,14 +290,18 @@ export default class TrackOrderPage extends React.Component {
           allDatasOg: allDatas,
           orderidList:
             firstData.orderidList === undefined ? [] : firstData.orderidList,
+          branchData: firstData.branchData || null,
         },
         () => {
+          console.log(`status`, this.state.status);
           Helper.networkHelperToken(
             Pref.BusinessBranchDetailUrl + firstData.idbranch,
             Pref.methodGet,
             this.state.token,
             result => {
-              this.setState({imageUrl: result.imageUrl});
+              this.setState({
+                imageUrl: result.imageUrl,
+              });
             },
             () => {
               //error
@@ -522,6 +534,170 @@ export default class TrackOrderPage extends React.Component {
     ]);
   };
 
+  reOrderClick = () => {
+    const {allDatasOg} = this.state;
+    Alert.alert(``, `${i18n.t(k.reorderconfirmcontent)}`, [
+      {
+        text: `${i18n.t(k.NO)}`,
+      },
+      {
+        text: `${i18n.t(k.YES)}`,
+        onPress: () => {
+          this.setState({smp: true});
+          if (
+            allDatasOg !== undefined &&
+            allDatasOg !== null &&
+            allDatasOg.length > 0
+          ) {
+            Helper.networkHelperTokenPost(
+              Pref.ReorderHistoryUrl,
+              JSON.stringify(allDatasOg),
+              Pref.methodPost,
+              this.state.token,
+              result => {
+                if (result === 'service unavailable') {
+                  this.setState({
+                    smp: false,
+                  });
+                  this.setState({
+                    showAlert: true,
+                    alertTitle: '',
+                    alertContent: `${i18n.t(k.reorderserviceerror)}`,
+                  });
+                } else if (result === 'extra unavailable') {
+                  this.setState({
+                    smp: false,
+                  });
+                  this.setState({
+                    showAlert: true,
+                    alertTitle: '',
+                    alertContent: `${i18n.t(k.reorderextraerror)}`,
+                  });
+                } else if (result === 'failed to retrieve order from history') {
+                  this.setState({
+                    smp: false,
+                  });
+                  this.setState({
+                    showAlert: true,
+                    alertTitle: '',
+                    alertContent: `${i18n.t(k.reorderfailedtoreterive)}`,
+                  });
+                } else if (result === "the order doesn't contain business ID") {
+                  this.setState({
+                    smp: false,
+                  });
+                  this.setState({
+                    showAlert: true,
+                    alertTitle: '',
+                    alertContent: `${i18n.t(k.reorderfailedtoreterive)}`,
+                  });
+                } else {
+                  this.setState({
+                    smp: false,
+                  });
+                  this.addToCart(result);
+                }
+              },
+              error => {
+                this.setState({smp: false});
+              },
+            );
+          }
+        },
+      },
+    ]);
+  };
+
+  addToCart = orderData => {
+    if (orderData !== null && orderData.length > 0) {
+      let cartItemList = [];
+      for (let index = 0; index < orderData.length; index++) {
+        const element = orderData[index];
+        const {extras} = element;
+        cartItemList.push(
+          this.returnTrimJsonofOrder(element, extras.length > 0 ? extras : []),
+        );
+      }
+      this.setState({smp: false});
+      Pref.getVal(Pref.cartItem, value => {
+        if (value !== undefined && value !== null) {
+          let cartData = JSON.parse(value);
+          if (cartData === undefined || cartData === null || cartData === '') {
+            Pref.setVal(Pref.cartItem, cartItemList);
+            NavigationActions.navigate('FinalOrder');
+          } else {
+            Lodash.map(cartItemList, ele => {
+              cartData.push(ele);
+            });
+            Pref.setVal(Pref.cartItem, cartData);
+            NavigationActions.navigate('FinalOrder');
+          }
+        } else {
+          Pref.setVal(Pref.cartItem, cartItemList);
+          NavigationActions.navigate('FinalOrder');
+        }
+      });
+    }
+  };
+
+  returnTrimJsonofOrder = (element, extralist) => {
+    const {serviceId, servicemode} = element;
+    //delete unwanted data
+    delete element.address;
+    delete element.business_message;
+    delete element.cartGuid;
+    delete element.cgUid;
+    delete element.expected_date;
+    delete element.firstname;
+    delete element.fkbranchO;
+    delete element.fkbranchONavigation;
+    delete element.fkcustomerO;
+    delete element.fkcustomerONavigation;
+    delete element.free;
+    delete element.guid;
+    delete element.idorder;
+    delete element.lastname;
+    delete element.orderdate;
+    delete element.paid;
+    delete element.servicenameExtra;
+    delete element.shovar;
+
+    let day = Moment(this.state.convertTime).format('YYYY/MM/DD HH:mm');
+    const cartTime = Moment(Date.now()).format('YYYY/MM/DD HH:mm:ss.SSS');
+
+    element.extras = extralist;
+    element.cartTime = cartTime;
+    element.orderdate = day;
+    element.idservice = serviceId;
+    element.serviceid = serviceId;
+    element.isdelivery = false;
+    element.status = 1;
+    element.paid = false;
+    element.deliveryPrice = '';
+    element.branchData = this.state.branchData;
+    element.imageUrl = element.imageurl || '';
+    element.circleTab = 1;
+    element.reoderItem = true;
+    element.selectedCirclePos = 1;
+    element.extraImageItemList = [];
+    element.extraImageItemList1 = [];
+    element.extraImageItemList2 = [];
+    element.extraImageItemList3 = [];
+    element.extraImageItemList4 = [];
+    element.extraImageItemList5 = [];
+    element.extraImageItemList6 = [];
+    element.showCircleExtraData = [];
+    element.freeList = [];
+    element.finishedList =
+      extralist.length > 0
+        ? extralist.map(v => Object.assign(v, {finished: true}))
+        : [];
+    element.clonesvmode = servicemode;
+    element.serviceMode = servicemode;
+    element.tillDoughPrice = 0;
+    return element;
+  };
+
   getCombinedprice = () => {
     const {totalPrice, deliveryPrices} = this.state;
     let price = Number(totalPrice);
@@ -641,7 +817,48 @@ export default class TrackOrderPage extends React.Component {
                           ) : null}
                         </View>
 
-                        {this.state.status === 1 ? (
+                        {this.state.status === 4 &&
+                        this.state.isHistory === false ? (
+                          <View style={{flex: 1, flexDirection: 'row-reverse'}}>
+                            <Button
+                              style={{
+                                color: i18n.t(k.WHITE),
+                                marginBottom: sizeHeight(1),
+                                marginTop: sizeHeight(1),
+                                flex: 0.18,
+                                marginEnd: 3,
+                                //borderColor:'#292929',
+                                //borderWidth:1,
+                                elevation: 0,
+                                height: 42,
+                                backgroundColor: i18n.t(k.DACCF),
+                              }}
+                              mode="contained"
+                              dark={true}
+                              uppercase={true}
+                              color={'white'}
+                              onPress={this.reOrderClick}
+                              loading={false}>
+                              <Subtitle
+                                styleName="v-center h-center"
+                                style={{
+                                  color: 'white',
+                                  fontSize: 13,
+                                  alignSelf: 'center',
+                                  justifyContent: 'center',
+                                  marginBottom: -32,
+                                  height: '100%',
+                                  width: '100%',
+                                }}>
+                                {i18n.t(k.reorderbuttntext)}
+                              </Subtitle>
+                            </Button>
+                            <View style={{flex: 0.82}} />
+                          </View>
+                        ) : null}
+
+                        {this.state.status === 1 &&
+                        this.state.isHistory === true ? (
                           <View style={{flex: 1, flexDirection: 'row-reverse'}}>
                             <Button
                               style={{
@@ -788,9 +1005,9 @@ export default class TrackOrderPage extends React.Component {
                           }}
                         />
 
-                        {this.state.businessMessage !== '' &&
-                        this.state.businessMessage !== null &&
-                        this.state.businessMessage !== undefined ? (
+                        {this.state.businessMessage !== undefined && this.state.businessMessage !== null &&
+                        this.state.businessMessage !== ''
+                         ? (
                           <Title
                             style={{
                               color: '#292929',
@@ -806,8 +1023,7 @@ export default class TrackOrderPage extends React.Component {
                           </Title>
                         ) : null}
 
-                        {this.state.status === -1 ||
-                        this.state.status === -2 ? null : (
+                        {this.state.status === -1 || this.state.status === -2 ? null : (
                           <View
                             style={{
                               justifyContent: 'space-evenly',
@@ -1152,6 +1368,21 @@ export default class TrackOrderPage extends React.Component {
             }
           />
           <Loader isShow={this.state.smp} />
+
+          {this.state.showAlert ? (
+            <AlertDialog
+              isShow={true}
+              title={this.state.alertTitle}
+              content={this.state.alertContent}
+              flexChanged={this.state.flexChanged}
+              callbacks={() =>
+                this.setState({
+                  showAlert: false,
+                  flexChanged: false,
+                })
+              }
+            />
+          ) : null}
         </Screen>
       </SafeAreaView>
     );

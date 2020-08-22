@@ -12,52 +12,34 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {Card, Colors, FAB} from 'react-native-paper';
+import {Colors} from 'react-native-paper';
 import {
   Image,
-  Divider,
   NavigationBar,
-  Row,
   Screen,
   Subtitle,
   Title,
   TouchableOpacity,
-  Heading,
-  ImageBackground,
-  Tile,
-  Overlay,
 } from '@shoutem/ui';
 import * as Helper from './../util/Helper';
 import * as Pref from './../util/Pref';
 import NavigationActions from '../util/NavigationActions';
-import {sizeHeight, sizeWidth, sizeFont} from './../util/Size';
+import {sizeHeight, sizeWidth} from './../util/Size';
 import OrderProcess1 from './OrderProcess1';
-import DummyLoader from '../util/DummyLoader';
 import * as Animatable from 'react-native-animatable';
 import * as Lodash from 'lodash';
-import {ScrollView} from 'react-native-gesture-handler';
 import Moment from 'moment';
 import {SafeAreaView} from 'react-navigation';
+import TabSectonList from './TabSectionList';
 
-var data = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-];
 var now = new Date().getDay();
 var currentDate = new Date();
-const openBiz = `פתוח`;
-const closedBiz = `סגור`;
-const busyBiz = `עמוס`;
 let scrollY = 0;
 
 export default class NewBusinessPage extends React.Component {
   constructor(props) {
     super(props);
+    this.orderprocessRef = React.createRef();
     this.scrollViewRef = React.createRef();
     this.backClick = this.backClick.bind(this);
     this.getOrderCounter = this.getOrderCounter.bind(this);
@@ -79,7 +61,7 @@ export default class NewBusinessPage extends React.Component {
       showOrderNo: false,
       cartDatas: [],
       branchid: 0,
-      tabNames: null,
+      tabNames: [],
       eachTabData: null,
       deliveryPrice: i18n.t(k._4),
       customerdt: i18n.t(k._4),
@@ -91,7 +73,7 @@ export default class NewBusinessPage extends React.Component {
       splittedDates: [],
       hasDelivery: 0,
       checkerDate: null,
-      isOpen:''
+      isOpen: '',
     };
   }
 
@@ -135,7 +117,9 @@ export default class NewBusinessPage extends React.Component {
     const data = state.params.item;
     //const val = state.params.mode;
     //console.log('item', data);
+    const branchId = data.idbranch;
     this.setState({
+      branchid: branchId,
       item: data,
       progressView: false,
       hasDelivery: data.hasDelivery === null ? 0 : data.hasDelivery,
@@ -147,8 +131,7 @@ export default class NewBusinessPage extends React.Component {
         const mode = Helper.removeQuotes(value) === '1' ? true : false;
         this.setState({
           mode: mode,
-          editData:
-            Helper.removeQuotes(value) === '1' ? editData : null,
+          editData: Helper.removeQuotes(value) === '1' ? editData : null,
         });
       }
     });
@@ -175,7 +158,7 @@ export default class NewBusinessPage extends React.Component {
         this.setState({isFav: false});
       }
     });
-    this.fetchAllServices(data.idbranch);
+    this.fetchAllServices(branchId);
   }
 
   /**
@@ -186,16 +169,16 @@ export default class NewBusinessPage extends React.Component {
     Pref.getVal(Pref.bearerToken, value => {
       const token = Helper.removeQuotes(value);
       this.setState({token: token});
-      
+
       Helper.networkHelperToken(
-        Pref.BranchStatusUrl+idx,
+        Pref.BranchStatusUrl + idx,
         Pref.methodGet,
         token,
         res => {
           this.setState({isOpen: res});
         },
         e => {
-          console.log(e)
+          console.log(e);
         },
       );
 
@@ -213,7 +196,7 @@ export default class NewBusinessPage extends React.Component {
           //console.log('convertTime', convertTime, checkerDate);
           this.setState({checkerDate: checkerDate});
         },
-        error => {
+        () => {
           //console.log('err', error);
         },
       );
@@ -226,7 +209,7 @@ export default class NewBusinessPage extends React.Component {
           Pref.setVal(Pref.CustData, result);
           this.setState({customerdt: result});
         },
-        error => {},
+        () => {},
       );
 
       Helper.networkHelperToken(
@@ -239,31 +222,41 @@ export default class NewBusinessPage extends React.Component {
           if (result !== null && result.length > 0) {
             let groupedExtra = Lodash.groupBy(result, function(exData) {
               if (exData.category !== '') {
-                return exData.category.toLowerCase();
+                return (
+                  exData.category.toLowerCase() +
+                  ':' +
+                  exData.categoryDescription
+                );
               }
             });
-            const serviceCat = Object.keys(groupedExtra).map(key => ({
-              cat: key,
-              data: groupedExtra[key],
-            }));
+            let id = 0;
+            const serviceCat = Object.keys(groupedExtra).map(key => {
+              id++;
+              return {
+                id: id,
+                cat: key,
+                title: key.split(':')[0],
+                description: key.split(':')[1],
+                data: groupedExtra[key],
+              };
+            });
 
             //console.log(`serviceCat`, serviceCat);
 
             this.setState({
-              branchid: idx,
               tabNames: serviceCat,
               eachTabData: result,
             });
           }
         },
-        error => {
+        () => {
           this.setState({progressView: false});
         },
       );
     });
   }
 
-  getOrderCounter() {
+  getOrderCounter = () => {
     Pref.getVal(Pref.cartItem, value => {
       const cartData = JSON.parse(value);
       //////console.log('cartData', cartData);
@@ -280,7 +273,7 @@ export default class NewBusinessPage extends React.Component {
         this.setState({cartBranchId: 0, showOrderNo: false});
       }
     });
-  }
+  };
 
   favClick() {
     if (this.state.isFav === false) {
@@ -319,12 +312,6 @@ export default class NewBusinessPage extends React.Component {
     });
   };
 
-  isValid(date, h1, m1, h2, m2) {
-    var h = date.getHours();
-    var m = date.getMinutes();
-    return (h1 < h || (h1 == h && m1 <= m)) && (h < h2 || (h == h2 && m <= m2));
-  }
-
   /**
    * deprecated
    * @param {} time
@@ -335,9 +322,6 @@ export default class NewBusinessPage extends React.Component {
     }
     if (time.includes('#')) {
       if (this.state.checkerDate !== null) {
-        const serverMonth = this.state.checkerDate.getMonth() + 1;
-        const deviceMonth = currentDate.getMonth() + 1;
-
         // if (currentDate.getFullYear() === this.state.checkerDate.getFullYear() &&
         //     deviceMonth === serverMonth &&
         //     currentDate.getDate() === this.state.checkerDate.getDate()) {
@@ -384,7 +368,7 @@ export default class NewBusinessPage extends React.Component {
 
   /**
    * biz expand time parse
-   * @param {} time 
+   * @param {} time
    */
   parsetime = time => {
     if (time == undefined || time == null) {
@@ -475,417 +459,411 @@ export default class NewBusinessPage extends React.Component {
     }
   };
 
-  render() {
+  renderTopBizInfo = () => {
     return (
-      <SafeAreaView
-        style={{flex: 1, backgroundColor: 'white'}}
-        forceInset={{top: 'never'}}>
-        <Screen
+      <>
+        {this.state.item !== null && this.state.item !== undefined ? (
+          <Image
+            styleName="large-wide"
+            style={{height: sizeHeight(24), resizeMode: 'contain'}}
+            source={{
+              uri: `${Pref.BASEURL}${this.state.item.imageurl}`,
+            }}
+          />
+        ) : null}
+        <View
           style={{
-            backgroundColor: 'white',
+            position: 'absolute',
+            backgroundColor: 'transparent',
           }}>
-          <StatusBar barStyle="dark-content" backgroundColor="white" />
-          <DummyLoader
-            visibilty={this.state.progressView}
-            center={
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                onScroll={this.handleScroll}
-                ref={this.scrollViewRef}
-                nestedScrollEnabled
-                scrollEventThrottle={16}>
-                {this.state.item !== null &&
-                this.state.item !== undefined ? (
-                  <Image
-                    styleName="large-wide"
-                    style={{height: sizeHeight(24), resizeMode: 'contain'}}
-                    source={{
-                      uri: `${Pref.BASEURL}${this.state.item.imageurl}`,
+          <NavigationBar
+            styleName="inline no-border clear"
+            // rightComponent={}
+            leftComponent={
+              <View
+                styleName="horizontal space-between"
+                style={{marginStart: 12}}>
+                <TouchableOpacity onPress={() => NavigationActions.goBack()}>
+                  <Icon
+                    name="arrow-forward"
+                    size={36}
+                    color="#292929"
+                    style={{
+                      padding: 4,
+                      backgroundColor: 'transparent',
                     }}
                   />
-                ) : null}
-                <View
-                  style={{
-                    position: 'absolute',
-                    backgroundColor: 'transparent',
-                  }}>
-                  <NavigationBar
-                    styleName="inline no-border clear"
-                    // rightComponent={}
-                    leftComponent={
-                      <View
-                        styleName="horizontal space-between"
-                        style={{marginStart: 12}}>
-                        <TouchableOpacity
-                          onPress={() => NavigationActions.goBack()}>
-                          <Icon
-                            name="arrow-forward"
-                            size={36}
-                            color="#292929"
-                            style={{
-                              padding: 4,
-                              backgroundColor: 'transparent',
-                            }}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    }
-                  />
-                </View>
-                <View>
-                  {this.state.item !== null &&
-                  this.state.item !== undefined ? (
-                    <View style={{flexDirection: 'column'}}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4),
-                          marginVertical: sizeHeight(2),
-                          paddingHorizontal: sizeWidth(1.5),
-                          justifyContent: 'space-between',
-                          backgroundColor: 'white',
-                        }}>
-                        <View style={{flexDirection: 'column'}}>
-                          <Title
-                            styleName="bold"
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              fontSize: 20,
-                              alignSelf: 'flex-start',
-                              fontWeight: '700',
-                            }}>
-                            {this.state.item.name}
-                          </Title>
-                          <View style={{flexDirection: 'row'}}>
-                            <Subtitle
-                              style={{
-                                color: '#292929',
-                                fontFamily: 'Rubik',
-                                alignSelf: 'flex-start',
-                                fontSize: 16,
-                              }}>
-                              {this.state.item.description}
-                            </Subtitle>
-                            <View
-                              style={{
-                                width: 8,
-                                height: 8,
-                                backgroundColor: '#292929',
-                                borderRadius: 8,
-                                alignSelf: 'center',
-                                margin: 6,
-                              }}
-                            />
-                            {this.state.isOpen !== '' ?
-                            <Subtitle
-                              style={{
-                                color:
-                                  this.state.isOpen === 'open'
-                                    ? '#1BB940'
-                                    : this.state.isOpen === 'closed'
-                                    ? '#B72727'
-                                    : Colors.deepOrange500,
-                                fontFamily: 'Rubik',
-                                alignSelf: 'flex-start',
-                                fontSize: 16,
-                              }}>
-                              {this.state.isOpen === 'open'
-                                ? `${openBiz}`
-                                : this.state.isOpen === 'closed'
-                                ? `${closedBiz}`
-                                : `${busyBiz}`}
-                            </Subtitle>
-                            : null}
-                          </View>
-                        </View>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignSelf: 'center',
-                          }}>
-                          <TouchableOpacity onPress={() => this.favClick()}>
-                            <Animatable.View
-                              animation="wobble"
-                              duration={200}>
-                              <Icon
-                                name={
-                                  this.state.isFav === false
-                                    ? i18n.t(k.FAVORITE_BORDER)
-                                    : i18n.t(k.FAVORITE)
-                                }
-                                size={24}
-                                color={
-                                  this.state.isFav === false
-                                    ? '#777777'
-                                    : 'red'
-                                }
-                                style={{
-                                  padding: 4,
-                                  backgroundColor: 'transparent',
-                                }}
-                              />
-                            </Animatable.View>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                      <View
-                        style={{
-                          backgroundColor: '#dedede',
-                          height: 1,
-                        }}
-                      />
-
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4),
-                          marginVertical: sizeHeight(1),
-                          paddingHorizontal: sizeWidth(2),
-                          marginTop: sizeHeight(3),
-                        }}>
-                        <Image
-                          source={require('./../res/images/Tracking.png')}
-                          style={{
-                            width: 22,
-                            height: 17,
-                            alignSelf: 'center',
-                          }}
-                        />
-
-                        <Subtitle
-                          style={{
-                            color: '#292929',
-                            fontFamily: 'Rubik',
-                            alignSelf: 'center',
-                            fontSize: 14,
-                            marginStart: sizeWidth(2),
-                          }}>
-                          {this.state.item.message}
-                        </Subtitle>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4),
-                          paddingHorizontal: sizeWidth(2),
-                          marginVertical: sizeHeight(1),
-                        }}>
-                        <Image
-                          source={require(`./../res/images/call.png`)}
-                          style={{
-                            width: 17,
-                            height: 17,
-                            alignSelf: 'center',
-                          }}
-                        />
-
-                        <TouchableWithoutFeedback onPress={this.phoneCalls}>
-                          <Subtitle
-                            style={{
-                              color: '#3DACCF',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'center',
-                              fontSize: 14,
-                              marginStart: sizeWidth(2),
-                            }}>
-                            {this.state.item.phone}
-                          </Subtitle>
-                        </TouchableWithoutFeedback>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4),
-                          paddingHorizontal: sizeWidth(2),
-                          marginVertical: sizeHeight(1),
-                          justifyContent: 'space-between',
-                        }}>
-                        <View style={{flexDirection: 'row'}}>
-                          <Image
-                            source={require(`./../res/images/smileydark.png`)}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              alignSelf: 'center',
-                            }}
-                          />
-
-                          <Subtitle
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'center',
-                              fontSize: 14,
-                              marginStart: sizeWidth(2),
-                            }}>
-                            {` ${i18n.t(k._59)} ${
-                              this.state.item.rating === -1
-                                ? i18n.t(k._60)
-                                : this.state.item.rating
-                            } (${this.state.item.ratingcount})`}
-                          </Subtitle>
-                        </View>
-                        <TouchableWithoutFeedback
-                          onPress={() =>
-                            NavigationActions.navigate(
-                              i18n.t(k.REVIEWSPAGE),
-                              {
-                                item: this.state.item,
-                              },
-                            )
-                          }>
-                          <Subtitle
-                            style={{
-                              color: '#3DACCF',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'center',
-                              fontSize: 14,
-                              marginEnd: sizeWidth(2),
-                            }}>
-                            {`${i18n.t(k._61)}`}
-                          </Subtitle>
-                        </TouchableWithoutFeedback>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4),
-                          paddingHorizontal: sizeWidth(2),
-                          marginVertical: sizeHeight(1),
-                          justifyContent: 'space-between',
-                        }}>
-                        <View style={{flexDirection: 'row'}}>
-                          <Image
-                            source={require(`./../res/images/circulardark.png`)}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              alignSelf: 'center',
-                            }}
-                          />
-
-                          <Subtitle
-                            style={{
-                              color: '#292929',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'center',
-                              fontSize: 14,
-                              marginStart: sizeWidth(2),
-                            }}>
-                            {this.parsetime(this.state.item.businessHours)}
-                          </Subtitle>
-                        </View>
-                        <TouchableWithoutFeedback
-                          onPress={() =>
-                            this.setState({
-                              isTimeExpanded: !this.state.isTimeExpanded,
-                            })
-                          }>
-                          <Subtitle
-                            style={{
-                              color: '#3DACCF',
-                              fontFamily: 'Rubik',
-                              alignSelf: 'center',
-                              fontSize: 14,
-                              marginEnd: sizeWidth(2),
-                            }}>
-                            {`${i18n.t(k._62)}`}
-                          </Subtitle>
-                        </TouchableWithoutFeedback>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          marginStart: sizeWidth(4.5),
-                          paddingHorizontal: sizeWidth(2),
-                          marginVertical: sizeHeight(1),
-                          marginBottom: sizeHeight(3),
-                          justifyContent: 'space-between',
-                        }}>
-                        <View style={{flexDirection: 'row'}}>
-                          <Image
-                            source={require(`./../res/images/placeholder.png`)}
-                            style={{
-                              width: 16,
-                              height: 22,
-                              alignSelf: 'center',
-                            }}
-                          />
-
-                          <TouchableWithoutFeedback
-                            onPress={this.locationOpen}>
-                            <Subtitle
-                              style={{
-                                color: '#3DACCF',
-                                fontFamily: 'Rubik',
-                                alignSelf: 'center',
-                                fontSize: 14,
-                                marginStart: sizeWidth(2),
-                              }}>
-                              {this.state.item.address}
-                            </Subtitle>
-                          </TouchableWithoutFeedback>
-                        </View>
-                        <TouchableWithoutFeedback
-                          onPress={() => {
-                            const lat = this.state.item.lat;
-                            const lng = this.state.item.lon;
-                            const url = `${i18n.t(
-                              k.HTTPS_WWW_WAZE_COM_UL_LL,
-                            )}${lat}${i18n.t(k.C1)}${lng}${i18n.t(
-                              k.NAVIGATE_YES,
-                            )}`;
-                            Linking.openURL(url);
-                          }}>
-                          <Image
-                            source={require(`./../res/images/waze.png`)}
-                            style={{
-                              width: 24,
-                              height: 22,
-                              alignSelf: 'center',
-                              padding: 4,
-                              marginEnd: 12,
-                            }}
-                          />
-                        </TouchableWithoutFeedback>
-                      </View>
-                    </View>
-                  ) : null}
-                </View>
-                {this.state.tabNames !== null &&
-                this.state.tabNames !== undefined &&
-                this.state.checkerDate !== undefined &&
-                this.state.checkerDate !== null ? (
-                  <OrderProcess1
-                    currentLat={this.state.currentLat}
-                    currentLog={this.state.currentLog}
-                    idbranch={this.state.branchid}
-                    tabNames={this.state.tabNames}
-                    eachTabData={this.state.eachTabData}
-                    deliveryPrice={this.state.deliveryPrice}
-                    customerdt={this.state.customerdt}
-                    orderChanged={() => {
-                      //////console.log('k');
-                      this.getOrderCounter();
-                    }}
-                    hasDelivery={this.state.hasDelivery}
-                    mode={this.state.mode}
-                    item={this.state.item}
-                    editData={this.state.editData}
-                    cartBranchId={this.state.cartBranchId}
-                    currentNames={this.state.item.idbranch}
-                    businessclosedornot={
-                      this.state.isOpen === 'open' ? true : false
-                    }
-                    checkerDate={this.state.checkerDate}
-                    backClicked={this.backScroll}
-                  />
-                ) : null}
-              </ScrollView>
+                </TouchableOpacity>
+              </View>
             }
           />
+        </View>
+        <View>
+          {this.state.item !== null && this.state.item !== undefined ? (
+            <View style={{flexDirection: 'column'}}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4),
+                  marginVertical: sizeHeight(2),
+                  paddingHorizontal: sizeWidth(1.5),
+                  justifyContent: 'space-between',
+                  backgroundColor: 'white',
+                }}>
+                <View style={{flexDirection: 'column'}}>
+                  <Title
+                    styleName="bold"
+                    style={{
+                      color: '#292929',
+                      fontFamily: 'Rubik',
+                      fontSize: 20,
+                      alignSelf: 'flex-start',
+                      fontWeight: '700',
+                    }}>
+                    {this.state.item.name}
+                  </Title>
+                  <View style={{flexDirection: 'row'}}>
+                    <Subtitle
+                      style={{
+                        color: '#292929',
+                        fontFamily: 'Rubik',
+                        alignSelf: 'flex-start',
+                        fontSize: 16,
+                      }}>
+                      {this.state.item.description}
+                    </Subtitle>
+                    <View
+                      style={{
+                        width: 8,
+                        height: 8,
+                        backgroundColor: '#292929',
+                        borderRadius: 8,
+                        alignSelf: 'center',
+                        margin: 6,
+                      }}
+                    />
+                    {this.state.isOpen !== '' ? (
+                      <Subtitle
+                        style={{
+                          color:
+                            this.state.isOpen === 'open'
+                              ? '#1BB940'
+                              : this.state.isOpen === 'closed'
+                              ? '#B72727'
+                              : Colors.deepOrange500,
+                          fontFamily: 'Rubik',
+                          alignSelf: 'flex-start',
+                          fontSize: 16,
+                        }}>
+                        {this.state.isOpen === 'open'
+                          ? `${i18n.t(k.openBiz)}`
+                          : this.state.isOpen === 'closed'
+                          ? `${i18n.t(k.closedBiz)}`
+                          : `${i18n.t(k.busyBiz)}`}
+                      </Subtitle>
+                    ) : null}
+                  </View>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignSelf: 'center',
+                  }}>
+                  <TouchableOpacity onPress={() => this.favClick()}>
+                    <Animatable.View animation="wobble" duration={200}>
+                      <Icon
+                        name={
+                          this.state.isFav === false
+                            ? i18n.t(k.FAVORITE_BORDER)
+                            : i18n.t(k.FAVORITE)
+                        }
+                        size={24}
+                        color={this.state.isFav === false ? '#777777' : 'red'}
+                        style={{
+                          padding: 4,
+                          backgroundColor: 'transparent',
+                        }}
+                      />
+                    </Animatable.View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View
+                style={{
+                  backgroundColor: '#dedede',
+                  height: 1,
+                }}
+              />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4),
+                  marginVertical: sizeHeight(1),
+                  paddingHorizontal: sizeWidth(2),
+                  marginTop: sizeHeight(3),
+                }}>
+                <Image
+                  source={require('./../res/images/Tracking.png')}
+                  style={{
+                    width: 22,
+                    height: 17,
+                    alignSelf: 'center',
+                  }}
+                />
+
+                <Subtitle
+                  style={{
+                    color: '#292929',
+                    fontFamily: 'Rubik',
+                    alignSelf: 'center',
+                    fontSize: 14,
+                    marginStart: sizeWidth(2),
+                  }}>
+                  {this.state.item.message}
+                </Subtitle>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4),
+                  paddingHorizontal: sizeWidth(2),
+                  marginVertical: sizeHeight(1),
+                }}>
+                <Image
+                  source={require(`./../res/images/call.png`)}
+                  style={{
+                    width: 17,
+                    height: 17,
+                    alignSelf: 'center',
+                  }}
+                />
+
+                <TouchableWithoutFeedback onPress={this.phoneCalls}>
+                  <Subtitle
+                    style={{
+                      color: '#3DACCF',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      marginStart: sizeWidth(2),
+                    }}>
+                    {this.state.item.phone}
+                  </Subtitle>
+                </TouchableWithoutFeedback>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4),
+                  paddingHorizontal: sizeWidth(2),
+                  marginVertical: sizeHeight(1),
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flexDirection: 'row'}}>
+                  <Image
+                    source={require(`./../res/images/smileydark.png`)}
+                    style={{
+                      width: 18,
+                      height: 18,
+                      alignSelf: 'center',
+                    }}
+                  />
+
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      marginStart: sizeWidth(2),
+                    }}>
+                    {` ${i18n.t(k._59)} ${
+                      this.state.item.rating === -1
+                        ? i18n.t(k._60)
+                        : this.state.item.rating
+                    } (${this.state.item.ratingcount})`}
+                  </Subtitle>
+                </View>
+                <TouchableWithoutFeedback
+                  onPress={() =>
+                    NavigationActions.navigate(i18n.t(k.REVIEWSPAGE), {
+                      item: this.state.item,
+                    })
+                  }>
+                  <Subtitle
+                    style={{
+                      color: '#3DACCF',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      marginEnd: sizeWidth(2),
+                    }}>
+                    {`${i18n.t(k._61)}`}
+                  </Subtitle>
+                </TouchableWithoutFeedback>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4),
+                  paddingHorizontal: sizeWidth(2),
+                  marginVertical: sizeHeight(1),
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flexDirection: 'row'}}>
+                  <Image
+                    source={require(`./../res/images/circulardark.png`)}
+                    style={{
+                      width: 18,
+                      height: 18,
+                      alignSelf: 'center',
+                    }}
+                  />
+
+                  <Subtitle
+                    style={{
+                      color: '#292929',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      marginStart: sizeWidth(2),
+                    }}>
+                    {this.parsetime(this.state.item.businessHours)}
+                  </Subtitle>
+                </View>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    this.setState({
+                      isTimeExpanded: !this.state.isTimeExpanded,
+                    });
+                  }}>
+                  <Subtitle
+                    style={{
+                      color: '#3DACCF',
+                      fontFamily: 'Rubik',
+                      alignSelf: 'center',
+                      fontSize: 14,
+                      marginEnd: sizeWidth(2),
+                    }}>
+                    {`${i18n.t(k._62)}`}
+                  </Subtitle>
+                </TouchableWithoutFeedback>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginStart: sizeWidth(4.5),
+                  paddingHorizontal: sizeWidth(2),
+                  marginVertical: sizeHeight(1),
+                  marginBottom: sizeHeight(3),
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flexDirection: 'row'}}>
+                  <Image
+                    source={require(`./../res/images/placeholder.png`)}
+                    style={{
+                      width: 16,
+                      height: 22,
+                      alignSelf: 'center',
+                    }}
+                  />
+
+                  <TouchableWithoutFeedback onPress={this.locationOpen}>
+                    <Subtitle
+                      style={{
+                        color: '#3DACCF',
+                        fontFamily: 'Rubik',
+                        alignSelf: 'center',
+                        fontSize: 14,
+                        marginStart: sizeWidth(2),
+                      }}>
+                      {this.state.item.address}
+                    </Subtitle>
+                  </TouchableWithoutFeedback>
+                </View>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    const lat = this.state.item.lat;
+                    const lng = this.state.item.lon;
+                    const url = `${i18n.t(
+                      k.HTTPS_WWW_WAZE_COM_UL_LL,
+                    )}${lat}${i18n.t(k.C1)}${lng}${i18n.t(k.NAVIGATE_YES)}`;
+                    Linking.openURL(url);
+                  }}>
+                  <Image
+                    source={require(`./../res/images/waze.png`)}
+                    style={{
+                      width: 24,
+                      height: 22,
+                      alignSelf: 'center',
+                      padding: 4,
+                      marginEnd: 12,
+                    }}
+                  />
+                </TouchableWithoutFeedback>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      </>
+    );
+  };
+
+  render() {
+    return (
+      <SafeAreaView style={styles.containermain} forceInset={{top: 'never'}}>
+        <Screen style={styles.containermain}>
+          <StatusBar barStyle="dark-content" backgroundColor="white" />
+
+          <View style={styles.containermain}>
+            <View style={{flex: 0.99}}>
+              <TabSectonList
+                visibility={this.state.progressView}
+                myHeader={this.renderTopBizInfo()}
+                clickedItem={(item, index) => {
+                  if (this.orderprocessRef && this.orderprocessRef.current) {
+                    this.orderprocessRef.current.menuItemClicked(
+                      '',
+                      item,
+                      index,
+                    );
+                  }
+                }}
+                productList={this.state.tabNames}
+                expanded={this.state.isTimeExpanded}
+              />
+            </View>
+            <View style={{flex: 0.01}}>
+              {this.state.tabNames !== null &&
+              this.state.tabNames !== undefined &&
+              this.state.checkerDate !== undefined &&
+              this.state.checkerDate !== null ? (
+                <OrderProcess1
+                  ref={this.orderprocessRef}
+                  currentLat={this.state.currentLat}
+                  currentLog={this.state.currentLog}
+                  idbranch={this.state.branchid}
+                  tabNames={[]}
+                  eachTabData={this.state.eachTabData}
+                  deliveryPrice={this.state.deliveryPrice}
+                  customerdt={this.state.customerdt}
+                  orderChanged={this.getOrderCounter}
+                  hasDelivery={this.state.hasDelivery}
+                  mode={this.state.mode}
+                  item={this.state.item}
+                  editData={this.state.editData}
+                  cartBranchId={this.state.cartBranchId}
+                  currentNames={this.state.item.idbranch}
+                  businessclosedornot={
+                    this.state.isOpen === 'open' ? true : false
+                  }
+                  checkerDate={this.state.checkerDate}
+                  //backClicked={this.backScroll}
+                />
+              ) : null}
+            </View>
+          </View>
 
           {this.state.showOrderNo ? (
             <View
@@ -953,6 +931,7 @@ export default class NewBusinessPage extends React.Component {
  * StyleSheet
  */
 const styles = StyleSheet.create({
+  containermain: {flex: 1, backgroundColor: 'white'},
   circleView: {
     width: 42,
     height: 42,
