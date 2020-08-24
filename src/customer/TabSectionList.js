@@ -5,34 +5,33 @@ import {
   Text,
   TouchableWithoutFeedback,
   Platform,
-  Dimensions,
 } from 'react-native';
 
 import {Title} from '@shoutem/ui';
 import AccordItem from './AccordItem';
 import {Animated} from 'react-native';
 import DummyLoader from './../util/DummyLoader';
-
-const windowHeight = Dimensions.get('window').height;
-//const TabBarHeight = 56;
-//let HeaderHeight = 456;
+import Fade from './../util/Fade';
 
 export default class TabSectionList extends React.PureComponent {
   constructor(props) {
     super(props);
     this.sectionListRef = React.createRef();
     this.flatListRef = React.createRef();
+    this.absoluteflatListRef = React.createRef();
     this.ontabClick = this.ontabClick.bind(this);
     this.onChangeViewable = this.onChangeViewable.bind(this);
     this.headerView = this.headerView.bind(this);
     this.blockUpdateIndex = false;
+    this.tabRef = React.createRef();
     this.state = {
       currentIndex: 0,
       scrollY: new Animated.Value(0),
-      tabMove: new Animated.Value(0),
       tabBarElevation: false,
       HeaderHeight: 0,
       TabBarHeight: 0,
+      tabbarY: 0,
+      headerY: 0,
     };
   }
 
@@ -57,7 +56,7 @@ export default class TabSectionList extends React.PureComponent {
     );
   };
 
-  renderSection = ({section, item, index}) => {
+  renderSection = ({section}) => {
     return (
       <View style={styles.sectioncontainer}>
         <View style={styles.itemtitlecontainer}>
@@ -101,6 +100,7 @@ export default class TabSectionList extends React.PureComponent {
     this.blockUpdateIndex = true;
     this.changeTopIndex(index);
     this.changeSectionIndex(index);
+    //this.visibility();
   };
 
   onChangeViewable = vi => {
@@ -128,7 +128,14 @@ export default class TabSectionList extends React.PureComponent {
       ref.scrollToIndex({
         animated: true,
         index: index,
-        //viewOffset:100
+      });
+    }
+
+    const abRef = this.absoluteflatListRef;
+    if (abRef && abRef.current) {
+      abRef.current.getNode().scrollToIndex({
+        animated: true,
+        index: index,
       });
     }
   };
@@ -140,160 +147,217 @@ export default class TabSectionList extends React.PureComponent {
         animated: true,
         itemIndex: 0,
         sectionIndex: index,
-        //viewOffset: 100,
-        //viewPosition:1
       });
     }
   };
 
-  componentDidMount() {
-    this.listerner = this.state.scrollY.addListener(data => {
-      const {value} = data;
-      const sum = this.state.HeaderHeight + this.state.TabBarHeight;
+  headerView = () => {
+    const {myHeader} = this.props;
+    return (
+      <Animated.View
+        style={{
+          width: '100%',
+          backgroundColor: 'white',
+        }}
+        onLayout={e => {
+          const {height, y} = e.nativeEvent.layout;
+          this.setState({HeaderHeight: height, headerY: y});
+        }}>
+        {myHeader}
+      </Animated.View>
+    );
+  };
+
+  tabView = () => {
+    const {productList = []} = this.props;
+
+    return (
+      <Animated.View
+        style={{
+          width: '100%',
+          backgroundColor: 'white',
+        }}
+        ref={this.tabRef}
+        onLayout={e => {
+          const {height, y} = e.nativeEvent.layout;
+          this.setState({
+            TabBarHeight: height,
+            tabbarY: y,
+          });
+        }}>
+        <Animated.FlatList
+          ref={this.flatListRef}
+          data={productList}
+          renderItem={({item, index}) => this.renderTab(index, item)}
+          keyExtractor={item => `${item.id}`}
+          horizontal
+          alwaysBounceHorizontal={false}
+          alwaysBounceVertical={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          onScrollToIndexFailed={() => {}}
+          // getItemLayout={(data, index) => ({
+          //   length: 56,
+          //   offset: 56 * index,
+          //   index: index,
+          // })}
+        />
+      </Animated.View>
+    );
+  };
+
+  tabAbsoluteView = () => {
+    const {productList = []} = this.props;
+    const {tabBarElevation, HeaderHeight, TabBarHeight} = this.state;
+
+    return (
+      <Fade
+        style={{
+          top: 0,
+          zIndex: 1,
+          position: 'absolute',
+          width: '100%',
+          backgroundColor: 'white',
+          ...Platform.select({
+            android: {
+              elevation: 4,
+            },
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.23,
+              shadowRadius: 2.62,
+            },
+          }),
+        }}
+        visible={tabBarElevation}>
+        <Animated.FlatList
+          ref={this.absoluteflatListRef}
+          data={productList}
+          renderItem={({item, index}) => this.renderTab(index, item)}
+          keyExtractor={item => `${item.id}`}
+          horizontal
+          alwaysBounceHorizontal={false}
+          alwaysBounceVertical={false}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          onScrollToIndexFailed={() => {}}
+          // getItemLayout={(data, index) => ({
+          //   length: 56,
+          //   offset: 56 * index,
+          //   index: index,
+          // })}
+        />
+      </Fade>
+    );
+  };
+
+  // componentDidMount() {
+  //   this.listerner = this.state.scrollY.addListener(data => {
+  //     const {value} = data;
+  //     //const sum = this.state.headerY + this.state.tabbarY;
+  //     //console.log('tabbarY', tabbarY);
+  //     this.tabRef.current.getNode().measure((x, y, width, height, px, py) => {
+  //       console.log('py', py);
+  //       this.setState({
+  //         tabBarElevation: py <=56 ? true : false,
+  //       });
+  //     });
+  //   });
+  // }
+
+  // componentWillUnmount() {
+  //   if (this.state.scrollY) {
+  //     this.state.scrollY.removeAllListeners();
+  //   }
+  // }
+
+  _onScroll = e =>{
+    this.tabRef.current.getNode().measure((x, y, width, height, px, py) => {
+      //console.log('py', py);
       this.setState({
-        tabBarElevation: value >= sum && sum > 0 ? true : false,
+        tabBarElevation: py <= 96 ? true : false,
       });
     });
   }
 
-  componentWillUnmount() {
-    if (this.state.scrollY) {
-      this.state.scrollY.removeAllListeners();
+  _onScrollEndDrag = e => {};
+
+  _onMomentumScrollBegin = () => {};
+
+  _onMomentumScrollEnd = () => {
+    this.blockUpdateIndex = false;
+    //this.visibility();
+  };
+
+  visibility = () => {
+    const ref = this.tabRef.current.getNode();
+    if (ref) {
+      ref.measure((x, y, width, height, px, py) => {
+        console.log(py);
+        if (py <= 1) {
+          this.setState({
+            tabBarElevation: true,
+          });
+        } else {
+          this.setState({
+            tabBarElevation: false,
+          });
+        }
+      });
     }
-  }
-
-  headerView = () => {
-    const {myHeader, productList = [], expanded} = this.props;
-    const {scrollY, HeaderHeight, TabBarHeight} = this.state;
-    const tabHeight = expanded ? HeaderHeight + TabBarHeight : HeaderHeight;
-
-    const tabY = scrollY.interpolate({
-      inputRange: [0, tabHeight],
-      outputRange: [tabHeight, 0],
-      extrapolate: 'clamp',
-    });
-
-    const headery = scrollY.interpolate({
-      inputRange: [0, HeaderHeight],
-      outputRange: [0, -HeaderHeight],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <>
-        <Animated.View
-          style={{
-            transform: [{translateY: headery}],
-            top: 0,
-            // height: HeaderHeight,
-            width: '100%',
-            backgroundColor: 'white',
-            position: 'absolute',
-            zIndex: 1,
-          }}
-          onLayout={e => {
-            const {height} = e.nativeEvent.layout;
-            this.setState({HeaderHeight: height});
-          }}>
-          {myHeader}
-        </Animated.View>
-        <Animated.View
-          style={{
-            top: 0,
-            zIndex: 1,
-            position: 'absolute',
-            transform: [{translateY: tabY}],
-            width: '100%',
-            backgroundColor: 'white',
-            ...Platform.select({
-              android: {
-                elevation: this.state.tabBarElevation === false ? 0 : 4,
-              },
-              ios: {
-                shadowColor: '#000',
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowOpacity: 0.23,
-                shadowRadius: 2.62,
-              },
-            }),
-          }}
-          onLayout={e => {
-            const {height} = e.nativeEvent.layout;
-            this.setState({TabBarHeight: height});
-          }}>
-          <Animated.FlatList
-            ref={this.flatListRef}
-            data={productList}
-            renderItem={({item, index}) => this.renderTab(index, item)}
-            keyExtractor={item => `${item.id}`}
-            horizontal
-            alwaysBounceHorizontal={false}
-            alwaysBounceVertical={false}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            onScrollToIndexFailed={() => {}}
-            // getItemLayout={(data, index) => ({
-            //   length: 56,
-            //   offset: 56*index,
-            //   index:index,
-            // })}
-          />
-        </Animated.View>
-      </>
-    );
   };
 
   render() {
     const {productList = [], visibility} = this.props;
-    const {tabBarElevation, scrollY, HeaderHeight, TabBarHeight} = this.state;
     return (
       <>
-        {this.headerView()}
+        {this.tabAbsoluteView()}
         <DummyLoader
           visibilty={visibility}
           center={
             productList && productList.length > 0 ? (
               <Animated.SectionList
                 ref={this.sectionListRef}
+                ListHeaderComponent={() => (
+                  <>
+                    {this.headerView()}
+                    {this.tabView()}
+                  </>
+                )}
                 sections={productList}
                 keyExtractor={item => `${item.id}`}
                 initialNumToRender={10}
                 bounces={false}
                 alwaysBounceVertical={false}
                 alwaysBounceHorizontal={false}
-                ItemSeparatorComponent={() => (
-                  <View style={styles.separator} />
-                )}
-                // style={{
-                //   //marginTop: tabBarElevation ? 56 : 0,
-                //   transform: [
-                //     {
-                //       translateY: tabBarElevation ? TabBarHeight : 0,
-                //     },
-                //   ],
-                // }}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
                 initialScrollIndex={this.state.currentIndex}
                 renderSectionHeader={this.renderSection}
                 renderItem={this.renderItem}
                 onViewableItemsChanged={this.onChangeViewable}
-                onMomentumScrollEnd={e => (this.blockUpdateIndex = false)}
-                scrollEventThrottle={16}
+                onMomentumScrollBegin={this._onMomentumScrollBegin}
+                onMomentumScrollEnd={this._onMomentumScrollEnd}
+                onScrollEndDrag={this._onScrollEndDrag}
+                scrollEventThrottle={1}
+                stickySectionHeadersEnabled
                 decelerationRate="fast"
-                //stickySectionHeadersEnabled={true}
-                //stickyHeaderIndices={[this.state.currentIndex]}
                 viewabilityConfig={{
                   minimumViewTime: 10,
                   itemVisiblePercentThreshold: 10,
                 }}
+                style={{
+                  marginTop:this.state.tabBarElevation ? 56 : 0
+                }}
                 onScrollToIndexFailed={() => {}}
-                getItemLayout={(data, index) => ({
-                  length: 96,
-                  offset: 96 * index,
-                  index,
-                })}
+                // getItemLayout={(data, index) => ({
+                //   length: 96,
+                //   offset: 96 * index,
+                //   index,
+                // })}
                 scrollToOverflowEnabled={true}
                 onScroll={Animated.event(
                   [
@@ -305,12 +369,8 @@ export default class TabSectionList extends React.PureComponent {
                       },
                     },
                   ],
-                  {useNativeDriver: true},
+                  {useNativeDriver: true, listener:this._onScroll},
                 )}
-                contentContainerStyle={{
-                  paddingTop: HeaderHeight + TabBarHeight,
-                  minHeight: windowHeight - TabBarHeight,
-                }}
               />
             ) : null
           }
